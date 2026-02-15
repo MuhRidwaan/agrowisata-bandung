@@ -3,6 +3,11 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PaketTourController;
+use App\Http\Controllers\PaketTourPhotoController;
+
+use App\Http\Controllers\PricingTierController;
+use App\Http\Controllers\TanggalAvailableController;
 
 /*
 |--------------------------------------------------------------------------
@@ -47,29 +52,38 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
-// LIST DATA
-Route::get('/users', [UserController::class, 'index'])
-->name('users.index');
 
-// FORM CREATE
-Route::get('/users/create', [UserController::class, 'create'])
-->name('users.create');
+    Route::resource('paket-tours', PaketTourController::class);
 
-// STORE DATA
-Route::post('/users', [UserController::class, 'store'])
-->name('users.store');
+    Route::resource('paket-tour-photos', PaketTourPhotoController::class); // Gallery Foto
 
-// FORM EDIT
-Route::get('/users/{user}/edit', [UserController::class, 'edit'])
-->name('users.edit');
+    Route::resource('pricing-tiers', PricingTierController::class); // Pricing Tier
 
-// UPDATE DATA
-Route::put('/users/{user}', [UserController::class, 'update'])
-->name('users.update');
+    Route::resource('tanggal-available', TanggalAvailableController::class); // Tanggal Available
 
-// DELETE DATA
-Route::delete('/users/{user}', [UserController::class, 'destroy'])
-->name('users.destroy');
+    // LIST DATA
+    Route::get('/users', [UserController::class, 'index'])
+        ->name('users.index');
+
+    // FORM CREATE
+    Route::get('/users/create', [UserController::class, 'create'])
+        ->name('users.create');
+
+    // STORE DATA
+    Route::post('/users', [UserController::class, 'store'])
+        ->name('users.store');
+
+    // FORM EDIT
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])
+        ->name('users.edit');
+
+    // UPDATE DATA
+    Route::put('/users/{user}', [UserController::class, 'update'])
+        ->name('users.update');
+
+    // DELETE DATA
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])
+        ->name('users.destroy');
 });
 
 require __DIR__.'/auth.php';
