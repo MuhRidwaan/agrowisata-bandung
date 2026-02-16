@@ -62,7 +62,7 @@
     {{-- SweatAllert --}}
     <script src="{{ asset('plugins/sweetalert2/sweetalert2.min.js') }}"></script>
     {{-- Global Alert --}}
-    @include('backend.layoutsgit.scripts.alert')
+    @include('backend.layouts.scripts.alert')
 
     @stack('scripts')
     </body>
