@@ -11,13 +11,13 @@ class TanggalAvailableController extends Controller
     public function index()
     {
         $tanggalAvailables = TanggalAvailable::with('paketTour')->orderBy('tanggal', 'desc')->paginate(15);
-        return view('tanggal_available.index', compact('tanggalAvailables'));
+        return view('backend.tanggal_available.index', compact('tanggalAvailables'));
     }
 
     public function create()
     {
         $paketTours = PaketTour::all();
-        return view('tanggal_available.form', [
+        return view('backend.tanggal_available.form', [
             'tanggalAvailable' => new TanggalAvailable(),
             'paketTours' => $paketTours,
             'edit' => false,
@@ -39,7 +39,7 @@ class TanggalAvailableController extends Controller
     public function edit(TanggalAvailable $tanggalAvailable)
     {
         $paketTours = PaketTour::all();
-        return view('tanggal_available.form', [
+        return view('backend.tanggal_available.form', [
             'tanggalAvailable' => $tanggalAvailable,
             'paketTours' => $paketTours,
             'edit' => true,

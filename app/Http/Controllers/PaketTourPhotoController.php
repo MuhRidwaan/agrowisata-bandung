@@ -11,13 +11,13 @@ class PaketTourPhotoController extends Controller
     public function index()
     {
         $photos = PaketTourPhoto::with('paketTour')->get();
-        return view('paket_tour_photo.index', compact('photos'));
+        return view('backend.paket_tour_photo.index', compact('photos'));
     }
 
     public function create()
     {
         $paketTours = PaketTour::all();
-        return view('paket_tour_photo.form', ['photo' => new PaketTourPhoto(), 'paketTours' => $paketTours]);
+        return view('backend.paket_tour_photo.form', ['photo' => new PaketTourPhoto(), 'paketTours' => $paketTours]);
     }
 
     public function store(Request $request)
@@ -38,7 +38,7 @@ class PaketTourPhotoController extends Controller
     public function edit(PaketTourPhoto $paketTourPhoto)
     {
         $paketTours = PaketTour::all();
-        return view('paket_tour_photo.form', ['photo' => $paketTourPhoto, 'paketTours' => $paketTours]);
+        return view('backend.paket_tour_photo.form', ['photo' => $paketTourPhoto, 'paketTours' => $paketTours]);
     }
 
     public function update(Request $request, PaketTourPhoto $paketTourPhoto)

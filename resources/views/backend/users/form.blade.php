@@ -1,4 +1,4 @@
-@extends('main_dashboard')
+@extends('backend.main_dashboard')
 
 @section('content')
     <!-- CONTENT HEADER -->
@@ -79,6 +79,24 @@
 
                                     <input type="password" name="password" class="form-control" placeholder="Password">
                                 </div>
+
+                                <div class="form-group">
+                                    <label>Role</label>
+
+                                    <select name="role" class="form-control">
+
+                                        <option value="">-- pilih role --</option>
+
+                                        @foreach ($roles as $role)
+                                            <option value="{{ $role->name }}"
+                                                {{ isset($user) && $user->hasRole($role->name) ? 'selected' : '' }}>
+                                                {{ $role->name }}
+                                            </option>
+                                        @endforeach
+
+                                    </select>
+                                </div>
+
 
                             </div>
 

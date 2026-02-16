@@ -1,4 +1,4 @@
-@extends('main_dashboard')
+@extends('backend.main_dashboard')
 
 @section('content')
     <section class="content-header">
@@ -57,13 +57,10 @@
                                         </div>
                                     </form>
 
-                                    <!-- IMPORT -->
-                                    <a href="#" class="btn btn-info btn-sm mr-1">
-                                        <i class="fas fa-file-import"></i> Import
-                                    </a>
+
 
                                     <!-- EXPORT -->
-                                    <a href="#" class="btn btn-success btn-sm mr-1">
+                                    <a href="{{ route('users.export') }}" class="btn btn-success btn-sm mr-1">
                                         <i class="fas fa-file-export"></i> Export
                                     </a>
 
@@ -98,7 +95,10 @@
 
                                     @forelse ($users as $key => $user)
                                         <tr>
-                                            <td>{{ $key + 1 }}</td>
+                                            <td>
+                                                {{ ($users->currentPage() - 1) * $users->perPage() + $loop->iteration }}
+                                            </td>
+
                                             <td>{{ $user->name }}</td>
                                             <td>{{ $user->email }}</td>
 
@@ -112,17 +112,17 @@
 
                                                 <!-- DELETE -->
                                                 <form action="{{ route('users.destroy', $user->id) }}" method="POST"
-                                                    style="display:inline-block"
-                                                    onsubmit="return confirm('Yakin hapus user ini?')">
+                                                    style="display:inline-block" class="form-delete">
 
                                                     @csrf
                                                     @method('DELETE')
 
-                                                    <button class="btn btn-danger btn-sm">
+                                                    <button type="submit" class="btn btn-danger btn-sm">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
 
                                                 </form>
+
 
 
                                             </td>
@@ -138,6 +138,10 @@
                                 </tbody>
 
                             </table>
+                            <div class="mt-3">
+                                {{ $users->links() }}
+                            </div>
+
 
                         </div>
 
@@ -148,4 +152,41 @@
 
         </div>
     </section>
+
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: '{{ session('success') }}',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        </script>
+    @endif
+
+    <script>
+        document.querySelectorAll('.form-delete').forEach(form => {
+            form.addEventListener('submit', function(e) {
+
+                e.preventDefault();
+
+                Swal.fire({
+                    title: 'Yakin?',
+                    text: "Data akan dihapus permanen",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+
+            });
+        });
+    </script>
 @endsection

@@ -60,7 +60,7 @@
                 </li>
 
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('roles.index') }}" class="nav-link">
                         <i class="nav-icon fas fa-user-shield"></i>
                         <p>Role & Permission</p>
                     </a>
@@ -86,7 +86,8 @@
                     <ul class="nav nav-treeview">
 
                         <li class="nav-item">
-                            <a href="{{ route('paket-tours.index') }}" class="nav-link {{ request()->routeIs('paket-tours.*') ? 'active' : '' }}">
+                            <a href="{{ route('paket-tours.index') }}"
+                                class="nav-link {{ request()->routeIs('paket-tours.*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Data Paket</p>
                             </a>
@@ -94,21 +95,24 @@
 
 
                         <li class="nav-item">
-                            <a href="{{ route('paket-tour-photos.index') }}" class="nav-link {{ request()->routeIs('paket-tour-photos.*') ? 'active' : '' }}">
+                            <a href="{{ route('paket-tour-photos.index') }}"
+                                class="nav-link {{ request()->routeIs('paket-tour-photos.*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Gallery Foto</p>
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a href="{{ route('pricing-tiers.index') }}" class="nav-link {{ request()->routeIs('pricing-tiers.*') ? 'active' : '' }}">
+                            <a href="{{ route('pricing-tiers.index') }}"
+                                class="nav-link {{ request()->routeIs('pricing-tiers.*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Pricing Tier</p>
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a href="{{ route('tanggal-available.index') }}" class="nav-link {{ request()->routeIs('tanggal-available.*') ? 'active' : '' }}">
+                            <a href="{{ route('tanggal-available.index') }}"
+                                class="nav-link {{ request()->routeIs('tanggal-available.*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Tanggal Available</p>
                             </a>

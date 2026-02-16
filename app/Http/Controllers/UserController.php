@@ -5,30 +5,42 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
+
+use App\Exports\UsersExport;
+use Maatwebsite\Excel\Facades\Excel;
+
 
 
 class UserController extends Controller
 {
-    public function index(Request $request)
-    {
-        $query = User::query();
-    
-        if ($request->search) {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%');
-        }
-    
-        $users = $query->latest()->get();
-    
-        return view('users.index', compact('users'));
+   public function index(Request $request)
+{
+    $query = User::query();
+
+    if ($request->search) {
+        $query->where(function ($q) use ($request) {
+            $q->where('name', 'like', '%' . $request->search . '%')
+              ->orWhere('email', 'like', '%' . $request->search . '%');
+        });
     }
+
+    $users = $query
+        ->latest()
+        ->paginate(10) // jumlah per halaman
+        ->withQueryString(); // supaya search tidak hilang
+
+    return view('backend.users.index', compact('users'));
+}
+
     
 
    
 public function create()
 {
     // pakai 1 form
-    return view('users.form');
+    $roles = Role::all();
+    return view('backend.users.form', compact('roles'));
 }
 
 
@@ -49,6 +61,8 @@ public function store(Request $request)
         'password' => Hash::make($request->password),
     ]);
 
+    $user->assignRole($request->role);
+
     return redirect()
         ->route('users.index')
         ->with('success','User berhasil ditambahkan');
@@ -61,7 +75,8 @@ public function store(Request $request)
 public function edit(User $user)
 {
     // kirim data user ke form yang sama
-    return view('users.form', compact('user'));
+    $roles = Role::all();
+    return view('backend.users.form', compact('user', 'roles'));
 }
 
 
@@ -87,9 +102,26 @@ public function update(Request $request, User $user)
     }
 
     $user->update($data);
+    $user->syncRoles($request->role);
+    
 
     return redirect()
         ->route('users.index')
         ->with('success','User berhasil diupdate');
+}
+
+public function destroy(User $user)
+{
+    $user->delete();
+
+    return redirect()
+        ->route('users.index')
+        ->with('success', 'User berhasil dihapus');
+}
+
+
+public function export()
+{
+    return Excel::download(new UsersExport, 'users.xlsx');
 }
 }

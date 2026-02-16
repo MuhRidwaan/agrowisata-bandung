@@ -1,5 +1,4 @@
-
-@extends('main_dashboard')
+@extends('backend.main_dashboard')
 
 @section('content')
     <section class="content-header">
@@ -54,22 +53,26 @@
                                             <td>{{ $paket->nama_paket }}</td>
                                             <td>{{ $paket->deskripsi }}</td>
                                             <td>{{ $paket->jam_operasional }}</td>
-                                            <td>Rp {{ number_format($paket->harga_paket,0,',','.') }}</td>
+                                            <td>Rp {{ number_format($paket->harga_paket, 0, ',', '.') }}</td>
                                             <td>{{ $paket->kuota }}</td>
                                             <td>
-                                                @if($paket->tanggalAvailables && $paket->tanggalAvailables->count())
-                                                    @foreach($paket->tanggalAvailables as $tgl)
-                                                        <span class="badge badge-info mb-1">{{ $tgl->tanggal }} (Kuota: {{ $tgl->kuota }})</span><br>
+                                                @if ($paket->tanggalAvailables && $paket->tanggalAvailables->count())
+                                                    @foreach ($paket->tanggalAvailables as $tgl)
+                                                        <span class="badge badge-info mb-1">{{ $tgl->tanggal }} (Kuota:
+                                                            {{ $tgl->kuota }})</span><br>
                                                     @endforeach
                                                 @else
                                                     <span class="text-muted">-</span>
                                                 @endif
                                             </td>
                                             <td>
-                                                <a href="{{ route('paket-tours.edit', $paket->id) }}" class="btn btn-warning btn-sm">
+                                                <a href="{{ route('paket-tours.edit', $paket->id) }}"
+                                                    class="btn btn-warning btn-sm">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <form action="{{ route('paket-tours.destroy', $paket->id) }}" method="POST" style="display:inline-block" onsubmit="return confirm('Yakin hapus paket ini?')">
+                                                <form action="{{ route('paket-tours.destroy', $paket->id) }}"
+                                                    method="POST" style="display:inline-block"
+                                                    onsubmit="return confirm('Yakin hapus paket ini?')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button class="btn btn-danger btn-sm">

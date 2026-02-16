@@ -1,4 +1,4 @@
-@extends('main_dashboard')
+@extends('backend.main_dashboard')
 
 @section('content')
     <section class="content-header">
@@ -49,12 +49,15 @@
                                             <td>{{ $tier->paketTour->nama_paket ?? '-' }}</td>
                                             <td>{{ $tier->qty_min }}</td>
                                             <td>{{ $tier->qty_max }}</td>
-                                            <td>Rp {{ number_format($tier->harga,0,',','.') }}</td>
+                                            <td>Rp {{ number_format($tier->harga, 0, ',', '.') }}</td>
                                             <td>
-                                                <a href="{{ route('pricing-tiers.edit', $tier->id) }}" class="btn btn-warning btn-sm">
+                                                <a href="{{ route('pricing-tiers.edit', $tier->id) }}"
+                                                    class="btn btn-warning btn-sm">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <form action="{{ route('pricing-tiers.destroy', $tier->id) }}" method="POST" style="display:inline-block" onsubmit="return confirm('Yakin hapus tier ini?')">
+                                                <form action="{{ route('pricing-tiers.destroy', $tier->id) }}"
+                                                    method="POST" style="display:inline-block"
+                                                    onsubmit="return confirm('Yakin hapus tier ini?')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button class="btn btn-danger btn-sm">

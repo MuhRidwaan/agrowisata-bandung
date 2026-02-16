@@ -1,16 +1,16 @@
-@include('layouts_backend.header')
+@include('backend.layouts.header')
 <!-- Navigasi -->
-@include('layouts_backend.nav')
+@include('backend.layouts.nav')
 <!-- Sidebar -->
-@include('layouts_backend.sidebar')
+@include('backend.layouts.sidebar')
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
 
-  
+
     <!-- Content -->
     @yield('content')
 
     <!-- /.content -->
 </div>
 <!-- Footer -->
-@include('layouts_backend.footer')
+@include('backend.layouts.footer')

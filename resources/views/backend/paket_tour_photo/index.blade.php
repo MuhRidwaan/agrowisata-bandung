@@ -1,4 +1,4 @@
-@extends('main_dashboard')
+@extends('backend.main_dashboard')
 
 @section('content')
     <section class="content-header">
@@ -47,10 +47,13 @@
                                             <td>{{ $photo->paketTour->nama_paket ?? '-' }}</td>
                                             <td>{{ $photo->path_foto }}</td>
                                             <td>
-                                                <a href="{{ route('paket-tour-photos.edit', $photo->id) }}" class="btn btn-warning btn-sm">
+                                                <a href="{{ route('paket-tour-photos.edit', $photo->id) }}"
+                                                    class="btn btn-warning btn-sm">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <form action="{{ route('paket-tour-photos.destroy', $photo->id) }}" method="POST" style="display:inline-block" onsubmit="return confirm('Yakin hapus foto ini?')">
+                                                <form action="{{ route('paket-tour-photos.destroy', $photo->id) }}"
+                                                    method="POST" style="display:inline-block"
+                                                    onsubmit="return confirm('Yakin hapus foto ini?')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button class="btn btn-danger btn-sm">

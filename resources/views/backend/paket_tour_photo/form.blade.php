@@ -1,4 +1,4 @@
-@extends('main_dashboard')
+@extends('backend.main_dashboard')
 
 @section('content')
     <section class="content-header">
@@ -34,9 +34,11 @@
                                 {{ isset($photo->id) ? 'Form Edit Foto' : 'Form Tambah Foto' }}
                             </h3>
                         </div>
-                        <form method="POST" action="{{ isset($photo->id) ? route('paket-tour-photos.update', $photo->id) : route('paket-tour-photos.store') }}" enctype="multipart/form-data">
+                        <form method="POST"
+                            action="{{ isset($photo->id) ? route('paket-tour-photos.update', $photo->id) : route('paket-tour-photos.store') }}"
+                            enctype="multipart/form-data">
                             @csrf
-                            @if(isset($photo->id))
+                            @if (isset($photo->id))
                                 @method('PUT')
                             @endif
                             <div class="card-body">
@@ -44,23 +46,28 @@
                                     <label for="paket_tour_id">Paket Tour</label>
                                     <select name="paket_tour_id" id="paket_tour_id" class="form-control" required>
                                         <option value="">-- Pilih Paket Tour --</option>
-                                        @foreach($paketTours as $paket)
-                                            <option value="{{ $paket->id }}" {{ old('paket_tour_id', $photo->paket_tour_id) == $paket->id ? 'selected' : '' }}>{{ $paket->nama_paket }}</option>
+                                        @foreach ($paketTours as $paket)
+                                            <option value="{{ $paket->id }}"
+                                                {{ old('paket_tour_id', $photo->paket_tour_id) == $paket->id ? 'selected' : '' }}>
+                                                {{ $paket->nama_paket }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="path_foto">Upload Foto</label>
-                                    <input type="file" class="form-control" id="path_foto" name="path_foto" accept="image/*" {{ isset($photo->id) ? '' : 'required' }}>
-                                    @if(isset($photo->path_foto) && $photo->path_foto)
+                                    <input type="file" class="form-control" id="path_foto" name="path_foto"
+                                        accept="image/*" {{ isset($photo->id) ? '' : 'required' }}>
+                                    @if (isset($photo->path_foto) && $photo->path_foto)
                                         <div class="mt-2">
-                                            <img src="{{ asset('storage/'.$photo->path_foto) }}" alt="Foto" style="max-width:120px;max-height:120px;">
+                                            <img src="{{ asset('storage/' . $photo->path_foto) }}" alt="Foto"
+                                                style="max-width:120px;max-height:120px;">
                                         </div>
                                     @endif
                                 </div>
                             </div>
                             <div class="card-footer">
-                                <button type="submit" class="btn btn-primary">{{ isset($photo->id) ? 'Update' : 'Simpan' }}</button>
+                                <button type="submit"
+                                    class="btn btn-primary">{{ isset($photo->id) ? 'Update' : 'Simpan' }}</button>
                                 <a href="{{ route('paket-tour-photos.index') }}" class="btn btn-secondary">Batal</a>
                             </div>
                         </form>

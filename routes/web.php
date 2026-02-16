@@ -8,6 +8,8 @@ use App\Http\Controllers\PaketTourPhotoController;
 
 use App\Http\Controllers\PricingTierController;
 use App\Http\Controllers\TanggalAvailableController;
+use App\Http\Controllers\RoleController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -16,7 +18,7 @@ use App\Http\Controllers\TanggalAvailableController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('frontend.home');
 });
 
 /*
@@ -28,7 +30,7 @@ Route::get('/', function () {
 Route::middleware(['auth','role:admin'])->group(function () {
 
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        return view('backend.dashboard');
     })->name('dashboard');
 
 
@@ -84,6 +86,16 @@ Route::middleware('auth')->group(function () {
     // DELETE DATA
     Route::delete('/users/{user}', [UserController::class, 'destroy'])
         ->name('users.destroy');
+
+        Route::get('/users/export', [UserController::class, 'export'])
+    ->name('users.export');
+
 });
 
+
+Route::middleware('auth')->group(function () {
+
+    Route::resource('roles', RoleController::class);
+
+});
 require __DIR__.'/auth.php';

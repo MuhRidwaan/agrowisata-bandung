@@ -10,12 +10,12 @@ class PaketTourController extends Controller
     public function index()
     {
         $paketTours = PaketTour::all();
-        return view('paket_tour.index', compact('paketTours'));
+        return view('backend.paket_tour.index', compact('paketTours'));
     }
 
     public function create()
     {
-        return view('paket_tour.form', ['paketTour' => new PaketTour()]);
+        return view('backend.paket_tour.form', ['paketTour' => new PaketTour()]);
     }
 
     public function store(Request $request)
@@ -33,7 +33,7 @@ class PaketTourController extends Controller
 
     public function edit(PaketTour $paketTour)
     {
-        return view('paket_tour.form', compact('paketTour'));
+        return view('backend.paket_tour.form', compact('paketTour'));
     }
 
     public function update(Request $request, PaketTour $paketTour)

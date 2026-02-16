@@ -11,13 +11,13 @@ class PricingTierController extends Controller
     public function index()
     {
         $tiers = PricingTier::with('paketTour')->get();
-        return view('pricing_tier.index', compact('tiers'));
+        return view('backend.pricing_tier.index', compact('tiers'));
     }
 
     public function create()
     {
         $paketTours = PaketTour::all();
-        return view('pricing_tier.form', ['tier' => new PricingTier(), 'paketTours' => $paketTours]);
+        return view('backend.pricing_tier.form', ['tier' => new PricingTier(), 'paketTours' => $paketTours]);
     }
 
     public function store(Request $request)
@@ -35,7 +35,7 @@ class PricingTierController extends Controller
     public function edit(PricingTier $pricingTier)
     {
         $paketTours = PaketTour::all();
-        return view('pricing_tier.form', ['tier' => $pricingTier, 'paketTours' => $paketTours]);
+        return view('backend.pricing_tier.form', ['tier' => $pricingTier, 'paketTours' => $paketTours]);
     }
 
     public function update(Request $request, PricingTier $pricingTier)

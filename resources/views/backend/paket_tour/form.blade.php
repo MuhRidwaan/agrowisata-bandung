@@ -1,4 +1,4 @@
-@extends('main_dashboard')
+@extends('backend.main_dashboard')
 
 @section('content')
     <section class="content-header">
@@ -34,15 +34,17 @@
                                 {{ isset($paketTour->id) ? 'Form Edit Paket Tour' : 'Form Tambah Paket Tour' }}
                             </h3>
                         </div>
-                        <form method="POST" action="{{ isset($paketTour->id) ? route('paket-tours.update', $paketTour->id) : route('paket-tours.store') }}">
+                        <form method="POST"
+                            action="{{ isset($paketTour->id) ? route('paket-tours.update', $paketTour->id) : route('paket-tours.store') }}">
                             @csrf
-                            @if(isset($paketTour->id))
+                            @if (isset($paketTour->id))
                                 @method('PUT')
                             @endif
                             <div class="card-body">
                                 <div class="form-group">
                                     <label for="nama_paket">Nama Paket</label>
-                                    <input type="text" class="form-control" id="nama_paket" name="nama_paket" value="{{ old('nama_paket', $paketTour->nama_paket) }}" required>
+                                    <input type="text" class="form-control" id="nama_paket" name="nama_paket"
+                                        value="{{ old('nama_paket', $paketTour->nama_paket) }}" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="deskripsi">Deskripsi</label>
@@ -50,19 +52,25 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="jam_operasional">Jam Operasional</label>
-                                    <input type="time" class="form-control" id="jam_operasional" name="jam_operasional" value="{{ old('jam_operasional', $paketTour->jam_operasional) }}">
+                                    <input type="time" class="form-control" id="jam_operasional" name="jam_operasional"
+                                        value="{{ old('jam_operasional', $paketTour->jam_operasional) }}">
                                 </div>
                                 <div class="form-group">
                                     <label for="harga_paket">Harga Paket</label>
-                                    <input type="number" class="form-control" id="harga_paket" name="harga_paket" value="{{ old('harga_paket', $paketTour->harga_paket) }}" min="0" step="1000" required placeholder="Contoh: 100000">
+                                    <input type="number" class="form-control" id="harga_paket" name="harga_paket"
+                                        value="{{ old('harga_paket', $paketTour->harga_paket) }}" min="0"
+                                        step="1000" required placeholder="Contoh: 100000">
                                 </div>
                                 <div class="form-group">
                                     <label for="kuota">Kuota / Limit Booking</label>
-                                    <input type="number" class="form-control" id="kuota" name="kuota" value="{{ old('kuota', $paketTour->kuota) }}" min="1" required placeholder="Minimal 1">
+                                    <input type="number" class="form-control" id="kuota" name="kuota"
+                                        value="{{ old('kuota', $paketTour->kuota) }}" min="1" required
+                                        placeholder="Minimal 1">
                                 </div>
                             </div>
                             <div class="card-footer">
-                                <button type="submit" class="btn btn-primary">{{ isset($paketTour->id) ? 'Update' : 'Simpan' }}</button>
+                                <button type="submit"
+                                    class="btn btn-primary">{{ isset($paketTour->id) ? 'Update' : 'Simpan' }}</button>
                                 <a href="{{ route('paket-tours.index') }}" class="btn btn-secondary">Batal</a>
                             </div>
                         </form>
