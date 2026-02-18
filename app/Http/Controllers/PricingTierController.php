@@ -3,56 +3,93 @@
 namespace App\Http\Controllers;
 
 use App\Models\PricingTier;
-use App\Models\PaketTour;
+use App\Models\TourPackage;
 use Illuminate\Http\Request;
 
 class PricingTierController extends Controller
 {
+    /**
+     * List semua pricing tier
+     */
     public function index()
     {
-        $tiers = PricingTier::with('paketTour')->get();
-        return view('backend.pricing_tier.index', compact('tiers'));
+        $tiers = PricingTier::with('tourPackage')
+                    ->latest()
+                    ->get();
+
+        return view('backend.pricing_tiers.index', compact('tiers'));
     }
 
+    /**
+     * Form tambah
+     */
     public function create()
     {
-        $paketTours = PaketTour::all();
-        return view('backend.pricing_tier.form', ['tier' => new PricingTier(), 'paketTours' => $paketTours]);
+        $packages = TourPackage::orderBy('title')
+                        ->pluck('title','id');
+
+        return view('backend.pricing_tiers.form', compact('packages'));
     }
 
+    /**
+     * Simpan data baru
+     */
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'paket_tour_id' => 'required|exists:paket_tours,id',
-            'qty_min' => 'required|integer',
-            'qty_max' => 'required|integer',
-            'harga' => 'required|numeric',
+        $validated = $request->validate([
+            'tour_package_id' => 'required|exists:tour_packages,id',
+            'name'            => 'required|string|max:100',
+            'price'           => 'required|integer|min:0',
         ]);
-        PricingTier::create($data);
-        return redirect()->route('pricing-tiers.index')->with('success', 'Pricing Tier berhasil ditambahkan!');
+
+        PricingTier::create($validated);
+
+        return redirect()
+            ->route('pricing-tiers.index')
+            ->with('success', 'Kategori harga berhasil ditambahkan');
     }
 
+    /**
+     * Form edit
+     */
     public function edit(PricingTier $pricingTier)
     {
-        $paketTours = PaketTour::all();
-        return view('backend.pricing_tier.form', ['tier' => $pricingTier, 'paketTours' => $paketTours]);
+        $packages = TourPackage::orderBy('title')
+                        ->pluck('title','id');
+
+        return view('backend.pricing_tiers.form', [
+            'tier' => $pricingTier,
+            'packages' => $packages
+        ]);
     }
 
+    /**
+     * Update data
+     */
     public function update(Request $request, PricingTier $pricingTier)
     {
-        $data = $request->validate([
-            'paket_tour_id' => 'required|exists:paket_tours,id',
-            'qty_min' => 'required|integer',
-            'qty_max' => 'required|integer',
-            'harga' => 'required|numeric',
+        $validated = $request->validate([
+            'tour_package_id' => 'required|exists:tour_packages,id',
+            'name'            => 'required|string|max:100',
+            'price'           => 'required|integer|min:0',
         ]);
-        $pricingTier->update($data);
-        return redirect()->route('pricing-tiers.index')->with('success', 'Pricing Tier berhasil diupdate!');
+
+        $pricingTier->update($validated);
+
+        return redirect()
+            ->route('pricing-tiers.index')
+            ->with('success', 'Kategori harga berhasil diperbarui');
     }
 
+    /**
+     * Hapus data
+     */
     public function destroy(PricingTier $pricingTier)
     {
         $pricingTier->delete();
-        return redirect()->route('pricing-tiers.index')->with('success', 'Pricing Tier berhasil dihapus!');
+
+        return redirect()
+            ->route('pricing-tiers.index')
+            ->with('success', 'Kategori harga berhasil dihapus');
     }
 }

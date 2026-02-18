@@ -4,16 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class PricingTier extends Model
+class TourGallery extends Model
 {
     protected $fillable = [
         'tour_package_id',
-        'name',
-        'price'
+        'image',
+        'caption'
     ];
 
     public function tourPackage()
     {
         return $this->belongsTo(TourPackage::class);
     }
+
+    public function galleries()
+    {
+    return $this->hasMany(TourGallery::class);
+    }
+
 }

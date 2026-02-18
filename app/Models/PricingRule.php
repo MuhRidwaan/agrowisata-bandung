@@ -4,12 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class PricingTier extends Model
+class PricingRule extends Model
 {
     protected $fillable = [
         'tour_package_id',
-        'name',
-        'price'
+        'min_pax',
+        'max_pax',
+        'discount_type',
+        'discount_value',
+        'description',
     ];
 
     public function tourPackage()

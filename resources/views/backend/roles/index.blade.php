@@ -1,4 +1,4 @@
-@extends('backend.main_dashboard')
+@extends('backend.backend.main_dashboard')
 
 @section('content')
     <section class="content-header">
