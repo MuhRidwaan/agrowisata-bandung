@@ -13,14 +13,14 @@ class VendorController extends Controller
     public function index()
     {
         $vendors = Vendor::with('area')->get();
-        return view('vendors.index', compact('vendors'));
+        return view('.backend.vendors.index', compact('vendors'));
     }
 
     // ================= FORM CREATE =================
     public function create()
     {
         $areas = Area::all();
-        return view('vendors.form', compact('areas'));
+        return view('.backend.vendors.form', compact('areas'));
     }
 
     // ================= STORE =================
@@ -47,7 +47,7 @@ class VendorController extends Controller
         $vendor = Vendor::findOrFail($id);
         $areas = Area::all();
 
-        return view('vendors.form', compact('vendor', 'areas'));
+        return view('.backend.vendors.form', compact('vendor', 'areas'));
     }
 
     // ================= UPDATE =================
@@ -84,7 +84,7 @@ class VendorController extends Controller
         $vendor = Vendor::with('reviews')->findOrFail($id);
         $avgRating = $vendor->reviews()->avg('rating');
 
-        return view('vendors.show', compact('vendor', 'avgRating'));
+        return view('.backend.vendors.show', compact('vendor', 'avgRating'));
     }
 
     // ================= WHATSAPP =================
