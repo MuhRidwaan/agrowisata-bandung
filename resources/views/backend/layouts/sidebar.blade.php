@@ -125,14 +125,16 @@
                 <li class="nav-header">TRANSACTION</li>
 
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('bookings.index') }}"
+                        class="nav-link {{ request()->routeIs('bookings.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-shopping-cart"></i>
                         <p>Booking</p>
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('payments.index') }}"
+                        class="nav-link {{ request()->routeIs('payments.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-credit-card"></i>
                         <p>Payment</p>
                     </a>

@@ -1,4 +1,4 @@
-@extends('backend.backend.main_dashboard')
+@extends('backend..main_dashboard')
 @section('content')
     <div class="container-fluid">
         <div class="row mb-2">

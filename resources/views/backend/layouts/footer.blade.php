@@ -55,7 +55,7 @@
 
     <!-- AdminLTE -->
     <script src="{{ asset('dist/js/adminlte.js') }}"></script>
-    <script src="{{ asset('dist/js/demo.js') }}"></script>
+    {{-- <script src="{{ asset('dist/js/demo.js') }}"></script> --}}
     <script src="{{ asset('dist/js/pages/dashboard.js') }}"></script>
 
 

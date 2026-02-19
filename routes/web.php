@@ -9,6 +9,8 @@ use App\Http\Controllers\PaketTourPhotoController;
 use App\Http\Controllers\PricingTierController;
 use App\Http\Controllers\TanggalAvailableController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\PaymentController;
 
 
 /*
@@ -98,4 +100,49 @@ Route::middleware('auth')->group(function () {
     Route::resource('roles', RoleController::class);
 
 });
+
+Route::middleware(['auth','role:admin'])->group(function () {
+
+    // ======================
+    // ROUTES BOOKING
+    // ======================
+    Route::get('/bookings', 
+        [BookingController::class, 'index']
+    )->name('bookings.index');
+
+    Route::get('/bookings/create', 
+        [BookingController::class, 'create']
+    )->name('bookings.create');
+
+    Route::post('/bookings', 
+        [BookingController::class, 'store']
+    )->name('bookings.store');
+
+    Route::get('/bookings/{booking}/edit', 
+        [BookingController::class, 'edit']
+    )->name('bookings.edit');
+
+    Route::put('/bookings/{booking}', 
+        [BookingController::class, 'update']
+    )->name('bookings.update');
+
+    Route::delete('/bookings/{booking}', 
+        [BookingController::class, 'destroy']
+    )->name('bookings.destroy');
+
+
+    // ======================
+    // ROUTES PAYMENTS
+    // ======================
+    Route::get('/payments',
+        [PaymentController::class, 'index']
+    )->name('payments.index');
+
+    Route::post('/payments/{payment}/paid',
+        [PaymentController::class, 'markAsPaid']
+    )->name('payments.paid');
+
+});
+
+
 require __DIR__.'/auth.php';

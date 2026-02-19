@@ -11,13 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pricing_tiers', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('tour_package_id')->constrained()->cascadeOnDelete();
-            $table->string('name'); // Dewasa, Anak
-            $table->integer('price');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('pricing_tiers')) {
+    
+            Schema::create('pricing_tiers', function (Blueprint $table) {
+                $table->id();
+    
+                $table->foreignId('tour_package_id')
+                      ->constrained('paket_tours')
+                      ->cascadeOnDelete();
+    
+                $table->string('name'); // Dewasa, Anak
+                $table->integer('price');
+    
+                $table->timestamps();
+            });
+    
+        }
     }
 
     /**
