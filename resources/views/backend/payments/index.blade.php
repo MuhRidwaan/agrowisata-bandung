@@ -22,16 +22,19 @@
             <div class="row">
                 <div class="col-12">
                     <div class="card">
+
+                        <!-- HEADER -->
                         <div class="card-header">
                             <div class="d-flex justify-content-between align-items-center flex-wrap">
-                                <h3 class="card-title mb-2">Daftar Pembayaran</h3>
+                                <h3 class="card-title mb-2">Daftar Pembayaran Masuk</h3>
                                 <div class="d-flex align-items-center">
                                     <form action="{{ route('payments.index') }}" method="GET">
                                         <div class="input-group input-group-sm" style="width:250px;">
                                             <input type="text" name="search" class="form-control"
-                                                placeholder="Cari kode booking/user..." value="{{ request('search') }}">
+                                                placeholder="Cari kode/user..." value="{{ request('search') }}">
                                             <div class="input-group-append">
-                                                <button class="btn btn-default"><i class="fas fa-search"></i></button>
+                                                <button type="submit" class="btn btn-default"><i
+                                                        class="fas fa-search"></i></button>
                                             </div>
                                         </div>
                                     </form>
@@ -39,100 +42,149 @@
                             </div>
                         </div>
 
+                        <!-- BODY -->
                         <div class="card-body">
                             <table class="table table-bordered table-hover">
-                                <thead>
+                                <thead class="bg-light">
                                     <tr>
-                                        <th width="5%">No</th>
+                                        <th width="5%" class="text-center">No</th>
                                         <th>Kode Booking</th>
-                                        <th>User</th>
-                                        <th>Paket Tour</th>
-                                        <th>Total</th>
-                                        <th>Status</th>
-                                        <th>Waktu Bayar</th>
-                                        <th width="12%">Aksi</th>
+                                        <th>Nama Pemesan</th>
+                                        <th>Total Harga</th>
+                                        <th class="text-center">Status</th>
+                                        <th width="20%" class="text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse ($payments as $payment)
                                         <tr>
-                                            <td>{{ ($payments->currentPage() - 1) * $payments->perPage() + $loop->iteration }}
+                                            <td class="text-center">
+                                                {{ ($payments->currentPage() - 1) * $payments->perPage() + $loop->iteration }}
                                             </td>
                                             <td><strong>{{ $payment->booking->booking_code ?? '-' }}</strong></td>
-                                            <td>{{ $payment->booking->user->name ?? 'User Dihapus' }}</td>
-                                            <td>{{ $payment->booking->paketTour->nama_paket ?? '-' }}</td>
+                                            <td>
+                                                {{ $payment->booking->customer_name ?? ($payment->booking->user->name ?? '-') }}
+                                                <br>
+                                                <small
+                                                    class="text-muted">{{ $payment->booking->customer_phone ?? '' }}</small>
+                                            </td>
                                             <td>Rp {{ number_format($payment->booking->total_price ?? 0, 0, ',', '.') }}
                                             </td>
-                                            <td>
+                                            <td class="text-center">
                                                 @if ($payment->status == 'success')
-                                                    <span class="badge badge-success">Paid</span>
+                                                    <span class="badge badge-success"><i class="fas fa-check-circle"></i>
+                                                        Paid / Lunas</span>
                                                 @else
-                                                    <span class="badge badge-warning">Pending</span>
+                                                    <span class="badge badge-warning"><i class="fas fa-clock"></i> Waiting
+                                                        Payment</span>
                                                 @endif
                                             </td>
-                                            <td>
-                                                {{ $payment->paid_at ? \Carbon\Carbon::parse($payment->paid_at)->format('d M Y H:i') : '-' }}
-                                            </td>
-                                            <td>
+                                            <td class="text-center">
                                                 @if ($payment->status != 'success')
-                                                    <form method="POST" action="{{ route('payments.paid', $payment->id) }}"
-                                                        class="form-paid" style="display:inline-block">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-success btn-sm">
-                                                            <i class="fas fa-check-circle"></i> Mark Paid
-                                                        </button>
-                                                    </form>
+                                                    <!-- TOMBOL BAYAR MIDTRANS & AUTO URL -->
+                                                    <button class="btn btn-primary btn-sm btn-pay"
+                                                        data-token="{{ $payment->snap_token }}"
+                                                        data-url="{{ route('payments.paid', $payment->id) }}">
+                                                        <i class="fas fa-money-bill-wave"></i> Bayar Sekarang
+                                                    </button>
                                                 @else
-                                                    <span class="text-muted"><i class="fas fa-check"></i> Selesai</span>
+                                                    <span class="text-success font-weight-bold mr-2"><i
+                                                            class="fas fa-check"></i> Lunas</span>
+                                                    <!-- TOMBOL CETAK INVOICE -->
+                                                    <a href="{{ route('payments.invoice', $payment->id) }}"
+                                                        class="btn btn-info btn-sm">
+                                                        <i class="fas fa-print"></i> Invoice
+                                                    </a>
                                                 @endif
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="8" class="text-center">Data payment kosong</td>
+                                            <td colspan="6" class="text-center py-4">
+                                                <i class="fas fa-money-check-alt fa-3x text-muted mb-2"></i><br>
+                                                Belum ada data pembayaran.
+                                            </td>
                                         </tr>
                                     @endforelse
                                 </tbody>
                             </table>
 
-                            <div class="mt-3">
+                            <!-- PAGINATION -->
+                            <div class="mt-4">
                                 {{ $payments->links() }}
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    @if (session('success'))
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil',
-                text: '{{ session('success') }}',
-                timer: 2000,
-                showConfirmButton: false
-            });
-        </script>
-    @endif
+    <!-- LOAD SCRIPT MIDTRANS SANDBOX -->
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}">
+    </script>
 
+    <!-- LOGIC SWEETALERT & MUNCULIN POP-UP MIDTRANS -->
     <script>
-        document.querySelectorAll('.form-paid').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
+        document.querySelectorAll('.btn-pay').forEach(button => {
+            button.addEventListener('click', function() {
+                var snapToken = this.getAttribute('data-token');
+                var paymentUrl = this.getAttribute('data-url');
+
+                if (!snapToken) {
+                    Swal.fire('Error', 'Token pembayaran tidak ditemukan!', 'error');
+                    return;
+                }
+
                 Swal.fire({
-                    title: 'Konfirmasi Pembayaran?',
-                    text: "Status payment dan booking akan diubah menjadi lunas!",
+                    title: 'Lanjutkan Pembayaran?',
+                    text: "Anda akan diarahkan ke halaman aman Midtrans untuk membayar.",
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonColor: '#28a745',
+                    confirmButtonColor: '#007bff',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Ya, Lunas!',
+                    confirmButtonText: 'Ya, Bayar Sekarang!',
                     cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        form.submit();
+
+                        window.snap.pay(snapToken, {
+                            onSuccess: function(result) {
+                                // JIKA SUKSES, BUAT FORM VIRTUAL UNTUK SUBMIT AUTO-LUNAS KE ROUTE "markAsPaid"
+                                Swal.fire('Berhasil!',
+                                    'Pembayaran sukses! Memproses data...',
+                                    'success');
+
+                                var form = document.createElement('form');
+                                form.method = 'POST';
+                                form.action = paymentUrl;
+
+                                var csrf = document.createElement('input');
+                                csrf.type = 'hidden';
+                                csrf.name = '_token';
+                                csrf.value = '{{ csrf_token() }}';
+
+                                form.appendChild(csrf);
+                                document.body.appendChild(form);
+
+                                form.submit();
+                            },
+                            onPending: function(result) {
+                                Swal.fire('Menunggu',
+                                    'Silakan selesaikan pembayaran Anda.', 'info');
+                            },
+                            onError: function(result) {
+                                Swal.fire('Gagal',
+                                    'Pembayaran gagal, silakan coba lagi.', 'error');
+                            },
+                            onClose: function() {
+                                Swal.fire('Batal',
+                                    'Anda menutup layar pembayaran sebelum menyelesaikannya.',
+                                    'warning');
+                            }
+                        });
+
                     }
                 });
             });

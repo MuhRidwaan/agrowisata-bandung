@@ -82,6 +82,8 @@ Route::middleware(['auth','role:admin'])->group(function () {
     // ================= PAYMENTS =================
     Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::post('/payments/{payment}/paid', [PaymentController::class, 'markAsPaid'])->name('payments.paid');
+    Route::post('/midtrans/callback', [PaymentController::class, 'callback']);
+    Route::get('/payments/{payment}/invoice', [PaymentController::class, 'invoice'])->name('payments.invoice');
 
     // ================= VENDORS =================
     Route::get('/vendors/{id}/contact', [VendorController::class, 'contact'])->name('vendors.contact');
@@ -92,6 +94,8 @@ Route::middleware(['auth','role:admin'])->group(function () {
 
     // ================= WHATSAPP SETTING =================
     Route::resource('whatsappsetting', WhatsappSettingController::class);
+
+
 
 });
 

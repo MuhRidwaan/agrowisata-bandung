@@ -13,6 +13,9 @@ class Booking extends Model
         'jumlah_peserta',
         'total_price',
         'status',
+        'customer_name',
+        'customer_email',
+        'customer_phone',
     ];
 
     public function paketTour()

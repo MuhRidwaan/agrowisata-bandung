@@ -12,6 +12,7 @@ class Payment extends Model
         'transaction_id',
         'status',
         'paid_at',
+        'snap_token',
     ];
 
     public function booking()
