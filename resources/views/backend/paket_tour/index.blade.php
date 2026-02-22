@@ -5,14 +5,14 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Data Paket Tour</h1>
+                    <h1>Tour Package Data</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item">
                             <a href="{{ route('dashboard') }}">Dashboard</a>
                         </li>
-                        <li class="breadcrumb-item active">Data Paket Tour</li>
+                        <li class="breadcrumb-item active">Tour Package Data</li>
                     </ol>
                 </div>
             </div>
@@ -26,9 +26,9 @@
                     <div class="card">
                         <div class="card-header">
                             <div class="d-flex justify-content-between align-items-center flex-wrap">
-                                <h3 class="card-title mb-2">Data Paket Tour</h3>
+                                <h3 class="card-title mb-2">Tour Package Data</h3>
                                 <a href="{{ route('paket-tours.create') }}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus"></i> Tambah Paket Tour
+                                    <i class="fas fa-plus"></i> Add Tour Package
                                 </a>
                             </div>
                         </div>
@@ -37,11 +37,11 @@
                                 <thead>
                                     <tr>
                                         <th width="5%">No</th>
-                                        <th>Nama Paket</th>
-                                        <th>Deskripsi</th>
-                                        <th>Jam Operasional</th>
+                                        <th>Package Name</th>
+                                        <th>Description</th>
+                                        <th>Operational Hours</th>
                                         <th>Vendor</th>
-                                        <th>Tanggal Available</th>
+                                        <th>Available Dates</th>
                                         <th width="15%">Action</th>
                                     </tr>
                                 </thead>
@@ -51,12 +51,12 @@
                                             <td>{{ $key + 1 }}</td>
                                             <td>{{ $paket->nama_paket }}</td>
                                             <td>{{ $paket->deskripsi }}</td>
-                                            <td>{{ $paket->jam_awal ?? '-' }} s/d {{ $paket->jam_akhir ?? '-' }}</td>
+                                            <td>{{ $paket->jam_awal ?? '-' }} to {{ $paket->jam_akhir ?? '-' }}</td>
                                             <td>{{ $paket->vendor->name ?? '-' }}</td>
                                             <td>
                                                 @if ($paket->tanggalAvailables && $paket->tanggalAvailables->count())
                                                     @foreach ($paket->tanggalAvailables as $tgl)
-                                                        <span class="badge badge-info mb-1">{{ $tgl->tanggal }} (Kuota:
+                                                        <span class="badge badge-info mb-1">{{ $tgl->tanggal }} (Quota:
                                                             {{ $tgl->kuota }})</span><br>
                                                     @endforeach
                                                 @else
@@ -88,7 +88,7 @@
                                     @empty
                                         <tr>
                                             <td colspan="8" class="text-center">
-                                                Belum ada data paket tour.
+                                                No tour package data available yet.
                                             </td>
                                         </tr>
                                     @endforelse
@@ -104,7 +104,7 @@
         <script>
             Swal.fire({
                 icon: 'success',
-                title: 'Sukses',
+                title: 'Success',
                 text: '{{ session('success') }}',
                 timer: 2000,
                 showConfirmButton: false
@@ -116,14 +116,14 @@
         document.querySelector('.form-delete').addEventListener('submit', function(e) {
             e.preventDefault();
             Swal.fire({
-                title: 'Yakin ingin menghapus?',
-                text: "Data yang dihapus tidak bisa dikembalikan!",
+                title: 'Are you sure you want to delete?',
+                text: "Deleted data cannot be restored!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal'
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
                     this.submit();

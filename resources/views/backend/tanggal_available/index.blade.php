@@ -8,7 +8,7 @@
         <div class="row mb-2">
 
             <div class="col-sm-6">
-                <h1>Data Tanggal Available</h1>
+                <h1>Available Date Data</h1>
             </div>
 
             <div class="col-sm-6">
@@ -17,7 +17,7 @@
                         <a href="{{ route('dashboard') }}">Dashboard</a>
                     </li>
                     <li class="breadcrumb-item active">
-                        Data Tanggal Available
+                        Available Date Data
                     </li>
                 </ol>
             </div>
@@ -40,12 +40,12 @@
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center flex-wrap">
                             <h3 class="card-title mb-2">
-                                Data Tanggal Available
+                                Available Date Data
                             </h3>
 
                             <a href="{{ route('tanggal-available.create') }}"
                                class="btn btn-primary btn-sm">
-                                <i class="fas fa-plus"></i> Tambah Tanggal
+                                <i class="fas fa-plus"></i> Add Date
                             </a>
                         </div>
                     </div>
@@ -57,11 +57,11 @@
                             <thead>
                                 <tr>
                                     <th>No</th>
-                                    <th>Paket Tour</th>
-                                    <th>Tanggal</th>
-                                    <th>Kuota</th>
+                                    <th>Tour Package</th>
+                                    <th>Date</th>
+                                    <th>Quota</th>
                                     <th>Status</th>
-                                    <th>Aksi</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
 
@@ -95,7 +95,7 @@
 
                                                 <button type="submit"
                                                         class="btn btn-danger btn-sm">
-                                                    <i class="fas fa-trash"></i> Hapus
+                                                    <i class="fas fa-trash"></i> Delete
                                                 </button>
                                             </form>
 
@@ -104,7 +104,7 @@
                                 @empty
                                     <tr>
                                         <td colspan="6" class="text-center">
-                                            Belum ada data
+                                            No data available
                                         </td>
                                     </tr>
                                 @endforelse
@@ -130,7 +130,7 @@
 <script>
     Swal.fire({
         icon: 'success',
-        title: 'Sukses',
+        title: 'Success',
         text: '{{ session('success') }}',
         timer: 2000,
         showConfirmButton: false
@@ -145,13 +145,13 @@
             e.preventDefault();
 
             Swal.fire({
-                title: 'Yakin ingin menghapus?',
+                title: 'Are you sure you want to delete?',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal'
+                confirmButtonText: 'Yes, delete!',
+                cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
                     form.submit();

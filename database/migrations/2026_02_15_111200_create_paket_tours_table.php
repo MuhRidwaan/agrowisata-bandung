@@ -12,7 +12,6 @@ return new class extends Migration {
             $table->string('nama_paket');
             $table->text('deskripsi')->nullable();
             $table->string('jam_operasional')->nullable();
-            $table->decimal('harga_paket', 15, 2);
             $table->integer('kuota')->nullable();
             $table->timestamps();
         });

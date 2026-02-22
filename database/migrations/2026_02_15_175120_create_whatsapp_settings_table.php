@@ -12,12 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('whatsapp_settings', function (Blueprint $table) {
-        $table->id();
-        $table->unsignedBigInteger('vendor_id')->nullable()->after('id'); 
-        $table->string('phone_number');
-        $table->text('message_template');
-        $table->timestamps();
-    });
+            $table->id();
+            $table->unsignedBigInteger('vendor_id')->nullable();
+            $table->string('phone_number');
+            $table->text('message_template');
+            $table->timestamps();
+        });
 
     }
 

@@ -38,12 +38,12 @@
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center flex-wrap">
                             <h3 class="card-title mb-2">
-                                Data Pricing Rule
+                                Pricing Rule Data
                             </h3>
 
                             <a href="{{ route('pricingrules.create') }}"
                                class="btn btn-primary btn-sm">
-                                <i class="fas fa-plus"></i> Tambah Rule
+                                <i class="fas fa-plus"></i> Add Rule
                             </a>
                         </div>
                     </div>
@@ -54,12 +54,12 @@
                         <table class="table table-bordered table-hover">
                             <thead>
                                 <tr>
-                                    <th>Paket</th>
+                                    <th>Package</th>
                                     <th>Min</th>
                                     <th>Max</th>
-                                    <th>Tipe</th>
-                                    <th>Nilai</th>
-                                    <th width="15%">Aksi</th>
+                                    <th>Type</th>
+                                    <th>Value</th>
+                                    <th width="15%">Action</th>
                                 </tr>
                             </thead>
 
@@ -102,7 +102,7 @@
                                 @empty
                                     <tr>
                                         <td colspan="6" class="text-center">
-                                            Belum ada rule
+                                            No rules available
                                         </td>
                                     </tr>
                                 @endforelse
@@ -125,7 +125,7 @@
 <script>
     Swal.fire({
         icon: 'success',
-        title: 'Sukses',
+        title: 'Success',
         text: '{{ session('success') }}',
         timer: 3000,
         showConfirmButton: false
@@ -140,14 +140,14 @@
             e.preventDefault();
 
             Swal.fire({
-                title: 'Apakah Anda yakin?',
-                text: "Data akan dihapus secara permanen!",
+                title: 'Are you sure?',
+                text: "Data will be permanently deleted!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal'
+                confirmButtonText: 'Yes, delete!',
+                cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
                     form.submit();
