@@ -15,7 +15,7 @@ use App\Http\Controllers\WhatsappSettingController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\PricingRuleController;
 use App\Http\Controllers\AreaController;
->>>>>>> Stashed changes
+
 
 /*
 |--------------------------------------------------------------------------
