@@ -13,6 +13,9 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\WhatsappSettingController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\PricingRuleController;
+use App\Http\Controllers\AreaController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -40,7 +43,9 @@ Route::middleware('auth')->group(function () {
     // ================= PAKET TOUR & OPTIONS =================
     Route::resource('paket-tours', PaketTourController::class);
     Route::resource('paket-tour-photos', PaketTourPhotoController::class);
-    Route::resource('pricing-tiers', PricingTierController::class);
+    Route::resource('pricingtiers', PricingTierController::class);
+    Route::resource('pricingrules', PricingRuleController::class);
+
     Route::resource('tanggal-available', TanggalAvailableController::class);
 
     // ================= DATA USERS =================
@@ -90,11 +95,16 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::resource('vendors', VendorController::class);
 
     // ================= REVIEWS =================
-    Route::resource('review', ReviewController::class);
+    Route::get('review', [ReviewController::class, 'index'])->name('review.index');
+    Route::post('review/{id}/approve', [ReviewController::class, 'approve'])->name('review.approve');
+    Route::post('review/{id}/reject', [ReviewController::class, 'reject'])->name('review.reject');
+    Route::post('review/{id}/reply', [ReviewController::class, 'reply'])->name('review.reply');
 
     // ================= WHATSAPP SETTING =================
     Route::resource('whatsappsetting', WhatsappSettingController::class);
 
+    // ================= AREAS =================
+    Route::resource('areas', AreaController::class);
 
 
 });

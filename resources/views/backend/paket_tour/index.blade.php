@@ -12,7 +12,7 @@
                         <li class="breadcrumb-item">
                             <a href="{{ route('dashboard') }}">Dashboard</a>
                         </li>
-                        <li class="breadcrumb-item active">Paket Tour</li>
+                        <li class="breadcrumb-item active">Data Paket Tour</li>
                     </ol>
                 </div>
             </div>
@@ -40,8 +40,7 @@
                                         <th>Nama Paket</th>
                                         <th>Deskripsi</th>
                                         <th>Jam Operasional</th>
-                                        <th>Harga Paket</th>
-                                        <th>Kuota</th>
+                                        <th>Vendor</th>
                                         <th>Tanggal Available</th>
                                         <th width="15%">Action</th>
                                     </tr>
@@ -52,9 +51,8 @@
                                             <td>{{ $key + 1 }}</td>
                                             <td>{{ $paket->nama_paket }}</td>
                                             <td>{{ $paket->deskripsi }}</td>
-                                            <td>{{ $paket->jam_operasional }}</td>
-                                            <td>Rp {{ number_format($paket->harga_paket, 0, ',', '.') }}</td>
-                                            <td>{{ $paket->kuota }}</td>
+                                            <td>{{ $paket->jam_awal ?? '-' }} s/d {{ $paket->jam_akhir ?? '-' }}</td>
+                                            <td>{{ $paket->vendor->name ?? '-' }}</td>
                                             <td>
                                                 @if ($paket->tanggalAvailables && $paket->tanggalAvailables->count())
                                                     @foreach ($paket->tanggalAvailables as $tgl)
@@ -65,20 +63,26 @@
                                                     <span class="text-muted">-</span>
                                                 @endif
                                             </td>
+
                                             <td>
+
+                                                <!-- EDIT -->
                                                 <a href="{{ route('paket-tours.edit', $paket->id) }}"
                                                     class="btn btn-warning btn-sm">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <form action="{{ route('paket-tours.destroy', $paket->id) }}"
-                                                    method="POST" style="display:inline-block"
-                                                    onsubmit="return confirm('Yakin hapus paket ini?')">
+
+                                                <!-- DELETE -->
+                                                <form action="{{ route('paket-tours.destroy', $paket->id) }}" method="POST" 
+                                                    style="display:inline-block" class="form-delete">
+
                                                     @csrf
                                                     @method('DELETE')
                                                     <button class="btn btn-danger btn-sm">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
+                                                
                                             </td>
                                         </tr>
                                     @empty
@@ -96,4 +100,35 @@
             </div>
         </div>
     </section>
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Sukses',
+                text: '{{ session('success') }}',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        </script>
+    @endif
+
+    <script>
+        document.querySelector('.form-delete').addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Yakin ingin menghapus?',
+                text: "Data yang dihapus tidak bisa dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.submit();
+                }
+            });
+        });
+    </script>
 @endsection

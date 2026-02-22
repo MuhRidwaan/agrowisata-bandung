@@ -31,4 +31,9 @@ class PaketTour extends Model
     {
         return $this->hasMany(TanggalAvailable::class, 'paket_tour_id');
     }
+
+        public function vendor()
+    {
+        return $this->belongsTo(Vendor::class);
+    }
 }

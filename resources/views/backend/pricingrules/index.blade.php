@@ -7,7 +7,7 @@
         <div class="row mb-2">
 
             <div class="col-sm-6">
-                <h1>Galerry Photo</h1>
+                <h1>Pricing Rule</h1>
             </div>
 
             <div class="col-sm-6">
@@ -15,7 +15,9 @@
                     <li class="breadcrumb-item">
                         <a href="{{ route('dashboard') }}">Dashboard</a>
                     </li>
-                    <li class="breadcrumb-item active">Galerry Photo</li>
+                    <li class="breadcrumb-item active">
+                        Pricing Rule
+                    </li>
                 </ol>
             </div>
 
@@ -23,8 +25,10 @@
     </div>
 </section>
 
+
 <section class="content">
     <div class="container-fluid">
+
         <div class="row">
             <div class="col-12">
 
@@ -33,48 +37,54 @@
                     <!-- HEADER -->
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <h3 class="card-title mb-2">
+                                Data Pricing Rule
+                            </h3>
 
-                            <h3 class="card-title mb-2">Data Photos</h3>
-
-                            <div class="d-flex align-items-center">
-                                <a href="{{ route('paket-tour-photos.create') }}"
-                                   class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus"></i> Tambah Photo
-                                </a>
-                            </div>
-
+                            <a href="{{ route('pricingrules.create') }}"
+                               class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Tambah Rule
+                            </a>
                         </div>
                     </div>
                     <!-- END HEADER -->
 
-                    <div class="card-body">
-                        <table class="table table-bordered table-hover">
+                    <div class="card-body table-responsive">
 
+                        <table class="table table-bordered table-hover">
                             <thead>
                                 <tr>
-                                    <th width="5%">No</th>
-                                    <th>Paket Tour</th>
-                                    <th>Path Foto</th>
-                                    <th width="15%">Action</th>
+                                    <th>Paket</th>
+                                    <th>Min</th>
+                                    <th>Max</th>
+                                    <th>Tipe</th>
+                                    <th>Nilai</th>
+                                    <th width="15%">Aksi</th>
                                 </tr>
                             </thead>
 
                             <tbody>
-                                @forelse ($photos as $key => $photo)
+                                @forelse ($rules as $item)
                                     <tr>
-                                        <td>{{ $key + 1 }}</td>
-                                        <td>{{ $photo->paketTour->nama_paket ?? '-' }}</td>
-                                        <td>{{ $photo->path_foto }}</td>
+                                        <td>{{ $item->tourPackage->title ?? '-' }}</td>
+                                        <td>{{ $item->min_pax }}</td>
+                                        <td>{{ $item->max_pax }}</td>
+                                        <td>{{ ucfirst($item->discount_type) }}</td>
+                                        <td>
+                                            {{ $item->discount_type == 'percent'
+                                                ? $item->discount_value . '%'
+                                                : 'Rp ' . number_format($item->discount_value, 0, ',', '.') }}
+                                        </td>
                                         <td>
 
                                             <!-- EDIT -->
-                                            <a href="{{ route('paket-tour-photos.edit', $photo->id) }}"
+                                            <a href="{{ route('pricingrules.edit', $item->id) }}"
                                                class="btn btn-warning btn-sm">
                                                 <i class="fas fa-edit"></i>
                                             </a>
 
                                             <!-- DELETE -->
-                                            <form action="{{ route('paket-tour-photos.destroy', $photo->id) }}"
+                                            <form action="{{ route('pricingrules.destroy', $item->id) }}"
                                                   method="POST"
                                                   style="display:inline-block"
                                                   class="form-delete">
@@ -91,34 +101,38 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="text-center">
-                                            Belum ada data foto.
+                                        <td colspan="6" class="text-center">
+                                            Belum ada rule
                                         </td>
                                     </tr>
                                 @endforelse
                             </tbody>
 
                         </table>
+
                     </div>
 
                 </div>
 
             </div>
         </div>
+
     </div>
 </section>
 
+
 @if (session('success'))
-    <script>
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil',
-            text: '{{ session('success') }}',
-            timer: 2000,
-            showConfirmButton: false
-        });
-    </script>
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Sukses',
+        text: '{{ session('success') }}',
+        timer: 3000,
+        showConfirmButton: false
+    });
+</script>
 @endif
+
 
 <script>
     document.querySelectorAll('.form-delete').forEach(form => {
@@ -126,8 +140,8 @@
             e.preventDefault();
 
             Swal.fire({
-                title: 'Yakin ingin menghapus?',
-                text: "Data yang dihapus tidak bisa dikembalikan!",
+                title: 'Apakah Anda yakin?',
+                text: "Data akan dihapus secara permanen!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',

@@ -9,7 +9,7 @@
             <div class="card-body">
 
                 <form method="POST"
-                    action="{{ isset($rule) ? route('pricing-rules.update', $rule->id) : route('pricing-rules.store') }}">
+                    action="{{ isset($rule) ? route('pricingrules.update', $rule->id) : route('pricingrules.store') }}">
                     @csrf
                     @if (isset($rule))
                         @method('PUT')
@@ -66,7 +66,7 @@
                     </div>
 
                     <button class="btn btn-success">Simpan</button>
-                    <a href="{{ route('pricing-rules.index') }}" class="btn btn-secondary">Kembali</a>
+                    <a href="{{ route('pricingrules.index') }}" class="btn btn-secondary">Kembali</a>
 
                 </form>
 

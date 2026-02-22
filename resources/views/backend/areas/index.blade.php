@@ -6,7 +6,7 @@
             <div class="row mb-2">
 
                 <div class="col-sm-6">
-                    <h1>Vendor Data</h1>
+                    <h1>Area Data</h1>
                 </div>
 
                 <div class="col-sm-6">
@@ -14,7 +14,7 @@
                         <li class="breadcrumb-item">
                             <a href="{{ route('dashboard') }}">Dashboard</a>
                         </li>
-                        <li class="breadcrumb-item active">Vendors</li>
+                        <li class="breadcrumb-item active">Areas</li>
                     </ol>
                 </div>
 
@@ -36,13 +36,13 @@
 
                             <div class="d-flex justify-content-between align-items-center flex-wrap">
 
-                                <h3 class="card-title mb-2">Vendor List</h3>
+                                <h3 class="card-title mb-2">Area List</h3>
 
                                 <div class="d-flex align-items-center">
 
                                     <!-- ADD -->
-                                    <a href="{{ route('vendors.create') }}" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-plus"></i> Add Vendor
+                                    <a href="{{ route('areas.create') }}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-plus"></i> Add Area
                                     </a>
 
                                 </div>
@@ -60,55 +60,39 @@
                                 <thead>
                                     <tr>
                                         <th width="5%">No</th>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Phone</th>
-                                        <th>Area</th>
-                                        <th>Description</th>
+                                        <th>Area Name</th>
                                         <th width="20%">Actions</th>
                                     </tr>
                                 </thead>
 
                                 <tbody>
 
-                                    @forelse ($vendors as $key => $vendor)
+                                    @forelse ($areas as $key => $area)
                                         <tr>
                                             <td>
-                                                {{ ($vendors->currentPage() - 1) * $vendors->perPage() + $loop->iteration }}
+                                                {{ ($areas->currentPage() - 1) * $areas->perPage() + $loop->iteration }}
                                             </td>
 
-                                            <td>{{ $vendor->name }}</td>
-                                            <td>{{ $vendor->email }}</td>
-
-                                            <!-- PHONE + FORMAT -->
-                                            <td>
-                                                {{ \Illuminate\Support\Str::startsWith($vendor->phone, '+') 
-                                                    ? $vendor->phone 
-                                                    : '+' . $vendor->phone }}
-                                            </td>
-
-                                            <!-- AREA -->
-                                            <td>{{ $vendor->area->name ?? '-' }}</td>
-
-                                            <!-- DESCRIPTION -->
-                                            <td>{{ \Illuminate\Support\Str::limit($vendor->description, 50) }}</td>
+                                            <td>{{ $area->name }}</td>
 
                                             <td>
 
                                                 <!-- EDIT -->
-                                                <a href="{{ route('vendors.edit', $vendor->id) }}"
-                                                    class="btn btn-warning btn-sm">
+                                                <a href="{{ route('areas.edit', $area->id) }}"
+                                                    class="btn btn-warning btn-sm"
+                                                    title="Edit">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
 
                                                 <!-- DELETE -->
-                                                <form action="{{ route('vendors.destroy', $vendor->id) }}" method="POST"
+                                                <form action="{{ route('areas.destroy', $area->id) }}" method="POST"
                                                     style="display:inline-block" class="form-delete">
 
                                                     @csrf
                                                     @method('DELETE')
 
-                                                    <button type="submit" class="btn btn-danger btn-sm">
+                                                    <button type="submit" class="btn btn-danger btn-sm"
+                                                        title="Delete">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
 
@@ -118,8 +102,8 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="7" class="text-center">
-                                                No vendor data available
+                                            <td colspan="3" class="text-center">
+                                                No area data available
                                             </td>
                                         </tr>
                                     @endforelse
@@ -130,7 +114,7 @@
 
                             <!-- PAGINATION -->
                             <div class="mt-3">
-                                {{ $vendors->links() }}
+                                {{ $areas->links() }}
                             </div>
 
                         </div>

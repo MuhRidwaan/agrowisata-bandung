@@ -12,7 +12,7 @@ class VendorController extends Controller
     // ================= LIST =================
     public function index()
     {
-        $vendors = Vendor::with('area')->get();
+        $vendors = Vendor::with('area')->paginate(10);
         return view('.backend.vendors.index', compact('vendors'));
     }
 
@@ -45,7 +45,8 @@ class VendorController extends Controller
     public function edit($id)
     {
         $vendor = Vendor::findOrFail($id);
-        $areas = Area::all();
+        $areas = Area::orderBy('name', 'asc')->get();
+
 
         return view('.backend.vendors.form', compact('vendor', 'areas'));
     }

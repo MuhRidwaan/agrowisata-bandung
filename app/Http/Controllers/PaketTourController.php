@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\PaketTour;
 use Illuminate\Http\Request;
+use App\Models\TourPackage;
+use App\Models\Vendor;
 
 class PaketTourController extends Controller
 {
@@ -15,7 +17,8 @@ class PaketTourController extends Controller
 
     public function create()
     {
-        return view('backend.paket_tour.form', ['paketTour' => new PaketTour()]);
+        $vendors = Vendor::pluck('name', 'id');
+        return view('backend.paket_tour.form', ['paketTour' => new PaketTour(), 'vendors' => $vendors]);
     }
 
     public function store(Request $request)
@@ -33,7 +36,8 @@ class PaketTourController extends Controller
 
     public function edit(PaketTour $paketTour)
     {
-        return view('backend.paket_tour.form', compact('paketTour'));
+        $vendors = Vendor::pluck('name', 'id');
+        return view('backend.paket_tour.form', compact('paketTour', 'vendors'));
     }
 
     public function update(Request $request, PaketTour $paketTour)
