@@ -1,113 +1,130 @@
 @extends('backend.main_dashboard')
 
 @section('content')
-    <section class="content-header">
-        <div class="container-fluid">
-            <h1>Setting WhatsApp</h1>
-        </div>
-    </section>
+<section class="content-header">
+    <div class="container-fluid">
+        <h1>{{ isset($setting) ? 'Edit WhatsApp Setting' : 'Add WhatsApp Setting' }}</h1>
+    </div>
+</section>
 
-    <section class="content">
-        <div class="container-fluid">
+<section class="content">
+    <div class="container-fluid">
 
-            <div class="card card-primary">
-                <div class="card-header">
-                    <h3 class="card-title">Form WhatsApp</h3>
-                </div>
+        {{-- VALIDATION ERROR --}}
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                @foreach ($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
+            </div>
+        @endif
 
-                <form action="{{ route('whatsappsetting.store') }}" method="POST">
-                    @csrf
-
-                    <div class="card-body">
-
-                        <!-- NOMOR WA -->
-                        <div class="form-group">
-                            <label>Nomor WhatsApp <span class="text-danger">*</span></label>
-                            <input type="text" name="phone_number" class="form-control" placeholder="+628xxxx" required
-                                inputmode="numeric">
-                        </div>
-
-                        <!-- TEMPLATE PESAN -->
-                        <div class="form-group">
-                            <label>Template Pesan <span class="text-danger">*</span></label>
-                            <textarea name="message_template" class="form-control" rows="5" style="resize: none;"
-                                placeholder="Halo saya ingin tanya tentang @{{ nama }}" required></textarea>
-                        </div>
-
-                        <!-- STATUS -->
-                        <div class="form-group">
-                            <label>Status <span class="text-danger">*</span></label>
-                            <select name="is_active" class="form-control" required>
-                                <option value="">-- Pilih Status --</option>
-                                <option value="1">Aktif</option>
-                                <option value="0">Non Aktif</option>
-                            </select>
-                        </div>
-
-                    </div>
-
-                    <div class="card-footer">
-                        <button class="btn btn-primary" id="submitBtn" disabled>
-                            Simpan
-                        </button>
-
-                        <a href="{{ route('whatsappsetting.index') }}" class="btn btn-secondary">
-                            Kembali
-                        </a>
-                    </div>
-
-                </form>
-
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">WhatsApp Form</h3>
             </div>
 
+            <form action="{{ isset($setting) ? route('whatsappsetting.update', $setting->id) : route('whatsappsetting.store') }}"
+                method="POST">
+                @csrf
+                @if (isset($setting))
+                    @method('PUT')
+                @endif
+
+                <div class="card-body">
+
+                    <!-- VENDOR -->
+                    <div class="form-group">
+                        <label>Vendor <span class="text-danger">*</span></label>
+                        <select name="vendor_id" id="vendorSelect" class="form-control" required>
+                            <option value="">-- Select Vendor --</option>
+
+                            @foreach ($vendors as $vendor)
+                                <option value="{{ $vendor->id }}"
+                                    data-phone="{{ $vendor->phone }}"
+                                    data-name="{{ $vendor->name }}"
+                                    {{ old('vendor_id', $setting->vendor_id ?? '') == $vendor->id ? 'selected' : '' }}>
+                                    
+                                    {{ $vendor->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- PHONE AUTO -->
+                    <div class="form-group">
+                        <label>WhatsApp Number <span class="text-danger">*</span></label>
+                        <input type="text" name="phone_number" id="phoneInput"
+                            value="{{ old('phone_number', $setting->phone_number ?? '') }}"
+                            class="form-control" readonly required>
+                    </div>
+
+                    <!-- TEMPLATE -->
+                    <div class="form-group">
+                        <label>Message Template <span class="text-danger">*</span></label>
+                        <select name="message_template" class="form-control" required>
+                            <option value="">-- Select Template --</option>
+
+                            @foreach ($templates as $template)
+                                <option value="{{ $template }}"
+                                    {{ old('message_template', $setting->message_template ?? '') == $template ? 'selected' : '' }}>
+                                    {{ $template }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="card-footer">
+                    <button class="btn btn-primary">
+                        Save
+                    </button>
+
+                    <a href="{{ route('whatsappsetting.index') }}" class="btn btn-secondary">
+                        Back
+                    </a>
+                </div>
+
+            </form>
+
         </div>
-    </section>
 
-    <script>
-        const phone = document.querySelector('[name="phone_number"]');
-        const message = document.querySelector('[name="message_template"]');
-        const status = document.querySelector('[name="is_active"]');
-        const btn = document.getElementById('submitBtn');
+    </div>
+</section>
 
-        function formatPhone(input) {
-            let value = input.value.replace(/[^0-9+]/g, '');
+<script>
+    const vendorSelect = document.getElementById('vendorSelect');
+    const phoneInput = document.getElementById('phoneInput');
 
-            // 0 → +62
-            if (value.startsWith('0')) {
-                value = '+62' + value.substring(1);
-            }
-
-            // 62 → +62
-            if (value.startsWith('62') && !value.startsWith('+62')) {
-                value = '+' + value;
-            }
-
-            input.value = value;
-
-            checkForm();
+    function formatPhone(phone) {
+        if (phone.startsWith('0')) {
+            return '+62' + phone.substring(1);
         }
-
-        function checkForm() {
-            if (
-                phone.value.trim() !== "" &&
-                message.value.trim() !== "" &&
-                status.value !== ""
-            ) {
-                btn.disabled = false;
-            } else {
-                btn.disabled = true;
-            }
+        if (phone.startsWith('62') && !phone.startsWith('+62')) {
+            return '+' + phone;
         }
+        return phone;
+    }
 
-        // event
-        phone.addEventListener('input', function() {
-            formatPhone(this);
-        });
+    vendorSelect.addEventListener('change', function () {
+        let selected = this.options[this.selectedIndex];
+        let phone = selected.getAttribute('data-phone');
 
-        message.addEventListener('input', checkForm);
-        status.addEventListener('change', checkForm);
+        if (phone) {
+            phoneInput.value = formatPhone(phone);
+        }
+    });
 
-        // run awal
-        checkForm();
-    </script>
+    // AUTO LOAD ON EDIT
+    window.addEventListener('load', function () {
+        let selected = vendorSelect.options[vendorSelect.selectedIndex];
+        let phone = selected.getAttribute('data-phone');
+
+        if (phone && !phoneInput.value) {
+            phoneInput.value = formatPhone(phone);
+        }
+    });
+</script>
+
 @endsection

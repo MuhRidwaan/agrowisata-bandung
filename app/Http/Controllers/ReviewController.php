@@ -2,68 +2,70 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Review;
-use App\Models\Vendor;
 use Illuminate\Http\Request;
+use App\Models\Review;
 
 class ReviewController extends Controller
 {
-    // LIST
+    // ================= LIST =================
     public function index()
     {
-        $reviews = Review::with('vendor')->get();
+        $reviews = Review::with(['user', 'vendor']) 
+            ->latest()
+            ->paginate(10);
+
         return view('backend.reviews.index', compact('reviews'));
     }
 
-    // FORM CREATE
-    public function create()
-    {
-        $vendors = Vendor::all();
-        return view('backend.reviews.form', compact('vendors'));
-    }
-
-    // STORE
-    public function store(Request $request)
-    {
-        Review::create([
-            'user_id' => 1,
-            'vendor_id' => $request->vendor_id,
-            'name' => $request->name,
-            'rating' => $request->rating,
-            'comment' => $request->comment
-        ]);
-
-        return redirect()->route('review.index');
-    }
-
-    // FORM EDIT
-    public function edit($id)
+    // ================= APPROVE =================
+    public function approve($id)
     {
         $review = Review::findOrFail($id);
-        $vendors = Vendor::all();
-
-        return view('backend.reviews.form', compact('review','vendors'));
-    }
-
-    // UPDATE
-    public function update(Request $request, $id)
-    {
-        $review = Review::findOrFail($id);
+        if ($review->status !== 'pending') {
+            return back()->with('error', 'Review sudah diproses');
+        }
 
         $review->update([
-            'vendor_id' => $request->vendor_id,
-            'name' => $request->name,
-            'rating' => $request->rating,
-            'comment' => $request->comment
+            'status' => 'approved'
         ]);
 
-        return redirect()->route('review.index');
+        return back()->with('success', 'Review berhasil di-approve');
     }
 
-    // DELETE
-    public function destroy($id)
+    // ================= REJECT =================
+    public function reject($id)
     {
-        Review::destroy($id);
-        return redirect()->route('review.index');
+        $review = Review::findOrFail($id);
+
+        if ($review->status !== 'pending') {
+            return back()->with('error', 'Review sudah diproses');
+        }
+
+        $review->update([
+            'status' => 'rejected'
+        ]);
+
+        return back()->with('success', 'Review berhasil ditolak');
+    }
+
+    // ================= REPLY =================
+    public function reply(Request $request, $id)
+    {
+        $request->validate([
+            'admin_reply' => 'required|string|max:1000'
+        ]);
+
+        $review = Review::findOrFail($id);
+
+        // 🔒 hanya boleh reply kalau sudah approved
+        if ($review->status !== 'approved') {
+            return back()->with('error', 'Review harus di-approve dulu');
+        }
+
+        $review->update([
+            'admin_reply' => $request->admin_reply
+        ]);
+
+        return back()->with('success', 'Balasan berhasil dikirim');
     }
 }

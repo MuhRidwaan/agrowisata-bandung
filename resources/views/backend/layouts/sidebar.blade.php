@@ -68,6 +68,14 @@
                     </a>
                 </li>
 
+                <li class="nav-item">
+                    <a href="{{ route('areas.index') }}"
+                        class="nav-link {{ request()->routeIs('areas.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-map-marker-alt"></i>
+                        <p>Area</p>
+                    </a>
+                </li>
+                
                 @php
                     $isPaketTourActive =
                         request()->routeIs('paket-tours.*') ||

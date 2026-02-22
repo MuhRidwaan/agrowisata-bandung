@@ -6,7 +6,7 @@
             <div class="row mb-2">
 
                 <div class="col-sm-6">
-                    <h1>Data Vendor</h1>
+                    <h1>Vendor Data</h1>
                 </div>
 
                 <div class="col-sm-6">
@@ -14,7 +14,7 @@
                         <li class="breadcrumb-item">
                             <a href="{{ route('dashboard') }}">Dashboard</a>
                         </li>
-                        <li class="breadcrumb-item active">Data Vendor</li>
+                        <li class="breadcrumb-item active">Vendors</li>
                     </ol>
                 </div>
 
@@ -36,13 +36,13 @@
 
                             <div class="d-flex justify-content-between align-items-center flex-wrap">
 
-                                <h3 class="card-title mb-2">Data Vendor</h3>
+                                <h3 class="card-title mb-2">Vendor List</h3>
 
                                 <div class="d-flex align-items-center">
 
-                                    <!-- TAMBAH -->
+                                    <!-- ADD -->
                                     <a href="{{ route('vendors.create') }}" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-plus"></i> Tambah Vendor
+                                        <i class="fas fa-plus"></i> Add Vendor
                                     </a>
 
                                 </div>
@@ -60,12 +60,12 @@
                                 <thead>
                                     <tr>
                                         <th width="5%">No</th>
-                                        <th>Nama</th>
+                                        <th>Name</th>
                                         <th>Email</th>
                                         <th>Phone</th>
                                         <th>Area</th>
-                                        <th>Deskripsi</th>
-                                        <th width="20%">Action</th>
+                                        <th>Description</th>
+                                        <th width="20%">Actions</th>
                                     </tr>
                                 </thead>
 
@@ -90,7 +90,7 @@
                                             <!-- AREA -->
                                             <td>{{ $vendor->area->name ?? '-' }}</td>
 
-                                            <!-- DESKRIPSI -->
+                                            <!-- DESCRIPTION -->
                                             <td>{{ \Illuminate\Support\Str::limit($vendor->description, 50) }}</td>
 
                                             <td>
@@ -119,7 +119,7 @@
                                     @empty
                                         <tr>
                                             <td colspan="7" class="text-center">
-                                                Data vendor kosong
+                                                No vendor data available
                                             </td>
                                         </tr>
                                     @endforelse
@@ -148,7 +148,7 @@
         <script>
             Swal.fire({
                 icon: 'success',
-                title: 'Berhasil',
+                title: 'Success',
                 text: '{{ session('success') }}',
                 timer: 2000,
                 showConfirmButton: false
@@ -164,14 +164,14 @@
                 e.preventDefault();
 
                 Swal.fire({
-                    title: 'Yakin?',
-                    text: "Data akan dihapus permanen",
+                    title: 'Are you sure?',
+                    text: "This data will be permanently deleted",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Ya, hapus!',
-                    cancelButtonText: 'Batal'
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         form.submit();

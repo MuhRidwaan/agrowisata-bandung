@@ -3,28 +3,39 @@
 namespace App\Http\Controllers;
 
 use App\Models\WhatsappSetting;
+use App\Models\Vendor;
 use Illuminate\Http\Request;
 
 class WhatsappSettingController extends Controller
 {
     public function index()
     {
-        $settings = WhatsappSetting::all();
+        $settings = WhatsappSetting::with('vendor')->get();
         return view('backend.whatsappsetting.index', compact('settings'));
     }
 
     public function create()
     {
-        return view('backend.whatsappsetting.form');
+        $vendors = Vendor::orderBy('name')->get();
+
+        //  TEMPLATE SIAP PAKAI
+        $templates = [
+            'Halo {nama_vendor}, saya tertarik dengan layanan yang Anda tawarkan. Mohon informasi lebih lanjut ya ',
+            'Halo {nama_vendor}, saya ingin menanyakan detail paket atau layanan yang tersedia. Terima kasih ',
+            'Halo {nama_vendor}, saya ingin melakukan booking. Mohon info ketersediaannya ',
+            'Halo {nama_vendor}, saya ingin mengetahui informasi harga layanan yang tersedia ',
+        ];
+
+        return view('backend.whatsappsetting.form', compact('vendors', 'templates'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'phone_number' => 'required|regex:/^\+?62[0-9]+$/',
+            'vendor_id' => 'required|exists:vendors,id',
+            'phone_number' => 'required',
             'message_template' => 'required',
-            'is_active' => 'required|in:0,1',
-    ]);
+        ]);
 
         WhatsappSetting::create($validated);
 
@@ -32,19 +43,28 @@ class WhatsappSettingController extends Controller
             ->with('success', 'Data berhasil disimpan');
     }
 
-
     public function edit($id)
     {
         $setting = WhatsappSetting::findOrFail($id);
-        return view('backend.whatsappsetting.form', compact('setting'));
+        $vendors = Vendor::orderBy('name')->get();
+
+        // TEMPLATE JUGA HARUS ADA DI EDIT
+        $templates = [
+            'Halo {nama_vendor}, saya tertarik dengan layanan yang Anda tawarkan. Mohon informasi lebih lanjut ya ',
+            'Halo {nama_vendor}, saya ingin menanyakan detail paket atau layanan yang tersedia. Terima kasih ',
+            'Halo {nama_vendor}, saya ingin melakukan booking. Mohon info ketersediaannya ',
+            'Halo {nama_vendor}, saya ingin mengetahui informasi harga layanan yang tersedia ',
+        ];
+
+        return view('backend.whatsappsetting.form', compact('setting', 'vendors', 'templates'));
     }
 
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'phone_number' => 'required|regex:/^62[0-9]+$/',
+            'vendor_id' => 'required|exists:vendors,id',
+            'phone_number' => 'required',
             'message_template' => 'required',
-            'is_active' => 'required|in:0,1',
         ]);
 
         $setting = WhatsappSetting::findOrFail($id);

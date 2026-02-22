@@ -45,7 +45,8 @@ class VendorController extends Controller
     public function edit($id)
     {
         $vendor = Vendor::findOrFail($id);
-        $areas = Area::all();
+        $areas = Area::orderBy('name', 'asc')->get();
+
 
         return view('.backend.vendors.form', compact('vendor', 'areas'));
     }

@@ -3,14 +3,14 @@
 @section('content')
     <section class="content-header">
         <div class="container-fluid">
-            <h1>{{ isset($vendor) ? 'Edit Vendor' : 'Tambah Vendor' }}</h1>
+            <h1>{{ isset($vendor) ? 'Edit Vendor' : 'Add Vendor' }}</h1>
         </div>
     </section>
 
     <section class="content">
         <div class="container-fluid">
 
-            {{-- ERROR VALIDATION --}}
+            {{-- VALIDATION ERROR --}}
             @if ($errors->any())
                 <div class="alert alert-danger">
                     @foreach ($errors->all() as $error)
@@ -21,7 +21,7 @@
 
             <div class="card card-primary">
                 <div class="card-header">
-                    <h3 class="card-title">Form Vendor</h3>
+                    <h3 class="card-title">Vendor Form</h3>
                 </div>
 
                 <form action="{{ isset($vendor) ? route('vendors.update', $vendor->id) : route('vendors.store') }}"
@@ -33,12 +33,12 @@
 
                     <div class="card-body">
 
-                        <!-- NAMA -->
+                        <!-- NAME -->
                         <div class="form-group">
-                            <label>Nama <span class="text-danger">*</span></label>
+                            <label>Name <span class="text-danger">*</span></label>
                             <input type="text" name="name" class="form-control"
                                 value="{{ old('name', $vendor->name ?? '') }}"
-                                placeholder="Contoh: Agro Lembang" required>
+                                placeholder="Example: Agro Lembang" required>
                         </div>
 
                         <!-- EMAIL -->
@@ -51,7 +51,7 @@
 
                         <!-- PHONE -->
                         <div class="form-group">
-                            <label>No HP <span class="text-danger">*</span></label>
+                            <label>Phone Number <span class="text-danger">*</span></label>
                             <input type="text" name="phone" class="form-control"
                                 value="{{ old('phone', $vendor->phone ?? '') }}"
                                 placeholder="+628xxxxxxxxxx"
@@ -63,7 +63,7 @@
                         <div class="form-group">
                             <label>Area <span class="text-danger">*</span></label>
                             <select name="area_id" class="form-control" required>
-                                <option value="">-- Pilih Area --</option>
+                                <option value="">-- Select Area --</option>
                                 @foreach ($areas as $area)
                                     <option value="{{ $area->id }}"
                                         {{ old('area_id', $vendor->area_id ?? '') == $area->id ? 'selected' : '' }}>
@@ -75,27 +75,27 @@
 
                         <!-- ADDRESS -->
                         <div class="form-group">
-                            <label>Alamat <span class="text-danger">*</span></label>
+                            <label>Address <span class="text-danger">*</span></label>
                             <textarea name="address" class="form-control" rows="3" style="resize: none;"
-                                placeholder="Masukkan alamat lengkap" required>{{ old('address', $vendor->address ?? '') }}</textarea>
+                                placeholder="Enter full address" required>{{ old('address', $vendor->address ?? '') }}</textarea>
                         </div>
 
                         <!-- DESCRIPTION -->
                         <div class="form-group">
-                            <label>Deskripsi <span class="text-danger">*</span></label>
+                            <label>Description <span class="text-danger">*</span></label>
                             <textarea name="description" class="form-control" rows="5" style="resize: none;"
-                                placeholder="Deskripsi vendor..." required>{{ old('description', $vendor->description ?? '') }}</textarea>
+                                placeholder="Vendor description..." required>{{ old('description', $vendor->description ?? '') }}</textarea>
                         </div>
 
                     </div>
 
                     <div class="card-footer">
                         <button class="btn btn-primary" id="submitBtn">
-                            Simpan
+                            Save
                         </button>
 
                         <a href="{{ route('vendors.index') }}" class="btn btn-secondary">
-                            Kembali
+                            Back
                         </a>
                     </div>
 
@@ -108,7 +108,6 @@
 
     <script>
         const phone = document.querySelector('[name="phone"]');
-        const btn = document.getElementById('submitBtn');
 
         function formatPhone(input) {
             let value = input.value.replace(/[^0-9+]/g, '');
@@ -124,7 +123,6 @@
             input.value = value;
         }
 
-        // khusus phone
         phone.addEventListener('input', function () {
             formatPhone(this);
         });
