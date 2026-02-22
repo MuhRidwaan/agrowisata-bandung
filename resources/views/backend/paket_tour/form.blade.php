@@ -51,21 +51,21 @@
                                     <textarea class="form-control" id="deskripsi" name="deskripsi" rows="3" required>{{ old('deskripsi', $paketTour->deskripsi) }}</textarea>
                                 </div>
                                 <div class="form-group">
-                                    <label for="jam_operasional">Jam Operasional</label>
-                                    <input type="time" class="form-control" id="jam_operasional" name="jam_operasional"
-                                        value="{{ old('jam_operasional', $paketTour->jam_operasional) }}">
+                                    <label>Jam Operasional</label>
+                                    <div class="d-flex">
+                                        <input type="time" class="form-control mr-2" name="jam_awal" id="jam_awal" value="{{ old('jam_awal', $paketTour->jam_awal ?? '') }}">
+                                        <span class="mx-2">s/d</span>
+                                        <input type="time" class="form-control ml-2" name="jam_akhir" id="jam_akhir" value="{{ old('jam_akhir', $paketTour->jam_akhir ?? '') }}">
+                                    </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="harga_paket">Harga Paket</label>
-                                    <input type="number" class="form-control" id="harga_paket" name="harga_paket"
-                                        value="{{ old('harga_paket', $paketTour->harga_paket) }}" min="0"
-                                        step="1000" required placeholder="Contoh: 100000">
-                                </div>
-                                <div class="form-group">
-                                    <label for="kuota">Kuota / Limit Booking</label>
-                                    <input type="number" class="form-control" id="kuota" name="kuota"
-                                        value="{{ old('kuota', $paketTour->kuota) }}" min="1" required
-                                        placeholder="Minimal 1">
+                                    <label for="vendor_id">Vendor</label>
+                                    <select name="vendor_id" class="form-control" required>
+                                        <option value="">-- Pilih Vendor --</option>
+                                        @foreach($vendors as $id => $name)
+                                            <option value="{{ $id }}" {{ old('vendor_id', $paketTour->vendor_id ?? '') == $id ? 'selected' : '' }}>{{ $name }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
                             <div class="card-footer">

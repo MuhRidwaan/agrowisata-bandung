@@ -40,8 +40,7 @@
                                         <th>Nama Paket</th>
                                         <th>Deskripsi</th>
                                         <th>Jam Operasional</th>
-                                        <th>Harga Paket</th>
-                                        <th>Kuota</th>
+                                        <th>Vendor</th>
                                         <th>Tanggal Available</th>
                                         <th width="15%">Action</th>
                                     </tr>
@@ -52,9 +51,8 @@
                                             <td>{{ $key + 1 }}</td>
                                             <td>{{ $paket->nama_paket }}</td>
                                             <td>{{ $paket->deskripsi }}</td>
-                                            <td>{{ $paket->jam_operasional }}</td>
-                                            <td>Rp {{ number_format($paket->harga_paket, 0, ',', '.') }}</td>
-                                            <td>{{ $paket->kuota }}</td>
+                                            <td>{{ $paket->jam_awal ?? '-' }} s/d {{ $paket->jam_akhir ?? '-' }}</td>
+                                            <td>{{ $paket->vendor->name ?? '-' }}</td>
                                             <td>
                                                 @if ($paket->tanggalAvailables && $paket->tanggalAvailables->count())
                                                     @foreach ($paket->tanggalAvailables as $tgl)
