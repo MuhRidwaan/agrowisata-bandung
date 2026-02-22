@@ -9,7 +9,7 @@
             <div class="card-body">
 
                 <form method="POST"
-                    action="{{ isset($tier) ? route('pricing-tiers.update', $tier->id) : route('pricing-tiers.store') }}">
+                    action="{{ isset($tier) ? route('pricingtiers.update', $tier->id) : route('pricingtiers.store') }}">
                     @csrf
                     @if (isset($tier))
                         @method('PUT')
@@ -41,7 +41,7 @@
                     </div>
 
                     <button class="btn btn-success">Simpan</button>
-                    <a href="{{ route('pricing-tiers.index') }}" class="btn btn-secondary">Kembali</a>
+                    <a href="{{ route('pricingtiers.index') }}" class="btn btn-secondary">Kembali</a>
 
                 </form>
 

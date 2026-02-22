@@ -12,7 +12,7 @@
                         <li class="breadcrumb-item">
                             <a href="{{ route('dashboard') }}">Dashboard</a>
                         </li>
-                        <li class="breadcrumb-item active">Paket Tour</li>
+                        <li class="breadcrumb-item active">Data Paket Tour</li>
                     </ol>
                 </div>
             </div>
@@ -65,20 +65,26 @@
                                                     <span class="text-muted">-</span>
                                                 @endif
                                             </td>
+
                                             <td>
+
+                                                <!-- EDIT -->
                                                 <a href="{{ route('paket-tours.edit', $paket->id) }}"
                                                     class="btn btn-warning btn-sm">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <form action="{{ route('paket-tours.destroy', $paket->id) }}"
-                                                    method="POST" style="display:inline-block"
-                                                    onsubmit="return confirm('Yakin hapus paket ini?')">
+
+                                                <!-- DELETE -->
+                                                <form action="{{ route('paket-tours.destroy', $paket->id) }}" method="POST" 
+                                                    style="display:inline-block" class="form-delete">
+
                                                     @csrf
                                                     @method('DELETE')
                                                     <button class="btn btn-danger btn-sm">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
+                                                
                                             </td>
                                         </tr>
                                     @empty
@@ -96,4 +102,35 @@
             </div>
         </div>
     </section>
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Sukses',
+                text: '{{ session('success') }}',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        </script>
+    @endif
+
+    <script>
+        document.querySelector('.form-delete').addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Yakin ingin menghapus?',
+                text: "Data yang dihapus tidak bisa dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.submit();
+                }
+            });
+        });
+    </script>
 @endsection

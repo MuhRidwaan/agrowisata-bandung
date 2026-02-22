@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PricingTier;
 use App\Models\TourPackage;
+use App\Models\PaketTour;
 use Illuminate\Http\Request;
 
 class PricingTierController extends Controller
@@ -17,7 +18,7 @@ class PricingTierController extends Controller
                     ->latest()
                     ->get();
 
-        return view('backend.pricing_tiers.index', compact('tiers'));
+        return view('backend.pricingtiers.index', compact('tiers'));
     }
 
     /**
@@ -25,10 +26,10 @@ class PricingTierController extends Controller
      */
     public function create()
     {
-        $packages = TourPackage::orderBy('title')
-                        ->pluck('title','id');
+        $packages = PaketTour::orderBy('nama_paket')
+                ->pluck('nama_paket','id');
 
-        return view('backend.pricing_tiers.form', compact('packages'));
+        return view('backend.pricingtiers.form', compact('packages'));
     }
 
     /**
@@ -45,7 +46,7 @@ class PricingTierController extends Controller
         PricingTier::create($validated);
 
         return redirect()
-            ->route('pricing-tiers.index')
+            ->route('pricingtiers.index')
             ->with('success', 'Kategori harga berhasil ditambahkan');
     }
 
@@ -57,7 +58,7 @@ class PricingTierController extends Controller
         $packages = TourPackage::orderBy('title')
                         ->pluck('title','id');
 
-        return view('backend.pricing_tiers.form', [
+        return view('backend.pricingtiers.form', [
             'tier' => $pricingTier,
             'packages' => $packages
         ]);
@@ -77,7 +78,7 @@ class PricingTierController extends Controller
         $pricingTier->update($validated);
 
         return redirect()
-            ->route('pricing-tiers.index')
+            ->route('pricingtiers.index')
             ->with('success', 'Kategori harga berhasil diperbarui');
     }
 
@@ -89,7 +90,7 @@ class PricingTierController extends Controller
         $pricingTier->delete();
 
         return redirect()
-            ->route('pricing-tiers.index')
+            ->route('pricingtiers.index')
             ->with('success', 'Kategori harga berhasil dihapus');
     }
 }

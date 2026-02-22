@@ -40,7 +40,7 @@ Route::middleware('auth')->group(function () {
     // ================= PAKET TOUR & OPTIONS =================
     Route::resource('paket-tours', PaketTourController::class);
     Route::resource('paket-tour-photos', PaketTourPhotoController::class);
-    Route::resource('pricing-tiers', PricingTierController::class);
+    Route::resource('pricingtiers', PricingTierController::class);
     Route::resource('tanggal-available', TanggalAvailableController::class);
 
     // ================= DATA USERS =================
