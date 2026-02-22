@@ -27,12 +27,10 @@ class PaymentController extends Controller
         return view('backend.payments.index', compact('payments'));
     }
 
-    // Fungsi untuk menampilkan halaman Invoice
     public function invoice($id)
     {
         $payment = Payment::with(['booking.paketTour', 'booking.user'])->findOrFail($id);
 
-        // Cegah user akses invoice kalau belum lunas
         if ($payment->status != 'success') {
             return redirect()->route('payments.index')->with('error', 'Invoice belum tersedia karena pembayaran belum lunas.');
         }
@@ -40,7 +38,6 @@ class PaymentController extends Controller
         return view('backend.payments.invoice', compact('payment'));
     }
 
-    // Fungsi manual/frontend trick untuk konfirmasi lunas
     public function markAsPaid($id)
     {
         $payment = Payment::findOrFail($id);
@@ -61,36 +58,62 @@ class PaymentController extends Controller
         return back()->with('success', 'Pembayaran berhasil dikonfirmasi Lunas!');
     }
 
-    // Fungsi Webhook / Callback untuk Midtrans Server-to-Server
+    // FUNGSI BARU: Untuk membatalkan pembayaran yang expired
+    public function markAsFailed($id)
+    {
+        $payment = Payment::findOrFail($id);
+
+        if ($payment->status != 'success') {
+            $payment->update([
+                'status' => 'failed'
+            ]);
+
+            $payment->booking->update([
+                'status' => 'cancelled'
+            ]);
+        }
+
+        return back()->with('success', 'Transaksi berhasil dibatalkan karena Expired.');
+    }
+
+    // UPDATE: Webhook ditambahkan logika untuk Expire/Cancel
     public function callback(Request $request)
     {
         $serverKey = config('midtrans.server_key');
         
-        // Verifikasi keaslian notifikasi dari Midtrans (Keamanan)
         $hashed = hash("sha512", $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
         
         if ($hashed == $request->signature_key) {
-            if ($request->transaction_status == 'capture' || $request->transaction_status == 'settlement') {
-                
-                $booking = Booking::where('booking_code', $request->order_id)->first();
-                
-                if ($booking && $booking->status != 'paid') {
-                    // Update Booking
-                    $booking->update(['status' => 'paid']);
-                    
-                    // Update Payment
-                    if ($booking->payment) {
-                        $booking->payment->update([
-                            'status' => 'success',
-                            'paid_at' => now(),
-                            'payment_method' => $request->payment_type
-                        ]);
+            $booking = Booking::where('booking_code', $request->order_id)->first();
+            
+            if ($booking) {
+                // Jika Lunas
+                if ($request->transaction_status == 'capture' || $request->transaction_status == 'settlement') {
+                    if ($booking->status != 'paid') {
+                        $booking->update(['status' => 'paid']);
+                        if ($booking->payment) {
+                            $booking->payment->update([
+                                'status' => 'success',
+                                'paid_at' => now(),
+                                'payment_method' => $request->payment_type
+                            ]);
+                        }
+                    }
+                } 
+                // Jika Expired, Batal, atau Ditolak
+                elseif ($request->transaction_status == 'expire' || $request->transaction_status == 'cancel' || $request->transaction_status == 'deny') {
+                    if ($booking->status != 'cancelled') {
+                        $booking->update(['status' => 'cancelled']);
+                        if ($booking->payment) {
+                            $booking->payment->update([
+                                'status' => 'failed'
+                            ]);
+                        }
                     }
                 }
             }
         }
         
-        // Kasih balasan ke Midtrans kalau kita udah nerima notifnya
         return response()->json(['message' => 'Callback handled successfully']);
     }
 }

@@ -52,7 +52,7 @@
                                         <th>Nama Pemesan</th>
                                         <th>Total Harga</th>
                                         <th class="text-center">Status</th>
-                                        <th width="20%" class="text-center">Aksi</th>
+                                        <th width="22%" class="text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -70,24 +70,40 @@
                                             </td>
                                             <td>Rp {{ number_format($payment->booking->total_price ?? 0, 0, ',', '.') }}
                                             </td>
+
+                                            <!-- UPDATE STATUS BADGE -->
                                             <td class="text-center">
                                                 @if ($payment->status == 'success')
                                                     <span class="badge badge-success"><i class="fas fa-check-circle"></i>
                                                         Paid / Lunas</span>
+                                                @elseif ($payment->status == 'failed')
+                                                    <span class="badge badge-danger"><i class="fas fa-times-circle"></i>
+                                                        Expired / Failed</span>
                                                 @else
                                                     <span class="badge badge-warning"><i class="fas fa-clock"></i> Waiting
                                                         Payment</span>
                                                 @endif
                                             </td>
+
                                             <td class="text-center">
-                                                @if ($payment->status != 'success')
-                                                    <!-- TOMBOL BAYAR MIDTRANS & AUTO URL -->
-                                                    <button class="btn btn-primary btn-sm btn-pay"
+                                                @if ($payment->status == 'pending')
+                                                    <!-- TOMBOL BAYAR MIDTRANS -->
+                                                    <button class="btn btn-primary btn-sm btn-pay mb-1"
                                                         data-token="{{ $payment->snap_token }}"
                                                         data-url="{{ route('payments.paid', $payment->id) }}">
-                                                        <i class="fas fa-money-bill-wave"></i> Bayar Sekarang
+                                                        <i class="fas fa-money-bill-wave"></i> Bayar
                                                     </button>
-                                                @else
+
+                                                    <!-- TOMBOL BATALKAN MANUAL -->
+                                                    <form action="{{ route('payments.cancel', $payment->id) }}"
+                                                        method="POST" style="display:inline-block" class="form-cancel">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-danger btn-sm mb-1"
+                                                            title="Batalkan jika Expired">
+                                                            <i class="fas fa-times"></i> Batal
+                                                        </button>
+                                                    </form>
+                                                @elseif ($payment->status == 'success')
                                                     <span class="text-success font-weight-bold mr-2"><i
                                                             class="fas fa-check"></i> Lunas</span>
                                                     <!-- TOMBOL CETAK INVOICE -->
@@ -95,6 +111,9 @@
                                                         class="btn btn-info btn-sm">
                                                         <i class="fas fa-print"></i> Invoice
                                                     </a>
+                                                @elseif ($payment->status == 'failed')
+                                                    <span class="text-danger font-weight-bold"><i class="fas fa-ban"></i>
+                                                        Dibatalkan</span>
                                                 @endif
                                             </td>
                                         </tr>
@@ -148,26 +167,20 @@
                     cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) {
-
                         window.snap.pay(snapToken, {
                             onSuccess: function(result) {
-                                // JIKA SUKSES, BUAT FORM VIRTUAL UNTUK SUBMIT AUTO-LUNAS KE ROUTE "markAsPaid"
                                 Swal.fire('Berhasil!',
                                     'Pembayaran sukses! Memproses data...',
                                     'success');
-
                                 var form = document.createElement('form');
                                 form.method = 'POST';
                                 form.action = paymentUrl;
-
                                 var csrf = document.createElement('input');
                                 csrf.type = 'hidden';
                                 csrf.name = '_token';
                                 csrf.value = '{{ csrf_token() }}';
-
                                 form.appendChild(csrf);
                                 document.body.appendChild(form);
-
                                 form.submit();
                             },
                             onPending: function(result) {
@@ -179,12 +192,32 @@
                                     'Pembayaran gagal, silakan coba lagi.', 'error');
                             },
                             onClose: function() {
-                                Swal.fire('Batal',
-                                    'Anda menutup layar pembayaran sebelum menyelesaikannya.',
+                                Swal.fire('Ditutup',
+                                    'Anda menutup layar sebelum menyelesaikannya.',
                                     'warning');
                             }
                         });
+                    }
+                });
+            });
+        });
 
+        // SCRIPT UNTUK KONFIRMASI TOMBOL BATAL MANUAL
+        document.querySelectorAll('.form-cancel').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Batalkan Pembayaran?',
+                    text: "Jika transaksi di Midtrans sudah Expired, klik Ya untuk membatalkan pesanan ini.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Ya, Batalkan!',
+                    cancelButtonText: 'Kembali'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
                     }
                 });
             });
