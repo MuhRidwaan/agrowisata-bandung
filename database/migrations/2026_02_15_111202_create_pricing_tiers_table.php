@@ -10,9 +10,8 @@ return new class extends Migration {
         Schema::create('pricing_tiers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('paket_tour_id')->constrained('paket_tours')->onDelete('cascade');
-            $table->integer('qty_min');
-            $table->integer('qty_max');
-            $table->decimal('harga', 15, 2);
+            $table->string('name', 100);
+            $table->integer('price');
             $table->timestamps();
         });
     }

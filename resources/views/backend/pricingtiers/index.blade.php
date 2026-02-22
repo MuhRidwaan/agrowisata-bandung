@@ -54,8 +54,7 @@
                                 <tr>
                                     <th width="5%">No</th>
                                     <th>Tour Package</th>
-                                    <th>Minimum Qty</th>
-                                    <th>Maximum Qty</th>
+                                    <th>Category Name</th>
                                     <th>Price</th>
                                     <th width="15%">Action</th>
                                 </tr>
@@ -65,36 +64,27 @@
                                 @forelse ($tiers as $key => $tier)
                                     <tr>
                                         <td>{{ $key + 1 }}</td>
-                                        <td>{{ $tier->paketTour->nama_paket ?? '-' }}</td>
-                                        <td>{{ $tier->qty_min }}</td>
-                                        <td>{{ $tier->qty_max }}</td>
+                                        <td>{{ $tier->tourPackage->title ?? '-' }}</td>
+                                        <td>{{ $tier->name }}</td>
+                                        <td>Rp {{ number_format($tier->price, 0, ',', '.') }}</td>
                                         <td>
-                                            Rp {{ number_format($tier->harga, 0, ',', '.') }}
-                                        </td>
-                                        <td>
-
                                             <!-- EDIT -->
                                             <a href="{{ route('pricingtiers.edit', $tier->id) }}"
                                                class="btn btn-warning btn-sm">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-
                                             <!-- DELETE -->
                                             <form action="{{ route('pricingtiers.destroy', $tier->id) }}"
                                                   method="POST"
                                                   style="display:inline-block"
                                                   class="form-delete">
-
                                                 @csrf
                                                 @method('DELETE')
-
                                                 <button type="submit"
                                                         class="btn btn-danger btn-sm">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
-
                                             </form>
-
                                         </td>
                                     </tr>
                                 @empty
