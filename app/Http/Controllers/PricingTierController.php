@@ -38,7 +38,7 @@ class PricingTierController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'tour_package_id' => 'required|exists:tour_packages,id',
+            'tour_package_id' => 'required|exists:paket_tours,id',
             'name'            => 'required|string|max:100',
             'price'           => 'required|integer|min:0',
         ]);

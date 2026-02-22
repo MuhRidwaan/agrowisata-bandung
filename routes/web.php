@@ -13,6 +13,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\WhatsappSettingController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\PricingRuleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +42,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('paket-tours', PaketTourController::class);
     Route::resource('paket-tour-photos', PaketTourPhotoController::class);
     Route::resource('pricingtiers', PricingTierController::class);
+    Route::resource('pricingrules', PricingRuleController::class);
+
     Route::resource('tanggal-available', TanggalAvailableController::class);
 
     // ================= DATA USERS =================

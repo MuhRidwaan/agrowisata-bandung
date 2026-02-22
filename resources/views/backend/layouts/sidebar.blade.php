@@ -74,6 +74,7 @@
                         request()->routeIs('paket-tour-photos.*') ||
                         request()->routeIs('pricingtiers.*') ||
                         request()->routeIs('tanggal-available.*');
+                        request()->routeIs('pricingrules.*');
                 @endphp
 
                 <li class="nav-item {{ $isPaketTourActive ? 'menu-open' : '' }}">
@@ -98,6 +99,13 @@
                                 class="nav-link {{ request()->routeIs('paket-tour-photos.*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Gallery Foto</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('pricingrules.index') }}"
+                                class="nav-link {{ request()->routeIs('pricingrules.*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Pricing Rules</p>
                             </a>
                         </li>
                         <li class="nav-item">

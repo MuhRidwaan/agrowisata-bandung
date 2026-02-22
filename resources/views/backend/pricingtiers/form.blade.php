@@ -4,7 +4,6 @@
 
 <section class="content-header">
     <div class="container-fluid">
-
         <div class="row mb-2">
 
             <div class="col-sm-6">
@@ -30,7 +29,6 @@
             </div>
 
         </div>
-
     </div>
 </section>
 
@@ -43,8 +41,8 @@
 
                 <form method="POST"
                       action="{{ isset($tier)
-                                ? route('pricingtiers.update', $tier->id)
-                                : route('pricingtiers.store') }}">
+                          ? route('pricingtiers.update', $tier->id)
+                          : route('pricingtiers.store') }}">
 
                     @csrf
 
@@ -52,12 +50,14 @@
                         @method('PUT')
                     @endif
 
+                    {{-- Paket Tour --}}
                     <div class="mb-3">
                         <label>Paket Tour</label>
+
                         <select name="tour_package_id"
                                 class="form-control"
                                 required>
-                            <option value="">-- pilih paket --</option>
+                            <option value="">-- Pilih Paket --</option>
 
                             @foreach ($packages as $id => $title)
                                 <option value="{{ $id }}"
@@ -68,17 +68,28 @@
                         </select>
                     </div>
 
+                    {{-- Nama Kategori --}}
                     <div class="mb-3">
                         <label>Nama Kategori</label>
-                        <input type="text"
-                               name="name"
-                               class="form-control"
-                               value="{{ old('name', $tier->name ?? '') }}"
-                               required>
+
+                        <select name="name"
+                                class="form-control"
+                                required>
+                            <option value="">-- Pilih Kategori --</option>
+
+                            @foreach (['Bayi', 'Anak Anak', 'Dewasa'] as $category)
+                                <option value="{{ $category }}"
+                                    {{ old('name', $tier->name ?? '') == $category ? 'selected' : '' }}>
+                                    {{ $category }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
 
+                    {{-- Harga --}}
                     <div class="mb-3">
                         <label>Harga</label>
+
                         <input type="number"
                                name="price"
                                class="form-control"
@@ -86,8 +97,10 @@
                                required>
                     </div>
 
+                    {{-- Action Buttons --}}
                     <div class="mt-3">
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit"
+                                class="btn btn-primary">
                             Simpan
                         </button>
 

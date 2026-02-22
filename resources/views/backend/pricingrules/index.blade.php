@@ -4,11 +4,10 @@
 
 <section class="content-header">
     <div class="container-fluid">
-
         <div class="row mb-2">
 
             <div class="col-sm-6">
-                <h1>Data Tanggal Available</h1>
+                <h1>Pricing Rule</h1>
             </div>
 
             <div class="col-sm-6">
@@ -17,13 +16,12 @@
                         <a href="{{ route('dashboard') }}">Dashboard</a>
                     </li>
                     <li class="breadcrumb-item active">
-                        Data Tanggal Available
+                        Pricing Rule
                     </li>
                 </ol>
             </div>
 
         </div>
-
     </div>
 </section>
 
@@ -40,53 +38,53 @@
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center flex-wrap">
                             <h3 class="card-title mb-2">
-                                Data Tanggal Available
+                                Data Pricing Rule
                             </h3>
 
-                            <a href="{{ route('tanggal-available.create') }}"
+                            <a href="{{ route('pricingrules.create') }}"
                                class="btn btn-primary btn-sm">
-                                <i class="fas fa-plus"></i> Tambah Tanggal
+                                <i class="fas fa-plus"></i> Tambah Rule
                             </a>
                         </div>
                     </div>
                     <!-- END HEADER -->
 
-                    <div class="card-body">
+                    <div class="card-body table-responsive">
 
                         <table class="table table-bordered table-hover">
                             <thead>
                                 <tr>
-                                    <th>No</th>
-                                    <th>Paket Tour</th>
-                                    <th>Tanggal</th>
-                                    <th>Kuota</th>
-                                    <th>Status</th>
-                                    <th>Aksi</th>
+                                    <th>Paket</th>
+                                    <th>Min</th>
+                                    <th>Max</th>
+                                    <th>Tipe</th>
+                                    <th>Nilai</th>
+                                    <th width="15%">Aksi</th>
                                 </tr>
                             </thead>
 
                             <tbody>
-                                @forelse ($tanggalAvailables as $item)
+                                @forelse ($rules as $item)
                                     <tr>
-                                        <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $item->paketTour->nama_paket ?? '-' }}</td>
-                                        <td>{{ $item->tanggal }}</td>
-                                        <td>{{ $item->kuota }}</td>
+                                        <td>{{ $item->tourPackage->title ?? '-' }}</td>
+                                        <td>{{ $item->min_pax }}</td>
+                                        <td>{{ $item->max_pax }}</td>
+                                        <td>{{ ucfirst($item->discount_type) }}</td>
                                         <td>
-                                            <span class="badge badge-{{ $item->status == 'aktif' ? 'success' : 'secondary' }}">
-                                                {{ ucfirst($item->status) }}
-                                            </span>
+                                            {{ $item->discount_type == 'percent'
+                                                ? $item->discount_value . '%'
+                                                : 'Rp ' . number_format($item->discount_value, 0, ',', '.') }}
                                         </td>
                                         <td>
 
                                             <!-- EDIT -->
-                                            <a href="{{ route('tanggal-available.edit', $item) }}"
+                                            <a href="{{ route('pricingrules.edit', $item->id) }}"
                                                class="btn btn-warning btn-sm">
-                                                <i class="fas fa-edit"></i> Edit
+                                                <i class="fas fa-edit"></i>
                                             </a>
 
                                             <!-- DELETE -->
-                                            <form action="{{ route('tanggal-available.destroy', $item) }}"
+                                            <form action="{{ route('pricingrules.destroy', $item->id) }}"
                                                   method="POST"
                                                   style="display:inline-block"
                                                   class="form-delete">
@@ -95,7 +93,7 @@
 
                                                 <button type="submit"
                                                         class="btn btn-danger btn-sm">
-                                                    <i class="fas fa-trash"></i> Hapus
+                                                    <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
 
@@ -104,17 +102,14 @@
                                 @empty
                                     <tr>
                                         <td colspan="6" class="text-center">
-                                            Belum ada data
+                                            Belum ada rule
                                         </td>
                                     </tr>
                                 @endforelse
                             </tbody>
+
                         </table>
 
-                    </div>
-
-                    <div class="card-footer clearfix">
-                        {{ $tanggalAvailables->links() }}
                     </div>
 
                 </div>
@@ -132,7 +127,7 @@
         icon: 'success',
         title: 'Sukses',
         text: '{{ session('success') }}',
-        timer: 2000,
+        timer: 3000,
         showConfirmButton: false
     });
 </script>
@@ -145,7 +140,8 @@
             e.preventDefault();
 
             Swal.fire({
-                title: 'Yakin ingin menghapus?',
+                title: 'Apakah Anda yakin?',
+                text: "Data akan dihapus secara permanen!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
