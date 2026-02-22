@@ -10,12 +10,12 @@ class WhatsappSettingController extends Controller
     public function index()
     {
         $settings = WhatsappSetting::all();
-        return view('whatsappsetting.index', compact('settings'));
+        return view('backend.whatsappsetting.index', compact('settings'));
     }
 
     public function create()
     {
-        return view('whatsappsetting.form');
+        return view('backend.whatsappsetting.form');
     }
 
     public function store(Request $request)
@@ -36,7 +36,7 @@ class WhatsappSettingController extends Controller
     public function edit($id)
     {
         $setting = WhatsappSetting::findOrFail($id);
-        return view('whatsappsetting.form', compact('setting'));
+        return view('backend.whatsappsetting.form', compact('setting'));
     }
 
     public function update(Request $request, $id)

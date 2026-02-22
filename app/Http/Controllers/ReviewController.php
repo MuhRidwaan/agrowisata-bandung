@@ -12,14 +12,14 @@ class ReviewController extends Controller
     public function index()
     {
         $reviews = Review::with('vendor')->get();
-        return view('reviews.index', compact('reviews'));
+        return view('backend.reviews.index', compact('reviews'));
     }
 
     // FORM CREATE
     public function create()
     {
         $vendors = Vendor::all();
-        return view('reviews.form', compact('vendors'));
+        return view('backend.reviews.form', compact('vendors'));
     }
 
     // STORE
@@ -42,7 +42,7 @@ class ReviewController extends Controller
         $review = Review::findOrFail($id);
         $vendors = Vendor::all();
 
-        return view('reviews.form', compact('review','vendors'));
+        return view('backend.reviews.form', compact('review','vendors'));
     }
 
     // UPDATE

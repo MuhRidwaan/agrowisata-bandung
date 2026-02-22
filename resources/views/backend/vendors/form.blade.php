@@ -10,6 +10,15 @@
     <section class="content">
         <div class="container-fluid">
 
+            {{-- ERROR VALIDATION --}}
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    @foreach ($errors->all() as $error)
+                        <div>{{ $error }}</div>
+                    @endforeach
+                </div>
+            @endif
+
             <div class="card card-primary">
                 <div class="card-header">
                     <h3 class="card-title">Form Vendor</h3>
@@ -28,21 +37,25 @@
                         <div class="form-group">
                             <label>Nama <span class="text-danger">*</span></label>
                             <input type="text" name="name" class="form-control"
-                                value="{{ old('name', $vendor->name ?? '') }}" placeholder="Contoh: Agro Lembang" required>
+                                value="{{ old('name', $vendor->name ?? '') }}"
+                                placeholder="Contoh: Agro Lembang" required>
                         </div>
 
                         <!-- EMAIL -->
                         <div class="form-group">
                             <label>Email <span class="text-danger">*</span></label>
                             <input type="email" name="email" class="form-control"
-                                value="{{ old('email', $vendor->email ?? '') }}" placeholder="example@gmail.com" required>
+                                value="{{ old('email', $vendor->email ?? '') }}"
+                                placeholder="example@gmail.com" required>
                         </div>
 
                         <!-- PHONE -->
                         <div class="form-group">
                             <label>No HP <span class="text-danger">*</span></label>
                             <input type="text" name="phone" class="form-control"
-                                value="{{ old('phone', $vendor->phone ?? '') }}" placeholder="+628xxxxxxxxxx" required
+                                value="{{ old('phone', $vendor->phone ?? '') }}"
+                                placeholder="+628xxxxxxxxxx"
+                                required
                                 inputmode="numeric">
                         </div>
 
@@ -63,21 +76,21 @@
                         <!-- ADDRESS -->
                         <div class="form-group">
                             <label>Alamat <span class="text-danger">*</span></label>
-                            <textarea name="address" class="form-control" rows="3" style="resize: none;" placeholder="Masukkan alamat lengkap"
-                                required>{{ old('address', $vendor->address ?? '') }}</textarea>
+                            <textarea name="address" class="form-control" rows="3" style="resize: none;"
+                                placeholder="Masukkan alamat lengkap" required>{{ old('address', $vendor->address ?? '') }}</textarea>
                         </div>
 
                         <!-- DESCRIPTION -->
                         <div class="form-group">
                             <label>Deskripsi <span class="text-danger">*</span></label>
-                            <textarea name="description" class="form-control" rows="5" style="resize: none;" placeholder="Deskripsi vendor..."
-                                required>{{ old('description', $vendor->description ?? '') }}</textarea>
+                            <textarea name="description" class="form-control" rows="5" style="resize: none;"
+                                placeholder="Deskripsi vendor..." required>{{ old('description', $vendor->description ?? '') }}</textarea>
                         </div>
 
                     </div>
 
                     <div class="card-footer">
-                        <button class="btn btn-primary" id="submitBtn" disabled>
+                        <button class="btn btn-primary" id="submitBtn">
                             Simpan
                         </button>
 
@@ -100,47 +113,20 @@
         function formatPhone(input) {
             let value = input.value.replace(/[^0-9+]/g, '');
 
-            // 0 → +62
             if (value.startsWith('0')) {
                 value = '+62' + value.substring(1);
             }
 
-            // 62 → +62
             if (value.startsWith('62') && !value.startsWith('+62')) {
                 value = '+' + value;
             }
 
             input.value = value;
-
-            checkForm();
         }
-
-        function checkForm() {
-            const fields = document.querySelectorAll('input[required], textarea[required], select[required]');
-
-            let valid = true;
-
-            fields.forEach(field => {
-                if (!field.value.trim()) {
-                    valid = false;
-                }
-            });
-
-            btn.disabled = !valid;
-        }
-
-        // event semua input
-        document.querySelectorAll('input, textarea, select').forEach(el => {
-            el.addEventListener('input', checkForm);
-            el.addEventListener('change', checkForm);
-        });
 
         // khusus phone
-        phone.addEventListener('input', function() {
+        phone.addEventListener('input', function () {
             formatPhone(this);
         });
-
-        // run awal
-        checkForm();
     </script>
 @endsection
