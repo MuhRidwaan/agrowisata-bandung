@@ -11,13 +11,13 @@ class PricingRuleController extends Controller
     public function index()
     {
         $rules = PricingRule::with('tourPackage')->latest()->get();
-        return view('backend.pricing_rules.index', compact('rules'));
+        return view('backend.pricingrules.index', compact('rules'));
     }
 
     public function create()
     {
         $packages = TourPackage::pluck('title','id');
-        return view('backend.pricing_rules.form', compact('packages'));
+        return view('backend.pricingrules.form', compact('packages'));
     }
 
     public function store(Request $request)
@@ -44,7 +44,7 @@ class PricingRuleController extends Controller
 
         PricingRule::create($data);
 
-        return redirect()->route('pricing-rules.index')
+        return redirect()->route('pricingrules.index')
             ->with('success','Rule diskon berhasil ditambahkan');
     }
 
@@ -52,7 +52,7 @@ class PricingRuleController extends Controller
     {
         $packages = TourPackage::pluck('title','id');
 
-        return view('backend.pricing_rules.form', [
+        return view('backend.pricingrules.form', [
             'rule' => $pricingRule,
             'packages' => $packages
         ]);
@@ -83,7 +83,7 @@ class PricingRuleController extends Controller
 
         $pricingRule->update($data);
 
-        return redirect()->route('pricing-rules.index')
+        return redirect()->route('pricingrules.index')
             ->with('success','Rule diskon diperbarui');
     }
 

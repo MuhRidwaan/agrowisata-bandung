@@ -4,10 +4,10 @@
 
 <section class="content-header">
     <div class="container-fluid">
-        <div class="row mb-2">
 
+        <div class="row mb-2">
             <div class="col-sm-6">
-                <h1>Galerry Photo</h1>
+                <h1>Pricing Tier</h1>
             </div>
 
             <div class="col-sm-6">
@@ -15,11 +15,11 @@
                     <li class="breadcrumb-item">
                         <a href="{{ route('dashboard') }}">Dashboard</a>
                     </li>
-                    <li class="breadcrumb-item active">Galerry Photo</li>
+                    <li class="breadcrumb-item active">Pricing Tier</li>
                 </ol>
             </div>
-
         </div>
+
     </div>
 </section>
 
@@ -34,12 +34,12 @@
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center flex-wrap">
 
-                            <h3 class="card-title mb-2">Data Photos</h3>
+                            <h3 class="card-title mb-2">Data Pricing Tier</h3>
 
                             <div class="d-flex align-items-center">
-                                <a href="{{ route('paket-tour-photos.create') }}"
+                                <a href="{{ route('pricingtiers.create') }}"
                                    class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus"></i> Tambah Photo
+                                    <i class="fas fa-plus"></i> Tambah Pricing Tier
                                 </a>
                             </div>
 
@@ -54,30 +54,37 @@
                                 <tr>
                                     <th width="5%">No</th>
                                     <th>Paket Tour</th>
-                                    <th>Path Foto</th>
+                                    <th>Qty Min</th>
+                                    <th>Qty Max</th>
+                                    <th>Harga</th>
                                     <th width="15%">Action</th>
                                 </tr>
                             </thead>
 
                             <tbody>
-                                @forelse ($photos as $key => $photo)
+                                @forelse ($tiers as $key => $tier)
                                     <tr>
                                         <td>{{ $key + 1 }}</td>
-                                        <td>{{ $photo->paketTour->nama_paket ?? '-' }}</td>
-                                        <td>{{ $photo->path_foto }}</td>
+                                        <td>{{ $tier->paketTour->nama_paket ?? '-' }}</td>
+                                        <td>{{ $tier->qty_min }}</td>
+                                        <td>{{ $tier->qty_max }}</td>
+                                        <td>
+                                            Rp {{ number_format($tier->harga, 0, ',', '.') }}
+                                        </td>
                                         <td>
 
                                             <!-- EDIT -->
-                                            <a href="{{ route('paket-tour-photos.edit', $photo->id) }}"
+                                            <a href="{{ route('pricingtiers.edit', $tier->id) }}"
                                                class="btn btn-warning btn-sm">
                                                 <i class="fas fa-edit"></i>
                                             </a>
 
                                             <!-- DELETE -->
-                                            <form action="{{ route('paket-tour-photos.destroy', $photo->id) }}"
+                                            <form action="{{ route('pricingtiers.destroy', $tier->id) }}"
                                                   method="POST"
                                                   style="display:inline-block"
                                                   class="form-delete">
+
                                                 @csrf
                                                 @method('DELETE')
 
@@ -85,14 +92,15 @@
                                                         class="btn btn-danger btn-sm">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
+
                                             </form>
 
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="text-center">
-                                            Belum ada data foto.
+                                        <td colspan="6" class="text-center">
+                                            Belum ada data pricing tier.
                                         </td>
                                     </tr>
                                 @endforelse
@@ -112,10 +120,18 @@
     <script>
         Swal.fire({
             icon: 'success',
-            title: 'Berhasil',
-            text: '{{ session('success') }}',
-            timer: 2000,
-            showConfirmButton: false
+            title: 'Sukses',
+            text: '{{ session('success') }}'
+        });
+    </script>
+@endif
+
+@if (session('error'))
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: '{{ session('error') }}'
         });
     </script>
 @endif
