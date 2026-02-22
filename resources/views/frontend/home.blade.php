@@ -130,7 +130,7 @@
                                     <span class="fs-4 fw-bold text-primary-agro font-display">Rp40.000</span>
                                     <small class="text-muted">/orang</small>
                                 </div>
-                                <a href="detail-strawberry.html" class="btn btn-agro-primary">Lihat Detail</a>
+                                <a href="{{ route('detail') }}" class="btn btn-agro-primary">Lihat Detail</a>
                             </div>
                         </div>
                     </div>
