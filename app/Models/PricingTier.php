@@ -7,13 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 class PricingTier extends Model
 {
     protected $fillable = [
-        'tour_package_id',
+        'paket_tour_id',
         'name',
-        'price'
+        'price',
     ];
 
-    public function tourPackage()
+    public function paketTour()
     {
-        return $this->belongsTo(TourPackage::class);
+        return $this->belongsTo(PaketTour::class);
+    }
+
+    public function pricingTiers()
+    {
+    return $this->hasMany(PricingTier::class, 'paket_tour_id');
     }
 }

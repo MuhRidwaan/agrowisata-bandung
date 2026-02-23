@@ -3,20 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\PricingRule;
-use App\Models\TourPackage;
+use App\Models\PaketTour;
 use Illuminate\Http\Request;
 
 class PricingRuleController extends Controller
 {
     public function index()
     {
-        $rules = PricingRule::with('tourPackage')->latest()->get();
+        $rules = PricingRule::with('paketTour')->latest()->get();
         return view('backend.pricingrules.index', compact('rules'));
     }
 
     public function create()
     {
-        $packages = TourPackage::pluck('title','id');
+        $packages = PaketTour::pluck('nama_paket','id');
         return view('backend.pricingrules.form', compact('packages'));
     }
 
@@ -32,7 +32,7 @@ class PricingRuleController extends Controller
         ]);
 
         // Validasi overlap range pax
-        $overlap = PricingRule::where('tour_package_id', $data['tour_package_id'])
+        $overlap = PricingRule::where('paket_tour_id', $data['paket_tour_id'])
             ->where(function($q) use ($data) {
                 $q->where('min_pax', '<=', $data['max_pax'])
                   ->where('max_pax', '>=', $data['min_pax']);
@@ -50,7 +50,7 @@ class PricingRuleController extends Controller
 
     public function edit(PricingRule $pricingRule)
     {
-        $packages = TourPackage::pluck('title','id');
+        $packages = PaketTour::pluck('nama_paket','id');
 
         return view('backend.pricingrules.form', [
             'rule' => $pricingRule,
@@ -61,7 +61,7 @@ class PricingRuleController extends Controller
     public function update(Request $request, PricingRule $pricingRule)
     {
         $data = $request->validate([
-            'tour_package_id' => 'required|exists:tour_packages,id',
+            'paket_tour_id' => 'required|exists:paket_tours,id',
             'min_pax' => 'required|integer|min:1',
             'max_pax' => 'required|integer|gte:min_pax',
             'discount_type' => 'required|in:percent,nominal',
@@ -70,7 +70,7 @@ class PricingRuleController extends Controller
         ]);
 
         // Validasi overlap range pax, kecuali rule ini sendiri
-        $overlap = PricingRule::where('tour_package_id', $data['tour_package_id'])
+        $overlap = PricingRule::where('paket_tour_id', $data['paket_tour_id'])
             ->where('id', '!=', $pricingRule->id)
             ->where(function($q) use ($data) {
                 $q->where('min_pax', '<=', $data['max_pax'])

@@ -12,11 +12,32 @@ class PaketTour extends Model
     protected $fillable = [
         'nama_paket',
         'deskripsi',
-        'jam_operasional',
+        'jam_awal',
+        'jam_akhir',
         'harga_paket',
         'kuota',
         'vendor_id',
     ];
+
+    /**
+     * Casting kolom TIME agar menjadi instance Carbon
+     */
+    protected $casts = [
+        'jam_awal'  => 'datetime:H:i:s',
+        'jam_akhir' => 'datetime:H:i:s',
+    ];
+
+    /**
+     * Accessor untuk format tampilan jam operasional
+     */
+    public function getJamOperasionalAttribute()
+    {
+        if (!$this->jam_awal || !$this->jam_akhir) {
+            return '-';
+        }
+
+        return $this->jam_awal->format('H:i') . ' to ' . $this->jam_akhir->format('H:i');
+    }
 
     public function photos()
     {
@@ -33,7 +54,7 @@ class PaketTour extends Model
         return $this->hasMany(TanggalAvailable::class, 'paket_tour_id');
     }
 
-        public function vendor()
+    public function vendor()
     {
         return $this->belongsTo(Vendor::class);
     }

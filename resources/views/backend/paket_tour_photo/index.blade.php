@@ -30,32 +30,29 @@
 
                 <div class="card">
 
-                    <!-- HEADER -->
+                    {{-- HEADER --}}
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center flex-wrap">
 
                             <h3 class="card-title mb-2">Photo Data</h3>
 
-                            <div class="d-flex align-items-center">
-                                <a href="{{ route('paket-tour-photos.create') }}"
-                                   class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus"></i> Add Photo
-                                </a>
-                            </div>
+                            <a href="{{ route('paket-tour-photos.create') }}"
+                               class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Add Photo
+                            </a>
 
                         </div>
                     </div>
-                    <!-- END HEADER -->
 
                     <div class="card-body">
-                        <table class="table table-bordered table-hover">
+                        <table class="table table-bordered table-hover text-center">
 
-                            <thead>
+                            <thead class="thead-light">
                                 <tr>
                                     <th width="5%">No</th>
                                     <th>Tour Package</th>
-                                    <th>Photo Path</th>
-                                    <th width="15%">Action</th>
+                                    <th width="25%">Preview</th>
+                                    <th width="20%">Action</th>
                                 </tr>
                             </thead>
 
@@ -63,17 +60,30 @@
                                 @forelse ($photos as $key => $photo)
                                     <tr>
                                         <td>{{ $key + 1 }}</td>
-                                        <td>{{ $photo->paketTour->nama_paket ?? '-' }}</td>
-                                        <td>{{ $photo->path_foto }}</td>
+
+                                        <td>
+                                            {{ $photo->paketTour->nama_paket ?? '-' }}
+                                        </td>
+
+                                        <td>
+                                            @if($photo->path_foto)
+                                                <img src="{{ Storage::url($photo->path_foto) }}"
+                                                     alt="Photo"
+                                                     style="max-width:120px; border-radius:6px;">
+                                            @else
+                                                <span class="text-muted">No Image</span>
+                                            @endif
+                                        </td>
+
                                         <td>
 
-                                            <!-- EDIT -->
+                                            {{-- EDIT --}}
                                             <a href="{{ route('paket-tour-photos.edit', $photo->id) }}"
                                                class="btn btn-warning btn-sm">
                                                 <i class="fas fa-edit"></i>
                                             </a>
 
-                                            <!-- DELETE -->
+                                            {{-- DELETE --}}
                                             <form action="{{ route('paket-tour-photos.destroy', $photo->id) }}"
                                                   method="POST"
                                                   style="display:inline-block"
@@ -108,18 +118,20 @@
     </div>
 </section>
 
+{{-- Success Alert --}}
 @if (session('success'))
-    <script>
-        Swal.fire({
-            icon: 'success',
-            title: 'Success',
-            text: '{{ session('success') }}',
-            timer: 2000,
-            showConfirmButton: false
-        });
-    </script>
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: '{{ session('success') }}',
+        timer: 2000,
+        showConfirmButton: false
+    });
+</script>
 @endif
 
+{{-- Delete Confirmation --}}
 <script>
     document.querySelectorAll('.form-delete').forEach(form => {
         form.addEventListener('submit', function (e) {

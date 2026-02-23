@@ -7,7 +7,7 @@
             <div class="row mb-2">
 
                 <div class="col-sm-6">
-                    <h1>{{ isset($user) ? 'Edit Pengguna' : 'Tambah Pengguna' }}</h1>
+                    <h1>{{ isset($user) ? 'Edit User' : 'Add User' }}</h1>
                 </div>
 
                 <div class="col-sm-6">
@@ -16,10 +16,10 @@
                             <a href="{{ route('dashboard') }}">Dashboard</a>
                         </li>
                         <li class="breadcrumb-item">
-                            <a href="{{ route('users.index') }}">Data Pengguna</a>
+                            <a href="{{ route('users.index') }}">User Data</a>
                         </li>
                         <li class="breadcrumb-item active">
-                            {{ isset($user) ? 'Edit' : 'Tambah' }}
+                            {{ isset($user) ? 'Edit' : 'Add' }}
                         </li>
                     </ol>
                 </div>
@@ -40,7 +40,7 @@
 
                         <div class="card-header">
                             <h3 class="card-title">
-                                {{ isset($user) ? 'Form Edit User' : 'Form Tambah User' }}
+                                {{ isset($user) ? 'Edit User Form' : 'Add User Form' }}
                             </h3>
                         </div>
 
@@ -56,16 +56,16 @@
 
                                 <!-- NAME -->
                                 <div class="form-group">
-                                    <label>Nama</label>
+                                    <label>Name</label>
                                     <input type="text" name="name" class="form-control"
-                                        value="{{ old('name', $user->name ?? '') }}" placeholder="Masukkan nama">
+                                        value="{{ old('name', $user->name ?? '') }}" placeholder="Enter name">
                                 </div>
 
                                 <!-- EMAIL -->
                                 <div class="form-group">
                                     <label>Email</label>
                                     <input type="email" name="email" class="form-control"
-                                        value="{{ old('email', $user->email ?? '') }}" placeholder="Masukkan email">
+                                        value="{{ old('email', $user->email ?? '') }}" placeholder="Enter email">
                                 </div>
 
                                 <!-- PASSWORD -->
@@ -73,7 +73,7 @@
                                     <label>
                                         Password
                                         @if (isset($user))
-                                            <small class="text-muted">(kosongkan jika tidak diubah)</small>
+                                            <small class="text-muted">(leave blank if not changing)</small>
                                         @endif
                                     </label>
 
@@ -85,7 +85,7 @@
 
                                     <select name="role" class="form-control">
 
-                                        <option value="">-- pilih role --</option>
+                                        <option value="">-- Select role --</option>
 
                                         @foreach ($roles as $role)
                                             <option value="{{ $role->name }}"
@@ -102,11 +102,11 @@
 
                             <div class="card-footer">
                                 <button class="btn btn-primary">
-                                    {{ isset($user) ? 'Update' : 'Simpan' }}
+                                    {{ isset($user) ? 'Update' : 'Save' }}
                                 </button>
 
                                 <a href="{{ route('users.index') }}" class="btn btn-secondary">
-                                    Kembali
+                                    Back
                                 </a>
                             </div>
 

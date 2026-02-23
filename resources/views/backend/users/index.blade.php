@@ -6,7 +6,7 @@
             <div class="row mb-2">
 
                 <div class="col-sm-6">
-                    <h1>Data Pengguna</h1>
+                    <h1>User Data</h1>
                 </div>
 
                 <div class="col-sm-6">
@@ -14,7 +14,7 @@
                         <li class="breadcrumb-item">
                             <a href="{{ route('dashboard') }}">Dashboard</a>
                         </li>
-                        <li class="breadcrumb-item active">Data Pengguna</li>
+                        <li class="breadcrumb-item active">User Data</li>
                     </ol>
                 </div>
 
@@ -36,7 +36,7 @@
 
                             <div class="d-flex justify-content-between align-items-center flex-wrap">
 
-                                <h3 class="card-title mb-2">Data Pengguna</h3>
+                                <h3 class="card-title mb-2">User Data</h3>
 
                                 <div class="d-flex align-items-center">
 
@@ -66,7 +66,7 @@
 
                                     <!-- TAMBAH -->
                                     <a href="{{ route('users.create') }}" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-plus"></i> Tambah User
+                                        <i class="fas fa-plus"></i> Add User
                                     </a>
 
                                 </div>
@@ -85,7 +85,7 @@
                                 <thead>
                                     <tr>
                                         <th width="5%">No</th>
-                                        <th>Nama</th>
+                                        <th>Name</th>
                                         <th>Email</th>
                                         <th width="15%">Action</th>
                                     </tr>
@@ -130,7 +130,7 @@
                                     @empty
                                         <tr>
                                             <td colspan="4" class="text-center">
-                                                Data kosong
+                                                Data is empty
                                             </td>
                                         </tr>
                                     @endforelse
@@ -157,7 +157,7 @@
         <script>
             Swal.fire({
                 icon: 'success',
-                title: 'Berhasil',
+                title: 'Success',
                 text: '{{ session('success') }}',
                 timer: 2000,
                 showConfirmButton: false
@@ -172,14 +172,14 @@
                 e.preventDefault();
 
                 Swal.fire({
-                    title: 'Yakin?',
-                    text: "Data akan dihapus permanen",
+                    title: 'Are you sure?',
+                    text: "The data will be permanently deleted",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Ya, hapus!',
-                    cancelButtonText: 'Batal'
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         form.submit();

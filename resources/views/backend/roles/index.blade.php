@@ -5,7 +5,7 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Data Role & Permission</h1>
+                    <h1>Role & Permission Data</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
@@ -25,13 +25,13 @@
 
                         <div class="card-header">
                             <div class="d-flex justify-content-between align-items-center flex-wrap">
-                                <h3 class="card-title mb-2">Daftar Role</h3>
+                                <h3 class="card-title mb-2">Role List</h3>
                                 <div class="d-flex align-items-center">
 
                                     <form action="{{ route('roles.index') }}" method="GET" class="mr-2">
                                         <div class="input-group input-group-sm" style="width:250px;">
                                             <input type="text" name="search" class="form-control"
-                                                placeholder="Cari role..." value="{{ request('search') }}">
+                                                placeholder="Search role..." value="{{ request('search') }}">
                                             <div class="input-group-append">
                                                 <button class="btn btn-default">
                                                     <i class="fas fa-search"></i>
@@ -41,7 +41,7 @@
                                     </form>
 
                                     <a href="{{ route('roles.create') }}" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-plus"></i> Tambah Role
+                                        <i class="fas fa-plus"></i> Add Role
                                     </a>
                                 </div>
                             </div>
@@ -52,14 +52,14 @@
                                 <thead>
                                     <tr>
                                         <th width="5%">No</th>
-                                        <th>Nama Role</th>
-                                        <th width="15%">Aksi</th>
+                                        <th>Role Name</th>
+                                        <th width="15%">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse ($roles as $role)
                                         <tr>
-                                            {{-- Penomoran dinamis untuk pagination --}}
+                                            {{-- Dynamic numbering for pagination --}}
                                             <td>{{ ($roles->currentPage() - 1) * $roles->perPage() + $loop->iteration }}
                                             </td>
                                             <td><strong>{{ $role->name }}</strong></td>
@@ -81,7 +81,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="3" class="text-center">Data role kosong</td>
+                                            <td colspan="3" class="text-center">Role data is empty</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -102,7 +102,7 @@
         <script>
             Swal.fire({
                 icon: 'success',
-                title: 'Berhasil',
+                title: 'Success',
                 text: '{{ session('success') }}',
                 timer: 2000,
                 showConfirmButton: false
@@ -115,14 +115,14 @@
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 Swal.fire({
-                    title: 'Yakin?',
-                    text: "Data role ini akan dihapus permanen!",
+                    title: 'Are you sure?',
+                    text: "This role data will be permanently deleted!",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Ya, hapus!',
-                    cancelButtonText: 'Batal'
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         form.submit();

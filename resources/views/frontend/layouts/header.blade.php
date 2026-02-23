@@ -24,6 +24,7 @@
         content="Temukan wisata agro terbaik di Bandung — dari kebun teh, strawberry, hingga kopi arabika.">
 
     <title>AgroBandung - Wisata Agro Terbaik di Bandung</title>
+    <link rel="icon" href="{{ asset('frontend/img/logo.png') }}" type="image/png">
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">

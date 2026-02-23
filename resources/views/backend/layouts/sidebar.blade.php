@@ -1,9 +1,9 @@
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
 
     <a href="{{ route('dashboard') }}" class="brand-link">
-        <img src="{{ asset('dist/img/AdminLTELogo.png') }}" alt="Logo" class="brand-image img-circle elevation-3"
+        <img src="{{ asset('frontend/img/logo.png') }}" alt="Logo" class="brand-image img-circle elevation-3"
             style="opacity:.8">
-        <span class="brand-text font-weight-light">Agrowisata</span>
+        <span class="brand-text font-weight-light">Jabar Agro</span>
     </a>
 
     <div class="sidebar">
@@ -81,7 +81,7 @@
                         request()->routeIs('paket-tours.*') ||
                         request()->routeIs('paket-tour-photos.*') ||
                         request()->routeIs('pricingtiers.*') ||
-                        request()->routeIs('tanggal-available.*');
+                        request()->routeIs('tanggal-available.*') ||
                         request()->routeIs('pricingrules.*');
                 @endphp
 
@@ -89,7 +89,7 @@
                     <a href="#" class="nav-link {{ $isPaketTourActive ? 'active' : '' }}">
                         <i class="nav-icon fas fa-map-marked-alt"></i>
                         <p>
-                            Paket Tour
+                            Tour Package
                             <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
@@ -99,14 +99,14 @@
                             <a href="{{ route('paket-tours.index') }}"
                                 class="nav-link {{ request()->routeIs('paket-tours.*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
-                                <p>Data Paket</p>
+                                <p>Tour Package Data</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="{{ route('paket-tour-photos.index') }}"
                                 class="nav-link {{ request()->routeIs('paket-tour-photos.*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
-                                <p>Gallery Foto</p>
+                                <p>Gallery Photo</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -127,19 +127,19 @@
                             <a href="{{ route('tanggal-available.index') }}"
                                 class="nav-link {{ request()->routeIs('tanggal-available.*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
-                                <p>Tanggal Available</p>
+                                <p>Available Date</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <li class="nav-header">TRANSACTION</li>
+                <li class="nav-header">TRANSACTIONS</li>
 
                 <li class="nav-item">
                     <a href="{{ route('bookings.index') }}"
                         class="nav-link {{ request()->routeIs('bookings.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-shopping-cart"></i>
-                        <p>Booking</p>
+                        <p>Bookings</p>
                     </a>
                 </li>
 
@@ -147,7 +147,7 @@
                     <a href="{{ route('payments.index') }}"
                         class="nav-link {{ request()->routeIs('payments.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-credit-card"></i>
-                        <p>Payment</p>
+                        <p>Payments</p>
                     </a>
                 </li>
 
@@ -157,27 +157,50 @@
                     <a href="{{ route('review.index') }}"
                         class="nav-link {{ request()->routeIs('review.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-star"></i>
-                        <p>Review & Rating</p>
+                        <p>Reviews & Ratings</p>
                     </a>
                 </li>
 
-                <li class="nav-header">CONFIG</li>
+                <li class="nav-header">CONFIGURATION</li>
 
                 <li class="nav-item">
                     <a href="{{ route('whatsappsetting.index') }}"
                         class="nav-link {{ request()->routeIs('whatsappsetting.*') ? 'active' : '' }}">
                         <i class="nav-icon fab fa-whatsapp"></i>
-                        <p>WhatsApp Setting</p>
+                        <p>WhatsApp Settings</p>
                     </a>
                 </li>
 
-                <li class="nav-header">REPORT</li>
+                <li class="nav-header">REPORTS</li>
 
                 <li class="nav-item">
                     <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-chart-bar"></i>
-                        <p>Report</p>
+                        <i class="nav-icon fas fa-chart-pie"></i>
+                        <p>
+                            Reports
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
                     </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Sales Report</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Booking Report</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>User Report</p>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
 
             </ul>
