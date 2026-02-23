@@ -15,7 +15,7 @@ public function up(): void
         $table->id();
 
         // relasi ke paket
-        $table->foreignId('tour_package_id')
+        $table->foreignId('paket_tour_id')
               ->constrained()
               ->cascadeOnDelete();
 

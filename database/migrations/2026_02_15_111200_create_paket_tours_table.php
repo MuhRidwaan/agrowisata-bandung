@@ -11,7 +11,9 @@ return new class extends Migration {
             $table->id();
             $table->string('nama_paket');
             $table->text('deskripsi')->nullable();
-            $table->string('jam_operasional')->nullable();
+            // Gunakan tipe TIME, bukan string
+            $table->time('jam_awal')->nullable();
+            $table->time('jam_akhir')->nullable();
             $table->integer('kuota')->nullable();
             $table->timestamps();
         });

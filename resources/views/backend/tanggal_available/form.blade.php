@@ -137,7 +137,7 @@
 
                         <a href="{{ route('tanggal-available.index') }}"
                            class="btn btn-secondary">
-                            Cancel
+                            Back
                         </a>
                     </div>
 

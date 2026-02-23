@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class PricingRule extends Model
 {
     protected $fillable = [
-        'tour_package_id',
+        'paket_tour_id',
         'min_pax',
         'max_pax',
         'discount_type',
@@ -15,8 +15,8 @@ class PricingRule extends Model
         'description',
     ];
 
-    public function tourPackage()
+    public function paketTour()
     {
-        return $this->belongsTo(TourPackage::class);
+        return $this->belongsTo(PaketTour::class, 'paket_tour_id');
     }
 }

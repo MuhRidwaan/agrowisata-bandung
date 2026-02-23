@@ -64,7 +64,7 @@
                                 @forelse ($tiers as $key => $tier)
                                     <tr>
                                         <td>{{ $key + 1 }}</td>
-                                        <td>{{ $tier->tourPackage->title ?? '-' }}</td>
+                                        <td>{{ $tier->paketTour->nama_paket ?? '-' }}</td>
                                         <td>{{ $tier->name }}</td>
                                         <td>Rp {{ number_format($tier->price, 0, ',', '.') }}</td>
                                         <td>

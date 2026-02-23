@@ -40,35 +40,41 @@
             <div class="card-body">
 
                 <form method="POST"
-                      action="{{ isset($tier)
+                      action="{{ (isset($tier) && $tier && $tier->id)
                           ? route('pricingtiers.update', $tier->id)
                           : route('pricingtiers.store') }}">
 
                     @csrf
 
-                    @if (isset($tier))
+                    @if (isset($tier) && $tier && $tier->id)
                         @method('PUT')
                     @endif
 
-                    {{-- Tour Package --}}
+
+                    {{-- Paket Tour --}}
                     <div class="mb-3">
                         <label>
                             Tour Package <span class="text-danger">*</span>
                         </label>
 
-                        <select name="tour_package_id"
+                        <select name="paket_tour_id"
                                 class="form-control"
                                 required>
                             <option value="">-- Select Package --</option>
 
-                            @foreach ($packages as $id => $title)
+                            @foreach ($packages as $id => $nama)
                                 <option value="{{ $id }}"
-                                    {{ old('tour_package_id', $tier->tour_package_id ?? '') == $id ? 'selected' : '' }}>
-                                    {{ $title }}
+                                    {{ old('paket_tour_id', $tier->paket_tour_id ?? '') == $id ? 'selected' : '' }}>
+                                    {{ $nama }}
                                 </option>
                             @endforeach
                         </select>
+
+                        @error('paket_tour_id')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
                     </div>
+
 
                     {{-- Category Name --}}
                     <div class="mb-3">
@@ -88,7 +94,12 @@
                                 </option>
                             @endforeach
                         </select>
+
+                        @error('name')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
                     </div>
+
 
                     {{-- Price --}}
                     <div class="mb-3">
@@ -100,10 +111,14 @@
                                name="price"
                                class="form-control"
                                min="0"
-                               step="0.01"
                                value="{{ old('price', $tier->price ?? '') }}"
                                required>
+
+                        @error('price')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
                     </div>
+
 
                     {{-- Action Buttons --}}
                     <div class="mt-3">

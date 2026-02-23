@@ -14,8 +14,8 @@ public function up(): void
     Schema::create('available_dates', function (Blueprint $table) {
         $table->id();
 
-        $table->foreignId('tour_package_id')
-              ->constrained()
+        $table->foreignId('paket_tour_id')
+              ->constrained('paket_tours')
               ->cascadeOnDelete();
 
         $table->date('date');

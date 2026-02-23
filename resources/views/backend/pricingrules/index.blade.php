@@ -66,7 +66,7 @@
                             <tbody>
                                 @forelse ($rules as $item)
                                     <tr>
-                                        <td>{{ $item->tourPackage->title ?? '-' }}</td>
+                                        <td>{{ $item->paketTour->nama_paket ?? '-' }}</td>
                                         <td>{{ $item->min_pax }}</td>
                                         <td>{{ $item->max_pax }}</td>
                                         <td>{{ ucfirst($item->discount_type) }}</td>

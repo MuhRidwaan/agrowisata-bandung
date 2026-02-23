@@ -117,7 +117,7 @@
                                 </button>
                                 <a href="{{ route('paket-tours.index') }}"
                                     class="btn btn-secondary">
-                                    Cancel
+                                    Back
                                 </a>
                             </div>
 
