@@ -108,9 +108,11 @@ Route::middleware(['auth','role:admin'])->group(function () {
 
 
     // Frontend
-    Route::get('/home', function () {
-        return view('frontend.detail');
-    })->name('detail');
+   
 });
+
+ Route::get('/home', function () {
+        return view('frontend.detail');
+    })->name('detail'); 
 
 require __DIR__.'/auth.php';
