@@ -45,6 +45,17 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    window.BOOKING_CONFIG = {
+        name: 'Kebun Strawberry Ciwidey',
+        location: 'Ciwidey, Bandung Selatan',
+        prices: [50000, 45000, 40000],
+        serviceFee: 2500,
+        waNumber: '6281234567001',
+        waContact: 'Pak Ahmad'
+    };
+</script>
+<script src="{{ asset('frontend/js/booking.js') }}"></script>
+<script>
     document.addEventListener('DOMContentLoaded', function() {
         var pills = document.querySelectorAll('.region-pill');
         var cards = document.querySelectorAll('.destination-card');
@@ -120,6 +131,7 @@
         });
     });
 </script>
+
 </body>
 
 </html>

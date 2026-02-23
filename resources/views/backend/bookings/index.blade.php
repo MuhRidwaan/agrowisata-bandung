@@ -5,12 +5,12 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Data Booking</h1>
+                    <h1>Booking Data</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item active">Data Booking</li>
+                        <li class="breadcrumb-item active">Booking Data</li>
                     </ol>
                 </div>
             </div>
@@ -24,14 +24,14 @@
                     <div class="card">
                         <div class="card-header">
                             <div class="d-flex justify-content-between align-items-center flex-wrap">
-                                <h3 class="card-title mb-2">Daftar Booking Masuk</h3>
+                                <h3 class="card-title mb-2">Incoming Booking List</h3>
                                 <div class="d-flex align-items-center">
 
                                     <!-- Search Form -->
                                     <form action="{{ route('bookings.index') }}" method="GET" class="mr-2">
                                         <div class="input-group input-group-sm" style="width:250px;">
                                             <input type="text" name="search" class="form-control"
-                                                placeholder="Cari kode/user..." value="{{ request('search') }}">
+                                                placeholder="Search code/user..." value="{{ request('search') }}">
                                             <div class="input-group-append">
                                                 <button type="submit" class="btn btn-default"><i
                                                         class="fas fa-search"></i></button>
@@ -40,7 +40,7 @@
                                     </form>
 
                                     <a href="{{ route('bookings.create') }}" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-plus"></i> Tambah Booking Baru
+                                        <i class="fas fa-plus"></i> Add New Booking
                                     </a>
                                 </div>
                             </div>
@@ -51,13 +51,13 @@
                                 <thead class="bg-light">
                                     <tr>
                                         <th width="5%" class="text-center">No</th>
-                                        <th>Kode Booking</th>
-                                        <th>Nama Pemesan</th>
-                                        <th>Paket Tour</th>
-                                        <th class="text-center">Peserta</th>
-                                        <th>Total Harga</th>
+                                        <th>Booking Code</th>
+                                        <th>Customer Name</th>
+                                        <th>Tour Package</th>
+                                        <th class="text-center">Participants</th>
+                                        <th>Total Price</th>
                                         <th class="text-center">Status</th>
-                                        <th width="12%" class="text-center">Aksi</th>
+                                        <th width="12%" class="text-center">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -68,7 +68,7 @@
                                             </td>
                                             <td><strong>{{ $booking->booking_code }}</strong></td>
                                             <td>
-                                                {{ $booking->customer_name ?? ($booking->user->name ?? 'User Dihapus') }} <br>
+                                                {{ $booking->customer_name ?? ($booking->user->name ?? 'User Deleted') }} <br>
                                                 <small class="text-muted">{{ $booking->customer_phone ?? '' }}</small>
                                             </td>
                                             <td>{{ $booking->paketTour->nama_paket ?? '-' }}</td>
@@ -95,7 +95,7 @@
                                                     style="display:inline-block" class="form-delete">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger btn-sm" title="Hapus Data">
+                                                    <button type="submit" class="btn btn-danger btn-sm" title="Delete Data">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
@@ -105,7 +105,7 @@
                                         <tr>
                                             <td colspan="8" class="text-center py-4">
                                                 <i class="fas fa-inbox fa-3x text-muted mb-2"></i><br>
-                                                Belum ada data booking.
+                                                No booking data yet.
                                             </td>
                                         </tr>
                                     @endforelse
@@ -126,7 +126,7 @@
         <script>
             Swal.fire({
                 icon: 'success',
-                title: 'Berhasil',
+                title: 'Success',
                 text: '{{ session('success') }}',
                 timer: 2000,
                 showConfirmButton: false
@@ -139,14 +139,14 @@
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 Swal.fire({
-                    title: 'Yakin mau dihapus?',
-                    text: "Data booking ini beserta data pembayarannya akan dihapus permanen!",
+                    title: 'Are you sure you want to delete?',
+                    text: "This booking data along with its payment data will be permanently deleted!",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Ya, hapus!',
-                    cancelButtonText: 'Batal'
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         form.submit();

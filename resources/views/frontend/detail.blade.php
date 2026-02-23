@@ -276,11 +276,11 @@
                                 </p>
                             </div>
 
-                            <a href="booking-strawberry.html" class="btn btn-agro-primary w-100 mb-3">Beli Tiket</a>
+                            <a href="{{ route('booking') }}" class="btn btn-agro-primary w-100 mb-3">Beli Tiket</a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-</div>
+    </div>
 @endsection

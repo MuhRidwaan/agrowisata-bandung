@@ -5,12 +5,12 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Invoice Pembayaran</h1>
+                    <h1>Payment Invoice</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('payments.index') }}">Data Payment</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('payments.index') }}">Payment Data</a></li>
                         <li class="breadcrumb-item active">Invoice</li>
                     </ol>
                 </div>
@@ -30,7 +30,7 @@
                             <div class="col-12">
                                 <h4>
                                     <i class="fas fa-leaf text-success"></i> Agrowisata Tour
-                                    <small class="float-right">Tanggal Cetak: {{ now()->format('d/m/Y') }}</small>
+                                    <small class="float-right">Print Date: {{ now()->format('d/m/Y') }}</small>
                                 </h4>
                             </div>
                         </div>
@@ -39,32 +39,32 @@
                         <!-- Info Row -->
                         <div class="row invoice-info mt-4 mb-4">
                             <div class="col-sm-4 invoice-col">
-                                Dari
+                                From
                                 <address>
-                                    <strong>Admin Agrowisata</strong><br>
+                                    <strong>Agrowisata Admin</strong><br>
                                     Jl. Raya Pariwisata No. 123<br>
-                                    Bandung, Jawa Barat<br>
-                                    Telepon: (022) 123-4567<br>
+                                    Bandung, West Java<br>
+                                    Phone: (022) 123-4567<br>
                                     Email: info@agrowisata.com
                                 </address>
                             </div>
 
                             <div class="col-sm-4 invoice-col">
-                                Kepada Pemesan
+                                To Customer
                                 <address>
                                     <strong>{{ $payment->booking->customer_name ?? $payment->booking->user->name }}</strong><br>
                                     Email: {{ $payment->booking->customer_email ?? $payment->booking->user->email }}<br>
-                                    Telepon: {{ $payment->booking->customer_phone ?? '-' }}
+                                    Phone: {{ $payment->booking->customer_phone ?? '-' }}
                                 </address>
                             </div>
 
                             <div class="col-sm-4 invoice-col">
                                 <b>Invoice #{{ $payment->booking->booking_code }}</b><br>
                                 <br>
-                                <b>Status Pembayaran:</b> <span class="badge badge-success"
-                                    style="font-size:14px;">LUNAS</span><br>
-                                <b>Tgl Bayar:</b> {{ \Carbon\Carbon::parse($payment->paid_at)->format('d M Y, H:i') }}<br>
-                                <b>Metode:</b> {{ strtoupper($payment->payment_method ?? 'Payment Gateway / Transfer') }}
+                                <b>Payment Status:</b> <span class="badge badge-success"
+                                    style="font-size:14px;">PAID</span><br>
+                                <b>Payment Date:</b> {{ \Carbon\Carbon::parse($payment->paid_at)->format('d M Y, H:i') }}<br>
+                                <b>Method:</b> {{ strtoupper($payment->payment_method ?? 'Payment Gateway / Transfer') }}
                             </div>
                         </div>
 
@@ -74,16 +74,16 @@
                                 <table class="table table-striped">
                                     <thead class="bg-light">
                                         <tr>
-                                            <th>Detail Paket Tour</th>
-                                            <th>Jumlah Peserta</th>
-                                            <th class="text-right">Harga Paket / Pax</th>
+                                            <th>Tour Package Details</th>
+                                            <th>Number of Participants</th>
+                                            <th class="text-right">Package Price / Pax</th>
                                             <th class="text-right">Subtotal</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
                                             <td>{{ $payment->booking->paketTour->nama_paket }}</td>
-                                            <td>{{ $payment->booking->jumlah_peserta }} Orang</td>
+                                            <td>{{ $payment->booking->jumlah_peserta }} People</td>
                                             <td class="text-right">Rp
                                                 {{ number_format($payment->booking->paketTour->harga_paket, 0, ',', '.') }}
                                             </td>
@@ -98,16 +98,15 @@
                         <!-- Footer Row -->
                         <div class="row mt-4">
                             <div class="col-6">
-                                <p class="lead">Catatan Penting:</p>
+                                <p class="lead">Important Notes:</p>
                                 <img src="https://midtrans.com/assets/img/midtrans-logo.png" alt="Midtrans" width="120"
                                     class="mb-3">
                                 <p class="text-muted well well-sm shadow-none" style="margin-top: 10px;">
-                                    Terima kasih telah melakukan pembayaran. Harap simpan invoice ini dan tunjukkan kepada
-                                    petugas kami saat melakukan registrasi ulang di lokasi Agrowisata.
+                                    Thank you for your payment. Please keep this invoice and show it to our staff during re-registration at the Agrowisata location.
                                 </p>
                             </div>
                             <div class="col-6">
-                                <p class="lead">Ringkasan Total</p>
+                                <p class="lead">Total Summary</p>
                                 <div class="table-responsive">
                                     <table class="table">
                                         <tr>
@@ -116,7 +115,7 @@
                                                 {{ number_format($payment->booking->total_price, 0, ',', '.') }}</td>
                                         </tr>
                                         <tr>
-                                            <th>Total Dibayarkan:</th>
+                                            <th>Total Paid:</th>
                                             <td class="text-right"><strong>Rp
                                                     {{ number_format($payment->booking->total_price, 0, ',', '.') }}</strong>
                                             </td>
@@ -126,14 +125,14 @@
                             </div>
                         </div>
 
-                        <!-- Tombol Aksi (Tidak akan ikut ter-print) -->
+                        <!-- Action Buttons (Will not be printed) -->
                         <div class="row no-print mt-5 pt-3 border-top">
                             <div class="col-12">
                                 <button type="button" class="btn btn-success float-right" onclick="window.print()">
                                     <i class="fas fa-print"></i> Print Invoice
                                 </button>
                                 <a href="{{ route('payments.index') }}" class="btn btn-secondary float-right mr-2">
-                                    <i class="fas fa-arrow-left"></i> Kembali ke Daftar
+                                    <i class="fas fa-arrow-left"></i> Back to List
                                 </a>
                             </div>
                         </div>
@@ -143,7 +142,7 @@
         </div>
     </section>
 
-    <!-- CSS Khusus agar Sidebar & Navbar ngilang pas diprint -->
+    <!-- Custom CSS to hide Sidebar & Navbar when printing -->
     <style>
         @media print {
             .no-print {

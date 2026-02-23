@@ -5,12 +5,12 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Data Payment</h1>
+                    <h1>Payment Data</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item active">Data Payment</li>
+                        <li class="breadcrumb-item active">Payment Data</li>
                     </ol>
                 </div>
             </div>
@@ -26,12 +26,12 @@
                         <!-- HEADER -->
                         <div class="card-header">
                             <div class="d-flex justify-content-between align-items-center flex-wrap">
-                                <h3 class="card-title mb-2">Daftar Pembayaran Masuk</h3>
+                                <h3 class="card-title mb-2">Incoming Payment List</h3>
                                 <div class="d-flex align-items-center">
                                     <form action="{{ route('payments.index') }}" method="GET">
                                         <div class="input-group input-group-sm" style="width:250px;">
                                             <input type="text" name="search" class="form-control"
-                                                placeholder="Cari kode/user..." value="{{ request('search') }}">
+                                                placeholder="Search code/user..." value="{{ request('search') }}">
                                             <div class="input-group-append">
                                                 <button type="submit" class="btn btn-default"><i
                                                         class="fas fa-search"></i></button>
@@ -48,11 +48,11 @@
                                 <thead class="bg-light">
                                     <tr>
                                         <th width="5%" class="text-center">No</th>
-                                        <th>Kode Booking</th>
-                                        <th>Nama Pemesan</th>
-                                        <th>Total Harga</th>
+                                        <th>Booking Code</th>
+                                        <th>Customer Name</th>
+                                        <th>Total Price</th>
                                         <th class="text-center">Status</th>
-                                        <th width="22%" class="text-center">Aksi</th>
+                                        <th width="22%" class="text-center">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -75,7 +75,7 @@
                                             <td class="text-center">
                                                 @if ($payment->status == 'success')
                                                     <span class="badge badge-success"><i class="fas fa-check-circle"></i>
-                                                        Paid / Lunas</span>
+                                                        Paid</span>
                                                 @elseif ($payment->status == 'failed')
                                                     <span class="badge badge-danger"><i class="fas fa-times-circle"></i>
                                                         Expired / Failed</span>
@@ -87,33 +87,50 @@
 
                                             <td class="text-center">
                                                 @if ($payment->status == 'pending')
-                                                    <!-- TOMBOL BAYAR MIDTRANS -->
+                                                    <!-- Tombol Bayar via Midtrans -->
                                                     <button class="btn btn-primary btn-sm btn-pay mb-1"
                                                         data-token="{{ $payment->snap_token }}"
-                                                        data-url="{{ route('payments.paid', $payment->id) }}">
-                                                        <i class="fas fa-money-bill-wave"></i> Bayar
+                                                        data-url="{{ route('payments.paid', $payment->id) }}" title="Pay with Midtrans">
+                                                        <i class="fas fa-money-bill-wave"></i> Pay
                                                     </button>
 
-                                                    <!-- TOMBOL BATALKAN MANUAL -->
-                                                    <form action="{{ route('payments.cancel', $payment->id) }}"
-                                                        method="POST" style="display:inline-block" class="form-cancel">
+                                                    <!-- Tombol Tandai Lunas (Manual) -->
+                                                    <form action="{{ route('payments.paid', $payment->id) }}" method="POST"
+                                                        style="display:inline-block" class="form-mark-paid">
                                                         @csrf
-                                                        <button type="submit" class="btn btn-danger btn-sm mb-1"
-                                                            title="Batalkan jika Expired">
-                                                            <i class="fas fa-times"></i> Batal
+                                                        <button type="submit" class="btn btn-success btn-sm mb-1" title="Mark as Paid Manually">
+                                                            <i class="fas fa-check"></i> Mark Paid
                                                         </button>
                                                     </form>
+
+                                                    <!-- Tombol Batalkan (Manual) -->
+                                                    <form action="{{ route('payments.cancel', $payment->id) }}" method="POST"
+                                                        style="display:inline-block" class="form-cancel">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-danger btn-sm mb-1" title="Cancel if Expired">
+                                                            <i class="fas fa-times"></i> Cancel
+                                                        </button>
+                                                    </form>
+
                                                 @elseif ($payment->status == 'success')
-                                                    <span class="text-success font-weight-bold mr-2"><i
-                                                            class="fas fa-check"></i> Lunas</span>
-                                                    <!-- TOMBOL CETAK INVOICE -->
+                                                    <span class="text-success font-weight-bold mr-2"><i class="fas fa-check"></i> Paid</span>
+                                                    <!-- PRINT INVOICE BUTTON -->
                                                     <a href="{{ route('payments.invoice', $payment->id) }}"
-                                                        class="btn btn-info btn-sm">
+                                                        class="btn btn-info btn-sm" title="Print Invoice">
                                                         <i class="fas fa-print"></i> Invoice
                                                     </a>
+
                                                 @elseif ($payment->status == 'failed')
-                                                    <span class="text-danger font-weight-bold"><i class="fas fa-ban"></i>
-                                                        Dibatalkan</span>
+                                                    <span class="text-danger font-weight-bold mr-2"><i class="fas fa-ban"></i>
+                                                        Cancelled</span>
+                                                    <!-- Tombol Tandai Lunas (Manual) untuk status Gagal -->
+                                                    <form action="{{ route('payments.paid', $payment->id) }}" method="POST"
+                                                        style="display:inline-block" class="form-mark-paid">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-success btn-sm mb-1" title="Mark as Paid Manually">
+                                                            <i class="fas fa-check"></i> Mark Paid
+                                                        </button>
+                                                    </form>
                                                 @endif
                                             </td>
                                         </tr>
@@ -121,7 +138,7 @@
                                         <tr>
                                             <td colspan="6" class="text-center py-4">
                                                 <i class="fas fa-money-check-alt fa-3x text-muted mb-2"></i><br>
-                                                Belum ada data pembayaran.
+                                                No payment data yet.
                                             </td>
                                         </tr>
                                     @endforelse
@@ -140,11 +157,11 @@
         </div>
     </section>
 
-    <!-- LOAD SCRIPT MIDTRANS SANDBOX -->
+    <!-- LOAD MIDTRANS SANDBOX SCRIPT -->
     <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}">
     </script>
 
-    <!-- LOGIC SWEETALERT & MUNCULIN POP-UP MIDTRANS -->
+    <!-- SWEETALERT LOGIC & MIDTRANS POP-UP -->
     <script>
         document.querySelectorAll('.btn-pay').forEach(button => {
             button.addEventListener('click', function() {
@@ -152,25 +169,25 @@
                 var paymentUrl = this.getAttribute('data-url');
 
                 if (!snapToken) {
-                    Swal.fire('Error', 'Token pembayaran tidak ditemukan!', 'error');
+                    Swal.fire('Error', 'Payment token not found!', 'error');
                     return;
                 }
 
                 Swal.fire({
-                    title: 'Lanjutkan Pembayaran?',
-                    text: "Anda akan diarahkan ke halaman aman Midtrans untuk membayar.",
+                    title: 'Continue Payment?',
+                    text: "You will be directed to the secure Midtrans page to pay.",
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#007bff',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Ya, Bayar Sekarang!',
-                    cancelButtonText: 'Batal'
+                    confirmButtonText: 'Yes, Pay Now!',
+                    cancelButtonText: 'Cancel'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         window.snap.pay(snapToken, {
                             onSuccess: function(result) {
-                                Swal.fire('Berhasil!',
-                                    'Pembayaran sukses! Memproses data...',
+                                Swal.fire('Success!',
+                                    'Payment successful! Processing data...',
                                     'success');
                                 var form = document.createElement('form');
                                 form.method = 'POST';
@@ -184,16 +201,16 @@
                                 form.submit();
                             },
                             onPending: function(result) {
-                                Swal.fire('Menunggu',
-                                    'Silakan selesaikan pembayaran Anda.', 'info');
+                                Swal.fire('Waiting',
+                                    'Please complete your payment.', 'info');
                             },
                             onError: function(result) {
-                                Swal.fire('Gagal',
-                                    'Pembayaran gagal, silakan coba lagi.', 'error');
+                                Swal.fire('Failed',
+                                    'Payment failed, please try again.', 'error');
                             },
                             onClose: function() {
-                                Swal.fire('Ditutup',
-                                    'Anda menutup layar sebelum menyelesaikannya.',
+                                Swal.fire('Closed',
+                                    'You closed the screen before completing it.',
                                     'warning');
                             }
                         });
@@ -202,19 +219,19 @@
             });
         });
 
-        // SCRIPT UNTUK KONFIRMASI TOMBOL BATAL MANUAL
+        // SCRIPT FOR MANUAL CANCEL BUTTON CONFIRMATION
         document.querySelectorAll('.form-cancel').forEach(form => {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 Swal.fire({
-                    title: 'Batalkan Pembayaran?',
-                    text: "Jika transaksi di Midtrans sudah Expired, klik Ya untuk membatalkan pesanan ini.",
+                    title: 'Cancel Payment?',
+                    text: "If the transaction in Midtrans has Expired, click Yes to cancel this order.",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Ya, Batalkan!',
-                    cancelButtonText: 'Kembali'
+                    confirmButtonText: 'Yes, Cancel!',
+                    cancelButtonText: 'Back'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         form.submit();

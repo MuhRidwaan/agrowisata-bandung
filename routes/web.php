@@ -15,6 +15,7 @@ use App\Http\Controllers\WhatsappSettingController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\PricingRuleController;
 use App\Http\Controllers\AreaController;
+use App\Http\Controllers\DashboardController;
 
 
 /*
@@ -72,9 +73,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth','role:admin'])->group(function () {
 
     // ================= DASHBOARD =================
-    Route::get('/dashboard', function () {
-        return view('backend.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // ================= BOOKINGS =================
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
@@ -111,8 +110,12 @@ Route::middleware(['auth','role:admin'])->group(function () {
    
 });
 
- Route::get('/home', function () {
+ Route::get('/paket-detail', function () {
         return view('frontend.detail');
     })->name('detail'); 
+    
+ Route::get('/booking', function () {
+        return view('frontend.booking');
+    })->name('booking'); 
 
 require __DIR__.'/auth.php';
