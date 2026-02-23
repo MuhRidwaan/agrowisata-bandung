@@ -5,7 +5,7 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>{{ isset($paketTour->id) ? 'Edit Paket Tour' : 'Tambah Paket Tour' }}</h1>
+                    <h1>{{ isset($paketTour->id) ? 'Edit Tour Package' : 'Add Tour Package' }}</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
@@ -13,10 +13,10 @@
                             <a href="{{ route('dashboard') }}">Dashboard</a>
                         </li>
                         <li class="breadcrumb-item">
-                            <a href="{{ route('paket-tours.index') }}">Data Paket Tour</a>
+                            <a href="{{ route('paket-tours.index') }}">Tour Package Data</a>
                         </li>
                         <li class="breadcrumb-item active">
-                            {{ isset($paketTour->id) ? 'Edit' : 'Tambah' }} Paket Tour
+                            {{ isset($paketTour->id) ? 'Edit' : 'Add' }} Tour Package
                         </li>
                     </ol>
                 </div>
@@ -31,7 +31,7 @@
                     <div class="card card-primary">
                         <div class="card-header">
                             <h3 class="card-title">
-                                {{ isset($paketTour->id) ? 'Form Edit Paket Tour' : 'Form Tambah Paket Tour' }}
+                                {{ isset($paketTour->id) ? 'Edit Tour Package Form' : 'Add Tour Package Form' }}
                             </h3>
                         </div>
                         <form method="POST"
@@ -42,26 +42,26 @@
                             @endif
                             <div class="card-body">
                                 <div class="form-group">
-                                    <label for="nama_paket">Nama Paket</label>
+                                    <label for="nama_paket">Package Name</label>
                                     <input type="text" class="form-control" id="nama_paket" name="nama_paket"
                                         value="{{ old('nama_paket', $paketTour->nama_paket) }}" required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="deskripsi">Deskripsi</label>
+                                    <label for="deskripsi">Description</label>
                                     <textarea class="form-control" id="deskripsi" name="deskripsi" rows="3" required>{{ old('deskripsi', $paketTour->deskripsi) }}</textarea>
                                 </div>
                                 <div class="form-group">
-                                    <label>Jam Operasional</label>
+                                    <label>Operational Hours</label>
                                     <div class="d-flex">
                                         <input type="time" class="form-control mr-2" name="jam_awal" id="jam_awal" value="{{ old('jam_awal', $paketTour->jam_awal ?? '') }}">
-                                        <span class="mx-2">s/d</span>
+                                        <span class="mx-2">to</span>
                                         <input type="time" class="form-control ml-2" name="jam_akhir" id="jam_akhir" value="{{ old('jam_akhir', $paketTour->jam_akhir ?? '') }}">
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="vendor_id">Vendor</label>
                                     <select name="vendor_id" class="form-control" required>
-                                        <option value="">-- Pilih Vendor --</option>
+                                        <option value="">-- Select Vendor --</option>
                                         @foreach($vendors as $id => $name)
                                             <option value="{{ $id }}" {{ old('vendor_id', $paketTour->vendor_id ?? '') == $id ? 'selected' : '' }}>{{ $name }}</option>
                                         @endforeach
@@ -70,8 +70,8 @@
                             </div>
                             <div class="card-footer">
                                 <button type="submit"
-                                    class="btn btn-primary">{{ isset($paketTour->id) ? 'Update' : 'Simpan' }}</button>
-                                <a href="{{ route('paket-tours.index') }}" class="btn btn-secondary">Batal</a>
+                                    class="btn btn-primary">{{ isset($paketTour->id) ? 'Update' : 'Save' }}</button>
+                                <a href="{{ route('paket-tours.index') }}" class="btn btn-secondary">Cancel</a>
                             </div>
                         </form>
                     </div>

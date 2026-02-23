@@ -15,6 +15,7 @@ class PaketTour extends Model
         'jam_operasional',
         'harga_paket',
         'kuota',
+        'vendor_id',
     ];
 
     public function photos()

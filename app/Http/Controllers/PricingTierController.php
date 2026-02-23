@@ -19,6 +19,10 @@ class PricingTierController extends Controller
                     ->get();
 
         return view('backend.pricingtiers.index', compact('tiers'));
+            $tiers = PricingTier::with('paketTour')
+                    ->latest()
+                    ->get();
+            return view('backend.pricingtiers.index', compact('tiers'));
     }
 
     /**
@@ -48,6 +52,17 @@ class PricingTierController extends Controller
         return redirect()
             ->route('pricingtiers.index')
             ->with('success', 'Kategori harga berhasil ditambahkan');
+            $validated = $request->validate([
+                'paket_tour_id' => 'required|exists:paket_tours,id',
+                'name'          => 'required|string|max:100',
+                'price'         => 'required|integer|min:0',
+            ]);
+
+            PricingTier::create($validated);
+
+            return redirect()
+                ->route('pricingtiers.index')
+                ->with('success', 'Kategori harga berhasil ditambahkan');
     }
 
     /**
@@ -62,6 +77,11 @@ class PricingTierController extends Controller
             'tier' => $pricingTier,
             'packages' => $packages
         ]);
+            $packages = PaketTour::orderBy('nama_paket')->pluck('nama_paket','id');
+            return view('backend.pricingtiers.form', [
+                'tier' => $pricingTier,
+                'packages' => $packages
+            ]);
     }
 
     /**
@@ -80,6 +100,17 @@ class PricingTierController extends Controller
         return redirect()
             ->route('pricingtiers.index')
             ->with('success', 'Kategori harga berhasil diperbarui');
+            $validated = $request->validate([
+                'paket_tour_id' => 'required|exists:paket_tours,id',
+                'name'          => 'required|string|max:100',
+                'price'         => 'required|integer|min:0',
+            ]);
+
+            $pricingTier->update($validated);
+
+            return redirect()
+                ->route('pricingtiers.index')
+                ->with('success', 'Kategori harga berhasil diperbarui');
     }
 
     /**

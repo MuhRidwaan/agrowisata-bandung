@@ -34,12 +34,12 @@
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center flex-wrap">
 
-                            <h3 class="card-title mb-2">Data Pricing Tier</h3>
+                            <h3 class="card-title mb-2">Pricing Tier Data</h3>
 
                             <div class="d-flex align-items-center">
                                 <a href="{{ route('pricingtiers.create') }}"
                                    class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus"></i> Tambah Pricing Tier
+                                    <i class="fas fa-plus"></i> Add Pricing Tier
                                 </a>
                             </div>
 
@@ -53,10 +53,9 @@
                             <thead>
                                 <tr>
                                     <th width="5%">No</th>
-                                    <th>Paket Tour</th>
-                                    <th>Qty Min</th>
-                                    <th>Qty Max</th>
-                                    <th>Harga</th>
+                                    <th>Tour Package</th>
+                                    <th>Category Name</th>
+                                    <th>Price</th>
                                     <th width="15%">Action</th>
                                 </tr>
                             </thead>
@@ -65,42 +64,33 @@
                                 @forelse ($tiers as $key => $tier)
                                     <tr>
                                         <td>{{ $key + 1 }}</td>
-                                        <td>{{ $tier->paketTour->nama_paket ?? '-' }}</td>
-                                        <td>{{ $tier->qty_min }}</td>
-                                        <td>{{ $tier->qty_max }}</td>
+                                        <td>{{ $tier->tourPackage->title ?? '-' }}</td>
+                                        <td>{{ $tier->name }}</td>
+                                        <td>Rp {{ number_format($tier->price, 0, ',', '.') }}</td>
                                         <td>
-                                            Rp {{ number_format($tier->harga, 0, ',', '.') }}
-                                        </td>
-                                        <td>
-
                                             <!-- EDIT -->
                                             <a href="{{ route('pricingtiers.edit', $tier->id) }}"
                                                class="btn btn-warning btn-sm">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-
                                             <!-- DELETE -->
                                             <form action="{{ route('pricingtiers.destroy', $tier->id) }}"
                                                   method="POST"
                                                   style="display:inline-block"
                                                   class="form-delete">
-
                                                 @csrf
                                                 @method('DELETE')
-
                                                 <button type="submit"
                                                         class="btn btn-danger btn-sm">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
-
                                             </form>
-
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
                                         <td colspan="6" class="text-center">
-                                            Belum ada data pricing tier.
+                                            No pricing tier data available.
                                         </td>
                                     </tr>
                                 @endforelse
@@ -120,7 +110,7 @@
     <script>
         Swal.fire({
             icon: 'success',
-            title: 'Sukses',
+            title: 'Success',
             text: '{{ session('success') }}'
         });
     </script>
@@ -142,14 +132,14 @@
             e.preventDefault();
 
             Swal.fire({
-                title: 'Yakin ingin menghapus?',
-                text: "Data yang dihapus tidak bisa dikembalikan!",
+                title: 'Are you sure you want to delete?',
+                text: "Deleted data cannot be restored!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal'
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
                     form.submit();

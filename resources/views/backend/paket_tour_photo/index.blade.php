@@ -7,7 +7,7 @@
         <div class="row mb-2">
 
             <div class="col-sm-6">
-                <h1>Galerry Photo</h1>
+                <h1>Photo Gallery</h1>
             </div>
 
             <div class="col-sm-6">
@@ -15,7 +15,7 @@
                     <li class="breadcrumb-item">
                         <a href="{{ route('dashboard') }}">Dashboard</a>
                     </li>
-                    <li class="breadcrumb-item active">Galerry Photo</li>
+                    <li class="breadcrumb-item active">Photo Gallery</li>
                 </ol>
             </div>
 
@@ -34,12 +34,12 @@
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center flex-wrap">
 
-                            <h3 class="card-title mb-2">Data Photos</h3>
+                            <h3 class="card-title mb-2">Photo Data</h3>
 
                             <div class="d-flex align-items-center">
                                 <a href="{{ route('paket-tour-photos.create') }}"
                                    class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus"></i> Tambah Photo
+                                    <i class="fas fa-plus"></i> Add Photo
                                 </a>
                             </div>
 
@@ -53,8 +53,8 @@
                             <thead>
                                 <tr>
                                     <th width="5%">No</th>
-                                    <th>Paket Tour</th>
-                                    <th>Path Foto</th>
+                                    <th>Tour Package</th>
+                                    <th>Photo Path</th>
                                     <th width="15%">Action</th>
                                 </tr>
                             </thead>
@@ -92,7 +92,7 @@
                                 @empty
                                     <tr>
                                         <td colspan="4" class="text-center">
-                                            Belum ada data foto.
+                                            No photo data available yet.
                                         </td>
                                     </tr>
                                 @endforelse
@@ -112,7 +112,7 @@
     <script>
         Swal.fire({
             icon: 'success',
-            title: 'Berhasil',
+            title: 'Success',
             text: '{{ session('success') }}',
             timer: 2000,
             showConfirmButton: false
@@ -126,14 +126,14 @@
             e.preventDefault();
 
             Swal.fire({
-                title: 'Yakin ingin menghapus?',
-                text: "Data yang dihapus tidak bisa dikembalikan!",
+                title: 'Are you sure you want to delete?',
+                text: "Deleted data cannot be restored!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal'
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
                     form.submit();

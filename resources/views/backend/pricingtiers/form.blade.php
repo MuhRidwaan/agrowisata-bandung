@@ -8,7 +8,7 @@
 
             <div class="col-sm-6">
                 <h1>
-                    {{ isset($tier) ? 'Edit Pricing Tier' : 'Tambah Pricing Tier' }}
+                    {{ isset($tier) ? 'Edit Pricing Tier' : 'Add Pricing Tier' }}
                 </h1>
             </div>
 
@@ -19,11 +19,11 @@
                     </li>
                     <li class="breadcrumb-item">
                         <a href="{{ route('pricingtiers.index') }}">
-                            Data Pricing Tier
+                            Pricing Tier Data
                         </a>
                     </li>
                     <li class="breadcrumb-item active">
-                        {{ isset($tier) ? 'Edit' : 'Tambah' }} Pricing Tier
+                        {{ isset($tier) ? 'Edit' : 'Add' }} Pricing Tier
                     </li>
                 </ol>
             </div>
@@ -50,14 +50,14 @@
                         @method('PUT')
                     @endif
 
-                    {{-- Paket Tour --}}
+                    {{-- Tour Package --}}
                     <div class="mb-3">
-                        <label>Paket Tour</label>
+                        <label>Tour Package</label>
 
                         <select name="tour_package_id"
                                 class="form-control"
                                 required>
-                            <option value="">-- Pilih Paket --</option>
+                            <option value="">-- Select Package --</option>
 
                             @foreach ($packages as $id => $title)
                                 <option value="{{ $id }}"
@@ -68,16 +68,16 @@
                         </select>
                     </div>
 
-                    {{-- Nama Kategori --}}
+                    {{-- Category Name --}}
                     <div class="mb-3">
-                        <label>Nama Kategori</label>
+                        <label>Category Name</label>
 
                         <select name="name"
                                 class="form-control"
                                 required>
-                            <option value="">-- Pilih Kategori --</option>
+                            <option value="">-- Select Category --</option>
 
-                            @foreach (['Bayi', 'Anak Anak', 'Dewasa'] as $category)
+                            @foreach (['Baby', 'Children', 'Adult'] as $category)
                                 <option value="{{ $category }}"
                                     {{ old('name', $tier->name ?? '') == $category ? 'selected' : '' }}>
                                     {{ $category }}
@@ -86,9 +86,9 @@
                         </select>
                     </div>
 
-                    {{-- Harga --}}
+                    {{-- Price --}}
                     <div class="mb-3">
-                        <label>Harga</label>
+                        <label>Price</label>
 
                         <input type="number"
                                name="price"
@@ -101,12 +101,12 @@
                     <div class="mt-3">
                         <button type="submit"
                                 class="btn btn-primary">
-                            Simpan
+                            Save
                         </button>
 
                         <a href="{{ route('pricingtiers.index') }}"
                            class="btn btn-secondary">
-                            Kembali
+                            Back
                         </a>
                     </div>
 

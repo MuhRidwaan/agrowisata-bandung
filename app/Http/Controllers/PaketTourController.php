@@ -26,10 +26,12 @@ class PaketTourController extends Controller
         $data = $request->validate([
             'nama_paket' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
-            'jam_operasional' => 'nullable|string',
-            'harga_paket' => 'required|numeric',
-            'kuota' => 'nullable|integer',
+            'jam_awal' => 'required',
+            'jam_akhir' => 'required',
+            'vendor_id' => 'required|exists:vendors,id',
         ]);
+        $data['jam_operasional'] = $data['jam_awal'] . ' - ' . $data['jam_akhir'];
+        unset($data['jam_awal'], $data['jam_akhir']);
         PaketTour::create($data);
         return redirect()->route('paket-tours.index')->with('success', 'Paket Tour berhasil ditambahkan!');
     }
@@ -45,10 +47,12 @@ class PaketTourController extends Controller
         $data = $request->validate([
             'nama_paket' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
-            'jam_operasional' => 'nullable|string',
-            'harga_paket' => 'required|numeric',
-            'kuota' => 'nullable|integer',
+            'jam_awal' => 'required',
+            'jam_akhir' => 'required',
+            'vendor_id' => 'required|exists:vendors,id',
         ]);
+        $data['jam_operasional'] = $data['jam_awal'] . ' - ' . $data['jam_akhir'];
+        unset($data['jam_awal'], $data['jam_akhir']);
         $paketTour->update($data);
         return redirect()->route('paket-tours.index')->with('success', 'Paket Tour berhasil diupdate!');
     }
