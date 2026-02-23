@@ -34,42 +34,72 @@
                                 {{ isset($photo->id) ? 'Edit Photo Form' : 'Add Photo Form' }}
                             </h3>
                         </div>
+
                         <form method="POST"
                             action="{{ isset($photo->id) ? route('paket-tour-photos.update', $photo->id) : route('paket-tour-photos.store') }}"
                             enctype="multipart/form-data">
+
                             @csrf
                             @if (isset($photo->id))
                                 @method('PUT')
                             @endif
+
                             <div class="card-body">
+
                                 <div class="form-group">
-                                    <label for="paket_tour_id">Tour Package</label>
-                                    <select name="paket_tour_id" id="paket_tour_id" class="form-control" required>
+                                    <label for="paket_tour_id">
+                                        Tour Package <span class="text-danger">*</span>
+                                    </label>
+                                    <select name="paket_tour_id"
+                                        id="paket_tour_id"
+                                        class="form-control"
+                                        required>
                                         <option value="">-- Select Tour Package --</option>
                                         @foreach ($paketTours as $paket)
                                             <option value="{{ $paket->id }}"
-                                                {{ old('paket_tour_id', $photo->paket_tour_id) == $paket->id ? 'selected' : '' }}>
-                                                {{ $paket->nama_paket }}</option>
+                                                {{ old('paket_tour_id', $photo->paket_tour_id ?? '') == $paket->id ? 'selected' : '' }}>
+                                                {{ $paket->nama_paket }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
+
                                 <div class="form-group">
-                                    <label for="path_foto">Upload Photo</label>
-                                    <input type="file" class="form-control" id="path_foto" name="path_foto"
-                                        accept="image/*" {{ isset($photo->id) ? '' : 'required' }}>
+                                    <label for="path_foto">
+                                        Upload Photo 
+                                        <span class="text-danger">*</span>
+                                    </label>
+
+                                    <input type="file"
+                                        class="form-control"
+                                        id="path_foto"
+                                        name="path_foto"
+                                        accept="image/*"
+                                        {{ isset($photo->id) ? '' : 'required' }}>
+
                                     @if (isset($photo->path_foto) && $photo->path_foto)
                                         <div class="mt-2">
-                                            <img src="{{ asset('storage/' . $photo->path_foto) }}" alt="Photo"
+                                            <img src="{{ asset('storage/' . $photo->path_foto) }}"
+                                                alt="Photo"
                                                 style="max-width:120px;max-height:120px;">
                                         </div>
                                     @endif
+
                                 </div>
+
                             </div>
+
                             <div class="card-footer">
                                 <button type="submit"
-                                    class="btn btn-primary">{{ isset($photo->id) ? 'Update' : 'Save' }}</button>
-                                <a href="{{ route('paket-tour-photos.index') }}" class="btn btn-secondary">Cancel</a>
+                                    class="btn btn-primary">
+                                    {{ isset($photo->id) ? 'Update' : 'Save' }}
+                                </button>
+                                <a href="{{ route('paket-tour-photos.index') }}"
+                                    class="btn btn-secondary">
+                                    Cancel
+                                </a>
                             </div>
+
                         </form>
                     </div>
                 </div>

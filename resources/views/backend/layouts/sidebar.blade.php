@@ -89,7 +89,7 @@
                     <a href="#" class="nav-link {{ $isPaketTourActive ? 'active' : '' }}">
                         <i class="nav-icon fas fa-map-marked-alt"></i>
                         <p>
-                            Paket Tour
+                            Tour Package
                             <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
@@ -99,14 +99,14 @@
                             <a href="{{ route('paket-tours.index') }}"
                                 class="nav-link {{ request()->routeIs('paket-tours.*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
-                                <p>Data Paket</p>
+                                <p>Tour Package Data</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="{{ route('paket-tour-photos.index') }}"
                                 class="nav-link {{ request()->routeIs('paket-tour-photos.*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
-                                <p>Gallery Foto</p>
+                                <p>Gallery Photo</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -127,7 +127,7 @@
                             <a href="{{ route('tanggal-available.index') }}"
                                 class="nav-link {{ request()->routeIs('tanggal-available.*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
-                                <p>Tanggal Available</p>
+                                <p>Available Date</p>
                             </a>
                         </li>
                     </ul>

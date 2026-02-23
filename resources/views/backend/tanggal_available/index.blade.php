@@ -8,7 +8,7 @@
         <div class="row mb-2">
 
             <div class="col-sm-6">
-                <h1>Available Date Data</h1>
+                <h1>Available Date</h1>
             </div>
 
             <div class="col-sm-6">
@@ -17,7 +17,7 @@
                         <a href="{{ route('dashboard') }}">Dashboard</a>
                     </li>
                     <li class="breadcrumb-item active">
-                        Available Date Data
+                        Available Date
                     </li>
                 </ol>
             </div>
@@ -40,7 +40,7 @@
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center flex-wrap">
                             <h3 class="card-title mb-2">
-                                Available Date Data
+                                Available Date
                             </h3>
 
                             <a href="{{ route('tanggal-available.create') }}"

@@ -52,7 +52,9 @@
 
                     {{-- Tour Package --}}
                     <div class="mb-3">
-                        <label>Tour Package</label>
+                        <label>
+                            Tour Package <span class="text-danger">*</span>
+                        </label>
 
                         <select name="tour_package_id"
                                 class="form-control"
@@ -70,7 +72,9 @@
 
                     {{-- Category Name --}}
                     <div class="mb-3">
-                        <label>Category Name</label>
+                        <label>
+                            Category Name <span class="text-danger">*</span>
+                        </label>
 
                         <select name="name"
                                 class="form-control"
@@ -88,11 +92,15 @@
 
                     {{-- Price --}}
                     <div class="mb-3">
-                        <label>Price</label>
+                        <label>
+                            Price <span class="text-danger">*</span>
+                        </label>
 
                         <input type="number"
                                name="price"
                                class="form-control"
+                               min="0"
+                               step="0.01"
                                value="{{ old('price', $tier->price ?? '') }}"
                                required>
                     </div>
