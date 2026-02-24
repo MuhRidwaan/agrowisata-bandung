@@ -40,18 +40,18 @@ class PricingTierController extends Controller
             ->with('success', 'Kategori harga berhasil ditambahkan');
     }
 
-    public function edit(PricingTier $pricingTier)
+    public function edit(PricingTier $pricingtier)
     {
         $packages = PaketTour::orderBy('nama_paket')
                         ->pluck('nama_paket','id');
 
         return view('backend.pricingtiers.form', [
-            'tier'     => $pricingTier,
+            'tier'     => $pricingtier,
             'packages' => $packages
         ]);
     }
 
-    public function update(Request $request, PricingTier $pricingTier)
+    public function update(Request $request, PricingTier $pricingtier)
     {
         $validated = $request->validate([
             'paket_tour_id' => 'required|exists:paket_tours,id',
@@ -59,16 +59,16 @@ class PricingTierController extends Controller
             'price'         => 'required|integer|min:0',
         ]);
 
-        $pricingTier->update($validated);
+        $pricingtier->update($validated);
 
         return redirect()
             ->route('pricingtiers.index')
             ->with('success', 'Kategori harga berhasil diperbarui');
     }
 
-    public function destroy(PricingTier $pricingTier)
+    public function destroy(PricingTier $pricingtier)
     {
-        $pricingTier->delete();
+        $pricingtier->delete();
 
         return redirect()
             ->route('pricingtiers.index')
