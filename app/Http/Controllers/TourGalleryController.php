@@ -11,13 +11,18 @@ class TourGalleryController extends Controller
 {
     public function index()
     {
-        $photos = TourGallery::with('tourPackage')->latest()->get();
+        $photos = TourGallery::with('tourPackage')
+                    ->latest()
+                    ->get();
+
         return view('tour_galleries.index', compact('photos'));
     }
 
     public function create()
     {
-        $packages = TourPackage::pluck('title','id');
+        $packages = TourPackage::orderBy('title')
+                    ->pluck('title','id');
+
         return view('tour_galleries.form', compact('packages'));
     }
 
@@ -25,30 +30,38 @@ class TourGalleryController extends Controller
     {
         $request->validate([
             'tour_package_id' => 'required|exists:tour_packages,id',
-            'images.*' => 'required|image|mimes:jpg,jpeg,png|max:2048'
+            'images'          => 'required|array',
+            'images.*'        => 'image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         $captions = $request->captions ?? [];
-        foreach ($request->file('images') as $i => $file) {
-            $path = $file->store('tour_galleries','public');
+
+        foreach ($request->file('images') as $index => $file) {
+
+            $path = $file->store('tour_galleries', 'public');
+
             TourGallery::create([
                 'tour_package_id' => $request->tour_package_id,
-                'image' => $path,
-                'caption' => $captions[$i] ?? null
+                'image'           => $path,
+                'caption'         => $captions[$index] ?? null,
             ]);
         }
 
-        return redirect()->route('tour-galleries.index')
+        return redirect()
+            ->route('tour-galleries.index')
             ->with('success','Foto berhasil diupload');
     }
 
     public function destroy(TourGallery $tourGallery)
     {
-        // Hapus file fisik dari storage public jika ada
-        if ($tourGallery->image && Storage::disk('public')->exists($tourGallery->image)) {
+        if ($tourGallery->image &&
+            Storage::disk('public')->exists($tourGallery->image)) {
+
             Storage::disk('public')->delete($tourGallery->image);
         }
+
         $tourGallery->delete();
+
         return back()->with('success','Foto dihapus');
     }
 }

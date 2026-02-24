@@ -41,7 +41,7 @@
 
                 <form method="POST"
                       action="{{ isset($rule)
-                          ? route('pricingrules.update', $rule)
+                          ? route('pricingrules.update', $rule->id)
                           : route('pricingrules.store') }}">
 
                     @csrf

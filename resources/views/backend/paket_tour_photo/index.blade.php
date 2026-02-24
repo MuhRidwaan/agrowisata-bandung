@@ -2,6 +2,7 @@
 
 @section('content')
 
+{{-- ================= CONTENT HEADER ================= --}}
 <section class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
@@ -23,6 +24,8 @@
     </div>
 </section>
 
+
+{{-- ================= MAIN CONTENT ================= --}}
 <section class="content">
     <div class="container-fluid">
         <div class="row">
@@ -30,24 +33,29 @@
 
                 <div class="card">
 
-                    {{-- HEADER --}}
-                    <div class="card-header">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    {{-- CARD HEADER --}}
+            <div class="card-header">
+                <div class="row align-items-center">
 
-                            <h3 class="card-title mb-2">Photo Data</h3>
-
-                            <a href="{{ route('paket-tour-photos.create') }}"
-                               class="btn btn-primary btn-sm">
-                                <i class="fas fa-plus"></i> Add Photo
-                            </a>
-
-                        </div>
+                    <div class="col-md-6">
+                        <h3 class="card-title mb-0">Photo Data</h3>
                     </div>
 
-                    <div class="card-body">
-                        <table class="table table-bordered table-hover text-center">
+                    <div class="col-md-6 text-md-right text-left mt-2 mt-md-0">
+                        <a href="{{ route('paket-tour-photos.create') }}"
+                        class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> Add Photo
+                        </a>
+                    </div>
 
-                            <thead class="thead-light">
+                </div>
+            </div>
+
+                    {{-- CARD BODY --}}
+                    <div class="card-body">
+                        <table class="table table-bordered table-hover text-center align-middle">
+
+                            <thead class="thead">
                                 <tr>
                                     <th width="5%">No</th>
                                     <th>Tour Package</th>
@@ -65,18 +73,24 @@
                                             {{ $photo->paketTour->nama_paket ?? '-' }}
                                         </td>
 
+                                        {{-- PREVIEW IMAGE --}}
                                         <td>
                                             @if($photo->path_foto)
                                                 <img src="{{ Storage::url($photo->path_foto) }}"
                                                      alt="Photo"
-                                                     style="max-width:120px; border-radius:6px;">
+                                                     class="preview-image"
+                                                     data-image="{{ Storage::url($photo->path_foto) }}"
+                                                     style="max-width:120px;
+                                                            border-radius:8px;
+                                                            cursor:pointer;
+                                                            transition:0.3s;">
                                             @else
                                                 <span class="text-muted">No Image</span>
                                             @endif
                                         </td>
 
+                                        {{-- ACTION BUTTON --}}
                                         <td>
-
                                             {{-- EDIT --}}
                                             <a href="{{ route('paket-tour-photos.edit', $photo->id) }}"
                                                class="btn btn-warning btn-sm">
@@ -86,8 +100,7 @@
                                             {{-- DELETE --}}
                                             <form action="{{ route('paket-tour-photos.destroy', $photo->id) }}"
                                                   method="POST"
-                                                  style="display:inline-block"
-                                                  class="form-delete">
+                                                  class="d-inline-block form-delete">
                                                 @csrf
                                                 @method('DELETE')
 
@@ -96,8 +109,8 @@
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
-
                                         </td>
+
                                     </tr>
                                 @empty
                                     <tr>
@@ -118,7 +131,8 @@
     </div>
 </section>
 
-{{-- Success Alert --}}
+
+{{-- ================= SUCCESS ALERT ================= --}}
 @if (session('success'))
 <script>
     Swal.fire({
@@ -131,14 +145,15 @@
 </script>
 @endif
 
-{{-- Delete Confirmation --}}
+
+{{-- ================= DELETE CONFIRMATION ================= --}}
 <script>
     document.querySelectorAll('.form-delete').forEach(form => {
         form.addEventListener('submit', function (e) {
             e.preventDefault();
 
             Swal.fire({
-                title: 'Are you sure you want to delete?',
+                title: 'Are you sure?',
                 text: "Deleted data cannot be restored!",
                 icon: 'warning',
                 showCancelButton: true,
@@ -146,10 +161,28 @@
                 cancelButtonColor: '#3085d6',
                 confirmButtonText: 'Yes, delete it!',
                 cancelButtonText: 'Cancel'
-            }).then((result) => {
+            }).then(result => {
                 if (result.isConfirmed) {
                     form.submit();
                 }
+            });
+        });
+    });
+</script>
+
+
+{{-- ================= IMAGE PREVIEW MODAL ================= --}}
+<script>
+    document.querySelectorAll('.preview-image').forEach(image => {
+        image.addEventListener('click', function () {
+            Swal.fire({
+                imageUrl: this.dataset.image,
+                imageAlt: 'Preview Photo',
+                showConfirmButton: false,
+                showCloseButton: true,
+                width: 900,
+                background: '#ffffff',
+                backdrop: 'rgba(0,0,0,0.85)'
             });
         });
     });
