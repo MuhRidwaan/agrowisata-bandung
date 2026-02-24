@@ -104,7 +104,8 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::post('review/{id}/approve', [ReviewController::class, 'approve'])->name('review.approve');
     Route::post('review/{id}/reject', [ReviewController::class, 'reject'])->name('review.reject');
     Route::post('review/{id}/reply', [ReviewController::class, 'reply'])->name('review.reply');
-
+    Route::delete('review/{id}', [ReviewController::class, 'destroy'])->name('review.destroy');
+    
     // ================= WHATSAPP SETTING =================
     Route::resource('whatsappsetting', WhatsappSettingController::class);
 

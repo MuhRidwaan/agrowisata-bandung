@@ -58,7 +58,14 @@
                                     {{ ($reviews->currentPage() - 1) * $reviews->perPage() + $loop->iteration }}
                                 </td>
 
-                                <td>{{ $review->user->name ?? '-' }}</td>
+                                <!-- NAME -->
+                                <td>
+                                    {{ $review->name ?? $review->user->name ?? '-' }}
+                                    @if(!$review->user_id)
+                                        <span class="badge badge-secondary">Guest</span>
+                                    @endif
+                                </td>
+
                                 <td>{{ $review->vendor->name ?? '-' }}</td>
 
                                 <!-- RATING -->
@@ -81,29 +88,51 @@
                                 <!-- ACTION -->
                                 <td>
 
-                                    <!-- APPROVE -->
-                                    <form action="{{ route('review.approve', $review->id) }}" method="POST"
-                                        style="display:inline-block">
-                                        @csrf
-                                        <button class="btn btn-success btn-sm" title="Approve">
-                                            <i class="fas fa-check"></i>
-                                        </button>
-                                    </form>
+                                    {{-- ================= PENDING ONLY ================= --}}
+                                    @if($review->status == 'pending')
 
-                                    <!-- REJECT -->
-                                    <form action="{{ route('review.reject', $review->id) }}" method="POST"
-                                        style="display:inline-block">
-                                        @csrf
-                                        <button class="btn btn-danger btn-sm" title="Reject">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </form>
+                                        <!-- APPROVE -->
+                                        <form action="{{ route('review.approve', $review->id) }}" method="POST"
+                                            style="display:inline-block; margin-right:5px;">
+                                            @csrf
+                                            <button class="btn btn-success btn-sm" title="Approve">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
 
-                                    <!-- REPLY BUTTON -->
-                                    <button class="btn btn-primary btn-sm" data-toggle="modal"
-                                        data-target="#replyModal{{ $review->id }}" title="Reply">
+                                        <!-- REJECT -->
+                                        <form action="{{ route('review.reject', $review->id) }}" method="POST"
+                                            style="display:inline-block; margin-right:5px;">
+                                            @csrf
+                                            <button class="btn btn-danger btn-sm" title="Reject">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+
+                                    @endif
+
+
+                                    {{-- ================= REPLY ================= --}}
+                                    <button class="btn btn-primary btn-sm"
+                                        data-toggle="modal"
+                                        data-target="#replyModal{{ $review->id }}"
+                                        title="Reply"
+                                        style="margin-right:5px;">
                                         <i class="fas fa-reply"></i>
                                     </button>
+
+
+                                    {{-- ================= DELETE ================= --}}
+                                    <form action="{{ route('review.destroy', $review->id) }}" method="POST"
+                                        style="display:inline-block;"
+                                        onsubmit="return confirm('Yakin mau hapus review ini?')">
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button class="btn btn-dark btn-sm" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
 
                                 </td>
                             </tr>
