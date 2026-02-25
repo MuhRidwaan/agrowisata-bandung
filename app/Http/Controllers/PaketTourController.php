@@ -30,6 +30,7 @@ class PaketTourController extends Controller
             'deskripsi' => 'nullable|string',
             'jam_awal'   => 'required|date_format:H:i',
             'jam_akhir'  => 'required|date_format:H:i|after:jam_awal',
+            'harga_paket' => 'nullable|numeric|min:0',
             'vendor_id'  => 'required|exists:vendors,id',
         ]);
 
@@ -53,6 +54,7 @@ class PaketTourController extends Controller
             'deskripsi'  => 'nullable|string',
             'jam_awal'   => 'required|date_format:H:i',
             'jam_akhir'  => 'required|date_format:H:i|after:jam_awal',
+            'harga_paket' => 'nullable|numeric|min:0',
             'vendor_id'  => 'required|exists:vendors,id',
         ]);
 
