@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->integer('kuota')->nullable();
             $table->decimal('harga_paket', 15, 2)->nullable();
             $table->timestamps();
+            $table->foreignId('vendor_id')->nullable()->constrained()->nullOnDelete();
         });
     }
 

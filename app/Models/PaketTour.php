@@ -58,4 +58,9 @@ class PaketTour extends Model
     {
         return $this->belongsTo(Vendor::class);
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'vendor_id', 'vendor_id');
+    }
 }

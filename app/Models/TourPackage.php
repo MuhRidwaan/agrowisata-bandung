@@ -27,6 +27,10 @@ class TourPackage extends Model
     {
         return $this->hasMany(AvailableDate::class);
     }
-
+    
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'vendor_id', 'vendor_id');
+    }
 
 }
