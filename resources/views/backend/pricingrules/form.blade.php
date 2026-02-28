@@ -1,3 +1,43 @@
+@push('scripts')
+<script>
+let ruleIndex = {{ isset($rules) ? count($rules) : (isset($rule) ? 1 : 0) }};
+function addRuleRow() {
+    const wrapper = document.getElementById('rules-wrapper');
+    const row = document.createElement('tr');
+    row.className = 'rule-row';
+    row.innerHTML = `
+        <td><input type="number" name="rules[
+        ${ruleIndex}
+        ][min_pax]" class="form-control" min="1" required></td>
+        <td><input type="number" name="rules[
+        ${ruleIndex}
+        ][max_pax]" class="form-control" min="1" required></td>
+        <td>
+            <select name="rules[
+        ${ruleIndex}
+        ][discount_type]" class="form-control" required>
+                <option value="">-- Select Type --</option>
+                <option value="percent">Percent</option>
+                <option value="nominal">Nominal</option>
+            </select>
+        </td>
+        <td><input type="number" name="rules[
+        ${ruleIndex}
+        ][discount_value]" class="form-control" min="0" required></td>
+        <td><input type="text" name="rules[
+        ${ruleIndex}
+        ][description]" class="form-control"></td>
+        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRuleRow(this)">-</button></td>
+    `;
+    wrapper.appendChild(row);
+    ruleIndex++;
+}
+function removeRuleRow(btn) {
+    const row = btn.closest('tr');
+    row.parentNode.removeChild(row);
+}
+</script>
+@endpush
 @extends('backend.main_dashboard')
 
 @section('content')
@@ -75,115 +115,52 @@
                     </div>
 
 
-                    {{-- Pax Range --}}
-                    <div class="row">
 
-                        <div class="col-md-6 mb-3">
-                            <label>
-                                Minimum Pax <span class="text-danger">*</span>
-                            </label>
-
-                            <input type="number"
-                                   name="min_pax"
-                                   class="form-control"
-                                   min="1"
-                                   value="{{ old('min_pax', $rule->min_pax ?? '') }}"
-                                   required>
-
-                            @error('min_pax')
-                                <small class="text-danger">{{ $message }}</small>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label>
-                                Maximum Pax <span class="text-danger">*</span>
-                            </label>
-
-                            <input type="number"
-                                   name="max_pax"
-                                   class="form-control"
-                                   min="1"
-                                   value="{{ old('max_pax', $rule->max_pax ?? '') }}"
-                                   required>
-
-                            @error('max_pax')
-                                <small class="text-danger">{{ $message }}</small>
-                            @enderror
-                        </div>
-
-                    </div>
-
-
-                    {{-- Discount Type --}}
+                    {{-- Dynamic Rules Table --}}
                     <div class="mb-3">
-                        <label>
-                            Discount Type <span class="text-danger">*</span>
-                        </label>
-
-                        <select name="discount_type"
-                                class="form-control"
-                                required>
-                            <option value="">-- Select Type --</option>
-
-                            <option value="percent"
-                                {{ old('discount_type', $rule->discount_type ?? '') == 'percent' ? 'selected' : '' }}>
-                                Percent
-                            </option>
-
-                            <option value="nominal"
-                                {{ old('discount_type', $rule->discount_type ?? '') == 'nominal' ? 'selected' : '' }}>
-                                Nominal
-                            </option>
-                        </select>
-
-                        @error('discount_type')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
+                        <label>Pricing Rules</label>
+                        <table class="table table-bordered" id="rules-table">
+                            <thead>
+                                <tr>
+                                    <th>Minimum Pax</th>
+                                    <th>Maximum Pax</th>
+                                    <th>Discount Type</th>
+                                    <th>Discount Value</th>
+                                    <th>Description</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="rules-wrapper">
+                                @php $rules = old('rules', isset($rules) ? $rules : [isset($rule) ? $rule->toArray() : []]); @endphp
+                                @foreach($rules as $i => $row)
+                                <tr class="rule-row">
+                                    <td>
+                                        <input type="number" name="rules[{{ $i }}][min_pax]" class="form-control" min="1" value="{{ $row['min_pax'] ?? '' }}" required>
+                                        @error('rules.'.$i.'.min_pax')
+                                            <small class="text-danger">{{ $message }}</small>
+                                        @enderror
+                                    </td>
+                                    <td><input type="number" name="rules[{{ $i }}][max_pax]" class="form-control" min="1" value="{{ $row['max_pax'] ?? '' }}" required></td>
+                                    <td>
+                                        <select name="rules[{{ $i }}][discount_type]" class="form-control" required>
+                                            <option value="">-- Select Type --</option>
+                                            <option value="percent" {{ ($row['discount_type'] ?? '') == 'percent' ? 'selected' : '' }}>Percent</option>
+                                            <option value="nominal" {{ ($row['discount_type'] ?? '') == 'nominal' ? 'selected' : '' }}>Nominal</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="number" name="rules[{{ $i }}][discount_value]" class="form-control" min="0" value="{{ $row['discount_value'] ?? '' }}" required></td>
+                                    <td><input type="text" name="rules[{{ $i }}][description]" class="form-control" value="{{ $row['description'] ?? '' }}"></td>
+                                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRuleRow(this)">-</button></td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        <button type="button" class="btn btn-info btn-sm" onclick="addRuleRow()">+ Add Rule</button>
                     </div>
 
-
-                    {{-- Discount Value --}}
-                    <div class="mb-3">
-                        <label>
-                            Discount Value <span class="text-danger">*</span>
-                        </label>
-
-                        <input type="number"
-                               name="discount_value"
-                               class="form-control"
-                               min="0"
-                               value="{{ old('discount_value', $rule->discount_value ?? '') }}"
-                               required>
-
-                        @error('discount_value')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
-
-
-                    {{-- Description --}}
-                    <div class="mb-3">
-                        <label>Description</label>
-
-                        <input type="text"
-                               name="description"
-                               class="form-control"
-                               value="{{ old('description', $rule->description ?? '') }}">
-                    </div>
-
-
-                    {{-- Buttons --}}
                     <div class="mt-3">
-                        <button type="submit"
-                                class="btn btn-primary">
-                            Save
-                        </button>
-
-                        <a href="{{ route('pricingrules.index') }}"
-                           class="btn btn-secondary">
-                            Back
-                        </a>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <a href="{{ route('pricingrules.index') }}" class="btn btn-secondary">Back</a>
                     </div>
 
                 </form>

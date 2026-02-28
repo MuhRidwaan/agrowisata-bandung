@@ -78,35 +78,73 @@
                                 @enderror
                             </div>
 
-                            {{-- Upload Photo --}}
+                            {{-- Upload Photos (Multiple) --}}
                             <div class="form-group">
                                 <label for="path_foto">
-                                    Upload Photo 
-                                    @if(!isset($photo->id))
-                                        <span class="text-danger">*</span>
-                                    @endif
+                                    Upload Photos <span class="text-danger">*</span>
                                 </label>
 
                                 <input type="file"
-                                    name="path_foto"
+                                    name="path_foto{{ isset($photo->id) ? '' : '[]' }}"
                                     id="path_foto"
                                     accept="image/*"
                                     class="form-control @error('path_foto') is-invalid @enderror"
-                                    {{ isset($photo->id) ? '' : 'required' }}>
+                                    @if(!isset($photo->id)) multiple required @endif
+                                    onchange="previewImages(event)">
+                                <div id="preview-container" class="mt-3"></div>
+@push('scripts')
+<script>
+function previewImages(event) {
+    const files = event.target.files;
+    const preview = document.getElementById('preview-container');
+    preview.innerHTML = '';
+    if (files) {
+        Array.from(files).forEach(file => {
+            if (file.type.match('image.*')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.maxWidth = '120px';
+                    img.style.margin = '5px';
+                    img.style.borderRadius = '8px';
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+}
+</script>
+@endpush
 
                                 @error('path_foto')
                                     <div class="invalid-feedback">
                                         {{ $message }}
                                     </div>
                                 @enderror
+                                @if($errors->has('path_foto.*'))
+                                    @foreach($errors->get('path_foto.*') as $messages)
+                                        @foreach($messages as $msg)
+                                            <div class="invalid-feedback d-block">{{ $msg }}</div>
+                                        @endforeach
+                                    @endforeach
+                                @endif
 
-                                {{-- Preview Existing Photo --}}
-                                @if(isset($photo->path_foto) && $photo->path_foto)
+                                {{-- Preview All Existing Photos (edit mode) --}}
+                                @if(isset($allPhotos) && $allPhotos->count())
                                     <div class="mt-3">
-                                        <label>Current Photo:</label><br>
-                                        <img src="{{ Storage::url($photo->path_foto) }}"
-                                            alt="Photo"
-                                            style="max-width:150px; border-radius:8px;">
+                                        <label>All Uploaded Photos:</label><br>
+                                        <div style="display:flex; flex-wrap:wrap; gap:10px;">
+                                            @foreach($allPhotos as $p)
+                                                <div style="text-align:center;">
+                                                    <img src="{{ Storage::url($p->path_foto) }}" alt="Photo" style="max-width:120px; border-radius:8px; display:block; margin-bottom:4px;">
+                                                    <label style="font-size:13px;">
+                                                        <input type="checkbox" name="delete_photos[]" value="{{ $p->id }}"> Delete
+                                                    </label>
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     </div>
                                 @endif
                             </div>

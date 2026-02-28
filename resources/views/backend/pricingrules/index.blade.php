@@ -76,13 +76,11 @@
                                                 : 'Rp ' . number_format($item->discount_value, 0, ',', '.') }}
                                         </td>
                                         <td>
-
                                             <!-- EDIT -->
                                             <a href="{{ route('pricingrules.edit', $item->id) }}"
                                                class="btn btn-warning btn-sm">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-
                                             <!-- DELETE -->
                                             <form action="{{ route('pricingrules.destroy', $item->id) }}"
                                                   method="POST"
@@ -90,13 +88,11 @@
                                                   class="form-delete">
                                                 @csrf
                                                 @method('DELETE')
-
                                                 <button type="submit"
                                                         class="btn btn-danger btn-sm">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
-
                                         </td>
                                     </tr>
                                 @empty
