@@ -10,6 +10,11 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class PaketTourController extends Controller
 {
+    public function show(PaketTour $paketTour)
+    {
+        $paketTour->load('vendor', 'tanggalAvailables');
+        return view('backend.paket_tour.show', compact('paketTour'));
+    }
     public function index()
     {
         $paketTours = PaketTour::with('vendor')->get();  

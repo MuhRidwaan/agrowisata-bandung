@@ -85,7 +85,7 @@
                                 </label>
 
                                 <input type="file"
-                                    name="path_foto{{ isset($photo->id) ? '' : '[]' }}"
+                                    name="{{ isset($photo->id) ? 'path_foto' : 'path_foto[]' }}"
                                     id="path_foto"
                                     accept="image/*"
                                     class="form-control @error('path_foto') is-invalid @enderror"
@@ -153,7 +153,7 @@ function previewImages(event) {
 
                         <div class="card-footer">
                             <button type="submit" class="btn btn-primary">
-                                {{ isset($photo->id) ? 'Update' : 'Save' }}
+                                {{ isset($photo->id) ? 'Save' : 'Save' }}
                             </button>
 
                             <a href="{{ route('paket-tour-photos.index') }}"

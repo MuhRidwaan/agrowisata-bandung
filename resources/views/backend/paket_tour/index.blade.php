@@ -58,12 +58,12 @@
                         <tr>
                             <th width="5%">No</th>
                             <th>Package Name</th>
-                            <th>Description</th>
+                            <!-- <th>Description</th> -->
                             <th>Operational Hours</th>
                             <th>Vendor</th>
                             <th class="text-right">Price</th>
                             <th>Available Dates</th>
-                            <th>Activities</th>
+                            <!-- <th>Activities</th> -->
                             <th width="15%">Action</th>
                         </tr>
                     </thead>
@@ -74,7 +74,7 @@
 
                                 <td>{{ $paket->nama_paket }}</td>
 
-                                <td>{{ $paket->deskripsi }}</td>
+                                <!-- <td>{{ $paket->deskripsi }}</td> -->
 
                                 <td>
                                     {{ $paket->jam_operasional }}
@@ -108,7 +108,7 @@
                                     @endif
                                 </td>
 
-                                {{-- ACTIVITIES --}}
+                                <!--
                                 <td>
                                     @if (is_array($paket->aktivitas))
                                         @foreach ($paket->aktivitas as $item)
@@ -120,24 +120,20 @@
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
+                                -->
 
                                 {{-- ACTION --}}
                                 <td>
-                                    <a href="{{ route('paket-tours.edit', $paket->id) }}"
-                                       class="btn btn-warning btn-sm">
+                                    <a href="{{ route('paket-tours.show', $paket->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ route('paket-tours.edit', $paket->id) }}" class="btn btn-warning btn-sm">
                                         <i class="fas fa-edit"></i>
                                     </a>
-
-                                    <form action="{{ route('paket-tours.destroy', $paket->id) }}"
-                                          method="POST"
-                                          style="display:inline-block"
-                                          class="form-delete">
-
+                                    <form action="{{ route('paket-tours.destroy', $paket->id) }}" method="POST" style="display:inline-block" class="form-delete">
                                         @csrf
                                         @method('DELETE')
-
-                                        <button type="submit"
-                                                class="btn btn-danger btn-sm">
+                                        <button type="submit" class="btn btn-danger btn-sm">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>

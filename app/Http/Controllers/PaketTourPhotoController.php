@@ -1,13 +1,18 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\PaketTourPhoto;
 use App\Models\PaketTour;
 use Illuminate\Http\Request;
 
 class PaketTourPhotoController extends Controller
 {
+        public function destroyByPaket($paket_tour_id)
+    {
+        \App\Models\PaketTourPhoto::where('paket_tour_id', $paket_tour_id)->delete();
+        return redirect()->route('paket-tour-photos.index')->with('success', 'Semua foto pada paket berhasil dihapus!');
+    }
+    
     public function index()
     {
         // Ambil semua paket beserta foto-fotonya
@@ -29,8 +34,10 @@ class PaketTourPhotoController extends Controller
             'path_foto.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
         $files = $request->file('path_foto');
-        if (!is_array($files)) {
-            $files = $files ? [$files] : [];
+        if (!$files) {
+            $files = [];
+        } elseif (!is_array($files)) {
+            $files = [$files];
         }
         if (count($files) > 0) {
             foreach ($files as $file) {

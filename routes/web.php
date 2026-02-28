@@ -58,6 +58,7 @@ Route::middleware('auth')->group(function () {
     Route::post('paket-tours/import', [PaketTourController::class, 'import'])->name('paket-tours.import');
     Route::resource('paket-tours', PaketTourController::class);
     Route::resource('paket-tour-photos', PaketTourPhotoController::class);
+        Route::delete('paket-tour-photos/delete-by-paket/{paket_tour_id}', [PaketTourPhotoController::class, 'destroyByPaket'])->name('paket-tour-photos.delete-by-paket');
     Route::resource('pricingtiers', PricingTierController::class);
     Route::resource('pricingrules', PricingRuleController::class);
     Route::resource('tanggal-available', TanggalAvailableController::class);

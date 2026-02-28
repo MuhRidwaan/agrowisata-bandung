@@ -71,24 +71,29 @@
                                         <td>{{ $paket->nama_paket }}</td>
                                         <td>
                                             @if($paket->photos->count())
-                                                @foreach($paket->photos as $photo)
-                                                    <img src="{{ Storage::url($photo->path_foto) }}" alt="Photo" class="preview-image" data-image="{{ Storage::url($photo->path_foto) }}" style="max-width:90px; border-radius:8px; margin:2px; cursor:pointer; transition:0.3s;">
-                                                @endforeach
+                                                <div class="d-flex flex-wrap align-items-start justify-content-center" style="gap: 12px;">
+                                                    @foreach($paket->photos as $photo)
+                                                        <img src="{{ Storage::url($photo->path_foto) }}" alt="Photo" class="preview-image" data-image="{{ Storage::url($photo->path_foto) }}" style="max-width:90px; border-radius:8px; margin-bottom:4px; cursor:pointer; transition:0.3s;">
+                                                    @endforeach
+                                                </div>
                                             @else
                                                 <span class="text-muted">No Image</span>
                                             @endif
                                         </td>
-                                            <td>
-                                                @if($paket->photos->count())
-                                                    @php $firstPhoto = $paket->photos->first(); @endphp
-                                                    <a href="{{ route('paket-tour-photos.edit', $firstPhoto->id) }}" class="btn btn-warning btn-sm mb-1"><i class="fas fa-edit"></i> </a>
-                                                    <form action="{{ route('paket-tour-photos.destroy', $firstPhoto->id) }}" method="POST" class="d-inline-block form-delete mb-1" style="display:inline;">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> </button>
-                                                    </form>
-                                                @endif
-                                                <!-- <a href="{{ route('paket-tour-photos.create') }}?paket_tour_id={{ $paket->id }}" class="btn btn-primary btn-sm mt-2"><i class="fas fa-plus"></i> Add Photo</a> -->
+                                        <td>
+                                            @if($paket->photos->count())
+                                                <a href="{{ route('paket-tour-photos.edit', $paket->photos->first()->id) }}" class="btn btn-warning btn-sm mr-1" title="Edit/Delete Photos">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            @endif
+                                            <form action="{{ route('paket-tour-photos.delete-by-paket', $paket->id) }}" method="POST" class="d-inline-block form-delete" style="display:inline;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-danger btn-sm" title="Delete All Photos">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
