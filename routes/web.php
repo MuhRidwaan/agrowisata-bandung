@@ -92,8 +92,10 @@ Route::middleware(['auth','role:admin'])->group(function () {
     // ================= PAYMENTS =================
     Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::post('/payments/{payment}/paid', [PaymentController::class, 'markAsPaid'])->name('payments.paid');
-    Route::post('/midtrans/callback', [PaymentController::class, 'callback']);
+    Route::post('/payments/{payment}/cancel',[PaymentController::class, 'markAsFailed'])->name('payments.cancel');
     Route::get('/payments/{payment}/invoice', [PaymentController::class, 'invoice'])->name('payments.invoice');
+    Route::post('/midtrans/callback', [PaymentController::class, 'callback'])->name('midtrans.callback');
+    Route::post('payments/{id}/send-email', [PaymentController::class, 'sendEmail'])->name('payments.send_email');
 
     // ================= VENDORS =================
     Route::get('/vendors/{id}/contact', [VendorController::class, 'contact'])->name('vendors.contact');
@@ -124,5 +126,8 @@ Route::middleware(['auth','role:admin'])->group(function () {
  Route::get('/booking', function () {
         return view('frontend.booking');
     })->name('booking'); 
+
+    // Halaman Invoice Public (Tanpa Login)
+Route::get('/pembayaran/invoice/{booking_code}', [App\Http\Controllers\PaymentController::class, 'publicInvoice'])->name('frontend.invoice');
 
 require __DIR__.'/auth.php';

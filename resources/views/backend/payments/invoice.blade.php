@@ -22,10 +22,8 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-12">
-                    <!-- MAIN INVOICE AREA -->
                     <div class="invoice p-4 mb-3" id="invoice-print-area" style="border-radius: 8px;">
 
-                        <!-- Header Row -->
                         <div class="row">
                             <div class="col-12">
                                 <h4>
@@ -36,7 +34,6 @@
                         </div>
                         <hr>
 
-                        <!-- Info Row -->
                         <div class="row invoice-info mt-4 mb-4">
                             <div class="col-sm-4 invoice-col">
                                 From
@@ -63,12 +60,12 @@
                                 <br>
                                 <b>Payment Status:</b> <span class="badge badge-success"
                                     style="font-size:14px;">PAID</span><br>
-                                <b>Payment Date:</b> {{ \Carbon\Carbon::parse($payment->paid_at)->format('d M Y, H:i') }}<br>
+                                <b>Payment Date:</b>
+                                {{ \Carbon\Carbon::parse($payment->paid_at)->format('d M Y, H:i') }}<br>
                                 <b>Method:</b> {{ strtoupper($payment->payment_method ?? 'Payment Gateway / Transfer') }}
                             </div>
                         </div>
 
-                        <!-- Table Row -->
                         <div class="row mt-5">
                             <div class="col-12 table-responsive">
                                 <table class="table table-striped">
@@ -95,14 +92,14 @@
                             </div>
                         </div>
 
-                        <!-- Footer Row -->
                         <div class="row mt-4">
                             <div class="col-6">
                                 <p class="lead">Important Notes:</p>
                                 <img src="https://midtrans.com/assets/img/midtrans-logo.png" alt="Midtrans" width="120"
                                     class="mb-3">
                                 <p class="text-muted well well-sm shadow-none" style="margin-top: 10px;">
-                                    Thank you for your payment. Please keep this invoice and show it to our staff during re-registration at the Agrowisata location.
+                                    Thank you for your payment. Please keep this invoice and show it to our staff during
+                                    re-registration at the Agrowisata location.
                                 </p>
                             </div>
                             <div class="col-6">
@@ -125,12 +122,21 @@
                             </div>
                         </div>
 
-                        <!-- Action Buttons (Will not be printed) -->
                         <div class="row no-print mt-5 pt-3 border-top">
                             <div class="col-12">
                                 <button type="button" class="btn btn-success float-right" onclick="window.print()">
                                     <i class="fas fa-print"></i> Print Invoice
                                 </button>
+
+                                <form action="{{ route('payments.send_email', $payment->id) }}" method="POST"
+                                    class="float-right mr-2">
+                                    @csrf
+                                    <button type="submit" class="btn btn-warning text-white"
+                                        title="Kirim Ulang Email Invoice">
+                                        <i class="fas fa-envelope"></i> Send Email
+                                    </button>
+                                </form>
+
                                 <a href="{{ route('payments.index') }}" class="btn btn-secondary float-right mr-2">
                                     <i class="fas fa-arrow-left"></i> Back to List
                                 </a>
@@ -142,7 +148,6 @@
         </div>
     </section>
 
-    <!-- Custom CSS to hide Sidebar & Navbar when printing -->
     <style>
         @media print {
             .no-print {

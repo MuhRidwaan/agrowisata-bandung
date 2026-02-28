@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Booking;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\InvoiceMail;
 
 class PaymentController extends Controller
 {
@@ -38,7 +40,7 @@ class PaymentController extends Controller
         return view('backend.payments.invoice', compact('payment'));
     }
 
-    public function markAsPaid($id)
+public function markAsPaid($id)
     {
         $payment = Payment::findOrFail($id);
 
@@ -55,7 +57,10 @@ class PaymentController extends Controller
             'status' => 'paid'
         ]);
 
-        return back()->with('success', 'Pembayaran berhasil dikonfirmasi Lunas!');
+        // AUTO KIRIM EMAIL (Manual Mark Paid)
+        $this->triggerInvoiceEmail($payment);
+
+        return back()->with('success', 'Pembayaran berhasil dikonfirmasi Lunas & Email terkirim!');
     }
 
     // FUNGSI BARU: Untuk membatalkan pembayaran yang expired
@@ -97,6 +102,9 @@ class PaymentController extends Controller
                                 'paid_at' => now(),
                                 'payment_method' => $request->payment_type
                             ]);
+
+                            $paymentForEmail = Payment::with(['booking.paketTour', 'booking.user'])->find($booking->payment->id);
+                            $this->triggerInvoiceEmail($paymentForEmail);
                         }
                     }
                 } 
@@ -115,5 +123,53 @@ class PaymentController extends Controller
         }
         
         return response()->json(['message' => 'Callback handled successfully']);
+    }
+
+
+    public function sendEmail($id)
+    {
+        $payment = Payment::with(['booking.paketTour', 'booking.user'])->findOrFail($id);
+
+        if ($payment->status != 'success') {
+            return back()->with('error', 'Invoice belum bisa dikirim karena pembayaran belum lunas.');
+        }
+
+        $emailSent = $this->triggerInvoiceEmail($payment);
+
+  
+        if ($emailSent) {
+            return back()->with('success', 'Email Invoice berhasil dikirim ulang ke customer.');
+        } else {
+            return back()->with('error', 'Gagal mengirim email. Pastikan alamat email customer tersedia.');
+        }
+    }
+
+    private function triggerInvoiceEmail($payment)
+    {
+        // Ambil email dari customer_email, jika kosong ambil dari email user
+        $email = $payment->booking->customer_email ?? $payment->booking->user->email ?? null;
+
+        if ($email) {
+            try {
+                Mail::to($email)->send(new InvoiceMail($payment));
+                return true;
+            } catch (\Exception $e) {
+               \Log::error('Mail fail: '.$e->getMessage());
+            // dd('Penyebab Gagal Kirim Email: ' . $e->getMessage());
+                return false;
+            }
+        }
+        return false;
+    }
+
+    // FUNGSI BARU: Untuk halaman invoice public (customer)
+    public function publicInvoice($booking_code)
+    {
+        
+        $payment = Payment::with(['booking.paketTour', 'booking.user'])
+            ->whereHas('booking', function($q) use ($booking_code) {
+                $q->where('booking_code', $booking_code);
+            })->firstOrFail();        
+        return view('frontend.invoice', compact('payment'));
     }
 }

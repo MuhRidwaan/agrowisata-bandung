@@ -90,47 +90,69 @@
                                                     <!-- Tombol Bayar via Midtrans -->
                                                     <button class="btn btn-primary btn-sm btn-pay mb-1"
                                                         data-token="{{ $payment->snap_token }}"
-                                                        data-url="{{ route('payments.paid', $payment->id) }}" title="Pay with Midtrans">
+                                                        data-url="{{ route('payments.paid', $payment->id) }}"
+                                                        title="Pay with Midtrans">
                                                         <i class="fas fa-money-bill-wave"></i> Pay
                                                     </button>
 
                                                     <!-- Tombol Tandai Lunas (Manual) -->
-                                                    <form action="{{ route('payments.paid', $payment->id) }}" method="POST"
-                                                        style="display:inline-block" class="form-mark-paid">
+                                                    <form action="{{ route('payments.paid', $payment->id) }}"
+                                                        method="POST" style="display:inline-block" class="form-mark-paid">
                                                         @csrf
-                                                        <button type="submit" class="btn btn-success btn-sm mb-1" title="Mark as Paid Manually">
+                                                        <button type="submit" class="btn btn-success btn-sm mb-1"
+                                                            title="Mark as Paid Manually">
                                                             <i class="fas fa-check"></i> Mark Paid
                                                         </button>
                                                     </form>
 
                                                     <!-- Tombol Batalkan (Manual) -->
-                                                    <form action="{{ route('payments.cancel', $payment->id) }}" method="POST"
-                                                        style="display:inline-block" class="form-cancel">
+                                                    <form action="{{ route('payments.cancel', $payment->id) }}"
+                                                        method="POST" style="display:inline-block" class="form-cancel">
                                                         @csrf
-                                                        <button type="submit" class="btn btn-danger btn-sm mb-1" title="Cancel if Expired">
+                                                        <button type="submit" class="btn btn-danger btn-sm mb-1"
+                                                            title="Cancel if Expired">
                                                             <i class="fas fa-times"></i> Cancel
                                                         </button>
                                                     </form>
-
                                                 @elseif ($payment->status == 'success')
-                                                    <span class="text-success font-weight-bold mr-2"><i class="fas fa-check"></i> Paid</span>
+                                                    <span class="text-success font-weight-bold mr-2"><i
+                                                            class="fas fa-check"></i> Paid</span>
                                                     <!-- PRINT INVOICE BUTTON -->
                                                     <a href="{{ route('payments.invoice', $payment->id) }}"
                                                         class="btn btn-info btn-sm" title="Print Invoice">
                                                         <i class="fas fa-print"></i> Invoice
                                                     </a>
-
                                                 @elseif ($payment->status == 'failed')
-                                                    <span class="text-danger font-weight-bold mr-2"><i class="fas fa-ban"></i>
+                                                    <span class="text-danger font-weight-bold mr-2"><i
+                                                            class="fas fa-ban"></i>
                                                         Cancelled</span>
                                                     <!-- Tombol Tandai Lunas (Manual) untuk status Gagal -->
-                                                    <form action="{{ route('payments.paid', $payment->id) }}" method="POST"
-                                                        style="display:inline-block" class="form-mark-paid">
+                                                    <form action="{{ route('payments.paid', $payment->id) }}"
+                                                        method="POST" style="display:inline-block" class="form-mark-paid">
                                                         @csrf
-                                                        <button type="submit" class="btn btn-success btn-sm mb-1" title="Mark as Paid Manually">
+                                                        <button type="submit" class="btn btn-success btn-sm mb-1"
+                                                            title="Mark as Paid Manually">
                                                             <i class="fas fa-check"></i> Mark Paid
                                                         </button>
                                                     </form>
+                                                @elseif ($payment->status == 'success')
+                                                    <span class="text-success font-weight-bold mr-2"><i
+                                                            class="fas fa-check"></i> Paid</span>
+
+                                                    <a href="{{ route('payments.invoice', $payment->id) }}"
+                                                        class="btn btn-info btn-sm mb-1" title="Print Invoice">
+                                                        <i class="fas fa-print"></i> Invoice
+                                                    </a>
+
+                                                    {{-- <form action="{{ route('payments.send_email', $payment->id) }}"
+                                                        method="POST" style="display:inline-block">
+                                                        @csrf
+                                                        <button type="submit"
+                                                            class="btn btn-warning btn-sm mb-1 text-white"
+                                                            title="Kirim Ulang Email Invoice">
+                                                            <i class="fas fa-envelope"></i> Email
+                                                        </button>
+                                                    </form> --}}
                                                 @endif
                                             </td>
                                         </tr>
