@@ -61,7 +61,7 @@
 
                                     <!-- EXPORT -->
                                     <a href="{{ route('users.export') }}" class="btn btn-success btn-sm mr-1">
-                                        <i class="fas fa-file-export"></i> Export
+                                        <i class="fas fa-file-excel"></i> Export
                                     </a>
 
                                     <!-- TAMBAH -->

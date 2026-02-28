@@ -54,6 +54,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // PAKET TOUR
+    Route::get('paket-tours/export', [PaketTourController::class, 'export'])->name('paket-tours.export');
+    Route::post('paket-tours/import', [PaketTourController::class, 'import'])->name('paket-tours.import');
     Route::resource('paket-tours', PaketTourController::class);
     Route::resource('paket-tour-photos', PaketTourPhotoController::class);
     Route::resource('pricingtiers', PricingTierController::class);

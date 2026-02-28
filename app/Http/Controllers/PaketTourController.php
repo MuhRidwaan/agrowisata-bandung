@@ -1,16 +1,18 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\PaketTour;
+use App\Imports\PaketToursImport;
 use Illuminate\Http\Request;
 use App\Models\Vendor;
+use App\Exports\PaketToursExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PaketTourController extends Controller
 {
     public function index()
     {
-        $paketTours = PaketTour::with('vendor')->get();
+        $paketTours = PaketTour::with('vendor')->get();  
         return view('backend.paket_tour.index', compact('paketTours'));
     }
 
@@ -31,6 +33,8 @@ class PaketTourController extends Controller
             'jam_awal'   => 'required|date_format:H:i',
             'jam_akhir'  => 'required|date_format:H:i|after:jam_awal',
             'harga_paket' => 'nullable|numeric|min:0',
+            'aktivitas' => 'nullable|array',
+            'aktivitas.*' => 'nullable|string|max:255',
             'vendor_id'  => 'required|exists:vendors,id',
         ]);
 
@@ -55,6 +59,8 @@ class PaketTourController extends Controller
             'jam_awal'   => 'required|date_format:H:i',
             'jam_akhir'  => 'required|date_format:H:i|after:jam_awal',
             'harga_paket' => 'nullable|numeric|min:0',
+            'aktivitas' => 'nullable|array',
+            'aktivitas.*' => 'nullable|string|max:255',
             'vendor_id'  => 'required|exists:vendors,id',
         ]);
 
@@ -72,5 +78,10 @@ class PaketTourController extends Controller
         return redirect()
             ->route('paket-tours.index')
             ->with('success', 'Paket Tour berhasil dihapus!');
+    }
+
+    public function export()
+    {
+        return Excel::download(new PaketToursExport, 'paket_tours.xlsx');
     }
 }

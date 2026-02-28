@@ -65,6 +65,7 @@
     @include('backend.layouts.scripts.alert')
 
     @stack('scripts')
+    @yield('scripts')
     </body>
 
     </html>
