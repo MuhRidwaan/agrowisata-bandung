@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,6 +15,7 @@ class PaketTour extends Model
         'jam_akhir',
         'harga_paket',
         'kuota',
+        'aktivitas',
         'vendor_id',
     ];
 
@@ -25,6 +25,7 @@ class PaketTour extends Model
     protected $casts = [
         'jam_awal'  => 'datetime:H:i:s',
         'jam_akhir' => 'datetime:H:i:s',
+        'aktivitas' => 'array',
     ];
 
     /**
@@ -58,4 +59,17 @@ class PaketTour extends Model
     {
         return $this->belongsTo(Vendor::class);
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'vendor_id', 'vendor_id');
+    }
+
+    public function setAktivitasAttribute($value)
+    {
+        $this->attributes['aktivitas'] = json_encode($value);
+    }
+
+    
+
 }

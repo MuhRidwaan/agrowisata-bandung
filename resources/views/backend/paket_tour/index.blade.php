@@ -31,14 +31,28 @@
                     Tour Package Data
                 </h3>
 
-                <a href="{{ route('paket-tours.create') }}"
-                   class="btn btn-primary btn-sm ml-auto">
-                    <i class="fas fa-plus"></i>
-                    Add Tour Package
-                </a>
+                <div class="ml-auto d-flex gap-2">
+               
+                    <a href="{{ route('paket-tours.export') }}" class="btn btn-success btn-sm mr-2">
+                        <i class="fas fa-file-excel"></i> Export
+                    </a>
+                    <a href="{{ route('paket-tours.create') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Add Tour Package
+                    </a>
+                </div>
             </div>
 
             <div class="card-body">
+                <form method="GET" action="" class="mb-3 d-flex align-items-center">
+                    <label class="mr-2 mb-0">Filter tanggal dibuat:</label>
+                    <input type="date" name="created_from" value="{{ request('created_from') }}" class="form-control mr-2" style="width:auto;">
+                    <span class="mx-1">s/d</span>
+                    <input type="date" name="created_to" value="{{ request('created_to') }}" class="form-control mr-2" style="width:auto;">
+                    <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+                    @if(request('created_from') || request('created_to'))
+                        <a href="{{ route('paket-tours.index') }}" class="btn btn-link btn-sm ml-2">Reset</a>
+                    @endif
+                </form>
                 <table class="table table-bordered table-hover">
                     <thead>
                         <tr>
@@ -49,6 +63,7 @@
                             <th>Vendor</th>
                             <th class="text-right">Price</th>
                             <th>Available Dates</th>
+                            <th>Activities</th>
                             <th width="15%">Action</th>
                         </tr>
                     </thead>
@@ -62,9 +77,7 @@
                                 <td>{{ $paket->deskripsi }}</td>
 
                                 <td>
-                                    {{ $paket->jam_awal ?? '-' }}
-                                    to
-                                    {{ $paket->jam_akhir ?? '-' }}
+                                    {{ $paket->jam_operasional }}
                                 </td>
 
                                 <td>
@@ -90,6 +103,19 @@
                                             </span>
                                             <br>
                                         @endforeach
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+
+                                {{-- ACTIVITIES --}}
+                                <td>
+                                    @if (is_array($paket->aktivitas))
+                                        @foreach ($paket->aktivitas as $item)
+                                            <span class="badge badge-info mb-1">{{ $item }}</span><br>
+                                        @endforeach
+                                    @elseif ($paket->aktivitas)
+                                        {{ $paket->aktivitas }}
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif

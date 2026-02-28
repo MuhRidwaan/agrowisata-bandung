@@ -59,64 +59,40 @@
                                 <tr>
                                     <th width="5%">No</th>
                                     <th>Tour Package</th>
-                                    <th width="25%">Preview</th>
+                                    <th width="40%">Preview</th>
                                     <th width="20%">Action</th>
                                 </tr>
                             </thead>
 
                             <tbody>
-                                @forelse ($photos as $key => $photo)
+                                @forelse ($pakets as $key => $paket)
                                     <tr>
                                         <td>{{ $key + 1 }}</td>
-
+                                        <td>{{ $paket->nama_paket }}</td>
                                         <td>
-                                            {{ $photo->paketTour->nama_paket ?? '-' }}
-                                        </td>
-
-                                        {{-- PREVIEW IMAGE --}}
-                                        <td>
-                                            @if($photo->path_foto)
-                                                <img src="{{ Storage::url($photo->path_foto) }}"
-                                                     alt="Photo"
-                                                     class="preview-image"
-                                                     data-image="{{ Storage::url($photo->path_foto) }}"
-                                                     style="max-width:120px;
-                                                            border-radius:8px;
-                                                            cursor:pointer;
-                                                            transition:0.3s;">
+                                            @if($paket->photos->count())
+                                                @foreach($paket->photos as $photo)
+                                                    <img src="{{ Storage::url($photo->path_foto) }}" alt="Photo" class="preview-image" data-image="{{ Storage::url($photo->path_foto) }}" style="max-width:90px; border-radius:8px; margin:2px; cursor:pointer; transition:0.3s;">
+                                                @endforeach
                                             @else
                                                 <span class="text-muted">No Image</span>
                                             @endif
                                         </td>
-
-                                        {{-- ACTION BUTTON --}}
-                                        <td>
-                                            {{-- EDIT --}}
-                                            <a href="{{ route('paket-tour-photos.edit', $photo->id) }}"
-                                               class="btn btn-warning btn-sm">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-
-                                            {{-- DELETE --}}
-                                            <form action="{{ route('paket-tour-photos.destroy', $photo->id) }}"
-                                                  method="POST"
-                                                  class="d-inline-block form-delete">
-                                                @csrf
-                                                @method('DELETE')
-
-                                                <button type="submit"
-                                                        class="btn btn-danger btn-sm">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </td>
-
+                                            <td>
+                                                @if($paket->photos->count())
+                                                    @php $firstPhoto = $paket->photos->first(); @endphp
+                                                    <a href="{{ route('paket-tour-photos.edit', $firstPhoto->id) }}" class="btn btn-warning btn-sm mb-1"><i class="fas fa-edit"></i> </a>
+                                                    <form action="{{ route('paket-tour-photos.destroy', $firstPhoto->id) }}" method="POST" class="d-inline-block form-delete mb-1" style="display:inline;">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> </button>
+                                                    </form>
+                                                @endif
+                                                <!-- <a href="{{ route('paket-tour-photos.create') }}?paket_tour_id={{ $paket->id }}" class="btn btn-primary btn-sm mt-2"><i class="fas fa-plus"></i> Add Photo</a> -->
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="text-center">
-                                            No photo data available yet.
-                                        </td>
+                                        <td colspan="4" class="text-center">No photo data available yet.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
