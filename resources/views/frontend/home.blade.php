@@ -176,7 +176,7 @@
         </div>
 
         <!-- NO RESULT TAMBAHAN -->
-        <div id="noResultMessage" class="text-center py-5 d-none">
+        <div id="noResultMessage" class="text-center py-5" style="display:none;">
             <i class="bi bi-search fs-1 text-muted mb-3 d-block"></i>
             <h5 class="fw-bold">Tidak ada destinasi yang tersedia</h5>
             <p class="text-muted">Silakan pilih wilayah lain atau ubah kata kunci pencarian</p>
@@ -199,6 +199,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let currentFilter = "all";
 
+    //Disable submit reload
     if (form) {
         form.addEventListener("submit", function(e){
             e.preventDefault();
@@ -218,41 +219,45 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (matchSearch && matchFilter) {
 
-                // FADE IN
+                //FADE IN (smooth & slow)
                 item.style.display = "";
+                item.style.transition = "all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1)";
                 item.style.opacity = "0";
-                item.style.transform = "translateY(10px)";
+                item.style.transform = "translateY(20px)";
 
                 setTimeout(() => {
                     item.style.opacity = "1";
                     item.style.transform = "translateY(0)";
-                }, 10);
+                }, 80);
 
                 visible++;
 
             } else {
 
-                // FADE OUT
+                //FADE OUT
+                item.style.transition = "all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1)";
                 item.style.opacity = "0";
-                item.style.transform = "translateY(10px)";
+                item.style.transform = "translateY(20px)";
 
                 setTimeout(() => {
                     item.style.display = "none";
-                }, 300);
+                }, 800);
             }
         });
 
-        if (visible === 0) {
-            noResult.classList.remove("d-none");
-        } else {
-            noResult.classList.add("d-none");
+        //NO RESULT
+        if (noResult) {
+            noResult.style.transition = "none";
+            noResult.style.display = visible === 0 ? "block" : "none";
         }
     }
 
+    // 🔍 Search input
     if (searchInput) {
         searchInput.addEventListener("input", filterData);
     }
 
+    //Filter button
     buttons.forEach(btn => {
         btn.addEventListener("click", function (e) {
             e.preventDefault();
