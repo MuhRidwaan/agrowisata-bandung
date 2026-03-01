@@ -20,7 +20,13 @@
 
     <!-- ================= GALLERY ================= -->
     <div class="mb-4">
-        <img src="{{ $paket->thumbnail ? asset('storage/'.$paket->thumbnail) : 'https://via.placeholder.com/800x400' }}"
+        <div class="gallery-main bg-secondary" id="mainGallery">
+            <picture>
+                <source srcset="{{ $paket->photos->first() ? asset('storage/' . $paket->photos->first()->path_foto) : 'https://via.placeholder.com/400x250' }}"
+                    type="image/webp">
+                <img src="{{ $paket->photos->first() ? asset('storage/' . $paket->photos->first()->path_foto) : 'https://via.placeholder.com/400x250' }}"
+                    class="img-fluid rounded w-100" alt="Gambar Paket">
+            </picture>         
             class="img-fluid rounded w-100">
     </div>
 

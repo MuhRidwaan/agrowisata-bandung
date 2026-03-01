@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.paket-item {
+    @apply opacity-100 translate-y-0 transition-all duration-300 ease-in-out;
+}
+
+.paket-hide {
+    @apply opacity-0 translate-y-2;
+}

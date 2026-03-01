@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request; 
 use App\Models\PaketTour;
 use App\Models\Review;
 use App\Models\Booking;
@@ -10,10 +11,25 @@ use App\Models\Area;
 class FrontendController extends Controller
 {
     // ================= HOME =================
-    public function home()
+    public function home(Request $request)
     {
-        $pakets = PaketTour::with(['vendor.area','reviews','photos'])->latest()->get();
+        $query = PaketTour::with(['vendor.area','reviews','photos'])->latest();
+
+        if ($request->area && $request->area != 'all') {
+            $query->whereHas('vendor.area', function ($q) use ($request) {
+                $q->whereRaw('LOWER(name) = ?', [strtolower($request->area)]);
+            });
+        }
+
+        if ($request->search) {
+            $query->whereRaw('LOWER(nama_paket) LIKE ?', [
+                '%' . strtolower($request->search) . '%'
+            ]);
+        }
+
+        $pakets = $query->get();
         $areas = Area::all();
+
         return view('frontend.home', compact('pakets', 'areas'));
     }
 
