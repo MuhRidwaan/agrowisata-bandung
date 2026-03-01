@@ -94,7 +94,7 @@
                             <input type="time"
                                 name="jam_awal"
                                 class="form-control mr-2 @error('jam_awal') is-invalid @enderror"
-                                value="{{ old('jam_awal', $paketTour->jam_awal ?? '') }}"
+                                value="{{ old('jam_awal', optional($paketTour->jam_awal)->format('H:i')) }}"
                                 required>
 
                             <span class="mx-2">to</span>
@@ -102,7 +102,7 @@
                             <input type="time"
                                 name="jam_akhir"
                                 class="form-control ml-2 @error('jam_akhir') is-invalid @enderror"
-                                value="{{ old('jam_akhir', $paketTour->jam_akhir ?? '') }}"
+                                value="{{ old('jam_akhir', optional($paketTour->jam_akhir)->format('H:i')) }}"
                                 required>
                         </div>
                         @error('jam_awal')
@@ -134,7 +134,7 @@
 
                     {{-- ACTIVITIES --}}
                     <div class="form-group">
-                        <label>Activities</label>
+                        <label>Activities <span class="text-danger">*</span></label>
 
                         <div id="activity-wrapper">
 

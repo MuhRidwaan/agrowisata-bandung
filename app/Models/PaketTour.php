@@ -64,12 +64,4 @@ class PaketTour extends Model
     {
         return $this->hasMany(Review::class, 'vendor_id', 'vendor_id');
     }
-
-    public function setAktivitasAttribute($value)
-    {
-        $this->attributes['aktivitas'] = json_encode($value);
-    }
-
-    
-
 }

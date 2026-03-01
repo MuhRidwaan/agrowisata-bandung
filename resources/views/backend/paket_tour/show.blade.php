@@ -45,6 +45,27 @@
                             <span class="text-muted">-</span>
                         @endif
                     </dd>
+
+                    <dt class="col-sm-3">Available Dates</dt>
+                    <dd class="col-sm-9">
+                        @if ($paketTour->tanggalAvailables && $paketTour->tanggalAvailables->count())
+                            @foreach ($paketTour->tanggalAvailables as $tgl)
+                                <span class="badge badge-info mb-1">{{ $tgl->tanggal }}</span>
+                            @endforeach
+                        @else
+                            <span class="text-muted">-</span>
+                        @endif
+                    </dd>
+
+                    <dt class="col-sm-3">Quota (from Available Dates)</dt>
+                    <dd class="col-sm-9">
+                        @if ($paketTour->tanggalAvailables && $paketTour->tanggalAvailables->count())
+                            {{ $paketTour->tanggalAvailables->sum('kuota') }}
+                            <small class="text-muted">(total dari {{ $paketTour->tanggalAvailables->count() }} tanggal)</small>
+                        @else
+                            <span class="text-muted">0</span>
+                        @endif
+                    </dd>
                 </dl>
                 <a href="{{ route('paket-tours.index') }}" class="btn btn-secondary">Back</a>
             </div>

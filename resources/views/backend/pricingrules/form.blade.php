@@ -118,7 +118,10 @@ function removeRuleRow(btn) {
 
                     {{-- Dynamic Rules Table --}}
                     <div class="mb-3">
-                        <label>Pricing Rules</label>
+                        <label>Pricing Rules <span class="text-danger">*</span></label>
+                        @error('rules')
+                            <div class="text-danger mb-2">{{ $message }}</div>
+                        @enderror
                         <table class="table table-bordered" id="rules-table">
                             <thead>
                                 <tr>

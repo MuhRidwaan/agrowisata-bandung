@@ -11,7 +11,8 @@ class PricingRuleController extends Controller
     public function index()
     {
         $rules = PricingRule::with('paketTour')->latest()->get();
-        return view('backend.pricingrules.index', compact('rules'));
+        $grouped = $rules->groupBy('paket_tour_id');
+        return view('backend.pricingrules.index', compact('grouped'));
     }
 
     public function create()
@@ -31,6 +32,13 @@ class PricingRuleController extends Controller
             'rules.*.discount_value' => 'required|integer|min:0',
             'rules.*.description' => 'nullable|string|max:255',
         ]);
+
+        // Validasi max 100 untuk tipe percent
+        foreach ($validated['rules'] as $i => $rule) {
+            if ($rule['discount_type'] === 'percent' && $rule['discount_value'] > 100) {
+                return back()->withErrors(['rules.'.$i.'.discount_value' => 'Diskon persen tidak boleh lebih dari 100%.'])->withInput();
+            }
+        }
 
         // Validasi overlap antar rules yang diinputkan & duplikat persis
         $inputRules = $validated['rules'];
@@ -112,6 +120,13 @@ class PricingRuleController extends Controller
             'rules.*.discount_value' => 'required|integer|min:0',
             'rules.*.description' => 'nullable|string|max:255',
         ]);
+
+        // Validasi max 100 untuk tipe percent
+        foreach ($validated['rules'] as $i => $rule) {
+            if ($rule['discount_type'] === 'percent' && $rule['discount_value'] > 100) {
+                return back()->withErrors(['rules.'.$i.'.discount_value' => 'Diskon persen tidak boleh lebih dari 100%.'])->withInput();
+            }
+        }
 
         $inputRules = $validated['rules'];
         // Validasi overlap antar rules input & duplikat persis

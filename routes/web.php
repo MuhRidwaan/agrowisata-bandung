@@ -61,6 +61,11 @@ Route::middleware('auth')->group(function () {
         Route::delete('paket-tour-photos/delete-by-paket/{paket_tour_id}', [PaketTourPhotoController::class, 'destroyByPaket'])->name('paket-tour-photos.delete-by-paket');
     Route::resource('pricingtiers', PricingTierController::class);
     Route::resource('pricingrules', PricingRuleController::class);
+
+    // AVAILABLE DATE
+    Route::get('tanggal-available/export', [TanggalAvailableController::class, 'export'])->name('tanggal-available.export');
+    Route::post('tanggal-available/import', [TanggalAvailableController::class, 'import'])->name('tanggal-available.import');
+    Route::get('tanggal-available/download-template', [TanggalAvailableController::class, 'downloadTemplate'])->name('tanggal-available.download-template');
     Route::resource('tanggal-available', TanggalAvailableController::class);
 
     // USERS

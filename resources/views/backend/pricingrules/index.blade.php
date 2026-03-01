@@ -64,37 +64,43 @@
                             </thead>
 
                             <tbody>
-                                @forelse ($rules as $item)
-                                    <tr>
-                                        <td>{{ $item->paketTour->nama_paket ?? '-' }}</td>
-                                        <td>{{ $item->min_pax }}</td>
-                                        <td>{{ $item->max_pax }}</td>
-                                        <td>{{ ucfirst($item->discount_type) }}</td>
-                                        <td>
-                                            {{ $item->discount_type == 'percent'
-                                                ? $item->discount_value . '%'
-                                                : 'Rp ' . number_format($item->discount_value, 0, ',', '.') }}
-                                        </td>
-                                        <td>
-                                            <!-- EDIT -->
-                                            <a href="{{ route('pricingrules.edit', $item->id) }}"
-                                               class="btn btn-warning btn-sm">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <!-- DELETE -->
-                                            <form action="{{ route('pricingrules.destroy', $item->id) }}"
-                                                  method="POST"
-                                                  style="display:inline-block"
-                                                  class="form-delete">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                        class="btn btn-danger btn-sm">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
+                                @forelse ($grouped as $paketTourId => $rules)
+                                    @foreach ($rules as $index => $item)
+                                        <tr>
+                                            @if ($index === 0)
+                                                <td rowspan="{{ $rules->count() }}" class="align-middle font-weight-bold">
+                                                    {{ $item->paketTour->nama_paket ?? '-' }}
+                                                </td>
+                                            @endif
+                                            <td>{{ $item->min_pax }}</td>
+                                            <td>{{ $item->max_pax }}</td>
+                                            <td>{{ ucfirst($item->discount_type) }}</td>
+                                            <td>
+                                                {{ $item->discount_type == 'percent'
+                                                    ? $item->discount_value . '%'
+                                                    : 'Rp ' . number_format($item->discount_value, 0, ',', '.') }}
+                                            </td>
+                                            <td>
+                                                <!-- EDIT -->
+                                                <a href="{{ route('pricingrules.edit', $item->id) }}"
+                                                   class="btn btn-warning btn-sm">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <!-- DELETE -->
+                                                <form action="{{ route('pricingrules.destroy', $item->id) }}"
+                                                      method="POST"
+                                                      style="display:inline-block"
+                                                      class="form-delete">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                            class="btn btn-danger btn-sm">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    @endforeach
                                 @empty
                                     <tr>
                                         <td colspan="6" class="text-center">

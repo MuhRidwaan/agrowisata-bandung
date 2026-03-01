@@ -31,8 +31,19 @@
                     Tour Package Data
                 </h3>
 
-                <div class="ml-auto d-flex gap-2">
-               
+                <div class="ml-auto d-flex align-items-center gap-2">
+
+                    <form method="GET" action="{{ route('paket-tours.index') }}" class="d-flex align-items-center mr-2">
+                        @if(request('created_from'))<input type="hidden" name="created_from" value="{{ request('created_from') }}">@endif
+                        @if(request('created_to'))<input type="hidden" name="created_to" value="{{ request('created_to') }}">@endif
+                        <div class="input-group input-group-sm" style="width:220px;">
+                            <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Cari nama paket...">
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-default"><i class="fas fa-search"></i></button>
+                            </div>
+                        </div>
+                    </form>
+
                     <a href="{{ route('paket-tours.export') }}" class="btn btn-success btn-sm mr-2">
                         <i class="fas fa-file-excel"></i> Export
                     </a>
@@ -43,14 +54,15 @@
             </div>
 
             <div class="card-body">
-                <form method="GET" action="" class="mb-3 d-flex align-items-center">
+                <form method="GET" action="{{ route('paket-tours.index') }}" class="mb-3 d-flex align-items-center flex-wrap">
+                    @if(request('search'))<input type="hidden" name="search" value="{{ request('search') }}">@endif
                     <label class="mr-2 mb-0">Filter tanggal dibuat:</label>
-                    <input type="date" name="created_from" value="{{ request('created_from') }}" class="form-control mr-2" style="width:auto;">
+                    <input type="date" name="created_from" value="{{ request('created_from') }}" class="form-control mr-2 mb-1" style="width:auto;">
                     <span class="mx-1">s/d</span>
-                    <input type="date" name="created_to" value="{{ request('created_to') }}" class="form-control mr-2" style="width:auto;">
-                    <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
-                    @if(request('created_from') || request('created_to'))
-                        <a href="{{ route('paket-tours.index') }}" class="btn btn-link btn-sm ml-2">Reset</a>
+                    <input type="date" name="created_to" value="{{ request('created_to') }}" class="form-control mr-2 mb-1" style="width:auto;">
+                    <button type="submit" class="btn btn-secondary btn-sm mb-1">Filter</button>
+                    @if(request('search') || request('created_from') || request('created_to'))
+                        <a href="{{ route('paket-tours.index') }}" class="btn btn-link btn-sm ml-2 mb-1">Reset</a>
                     @endif
                 </form>
                 <table class="table table-bordered table-hover">
@@ -62,7 +74,8 @@
                             <th>Operational Hours</th>
                             <th>Vendor</th>
                             <th class="text-right">Price</th>
-                            <th>Available Dates</th>
+                            <!-- <th>Available Dates</th> -->
+                            <!-- <th>Quota</th> -->
                             <!-- <th>Activities</th> -->
                             <th width="15%">Action</th>
                         </tr>
@@ -93,13 +106,12 @@
                                     @endif
                                 </td>
 
-                                {{-- AVAILABLE DATES --}}
+                                {{-- AVAILABLE DATES
                                 <td>
                                     @if ($paket->tanggalAvailables && $paket->tanggalAvailables->count())
                                         @foreach ($paket->tanggalAvailables as $tgl)
                                             <span class="badge badge-info mb-1">
                                                 {{ $tgl->tanggal }}
-                                                (Quota: {{ $tgl->kuota }})
                                             </span>
                                             <br>
                                         @endforeach
@@ -107,6 +119,17 @@
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
+                                --}}
+
+                                <!--
+                                <td>
+                                    @if ($paket->tanggalAvailables && $paket->tanggalAvailables->count())
+                                        {{ $paket->tanggalAvailables->sum('kuota') }}
+                                    @else
+                                        <span class="text-muted">0</span>
+                                    @endif
+                                </td>
+                                -->
 
                                 <!--
                                 <td>

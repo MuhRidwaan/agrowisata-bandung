@@ -43,15 +43,49 @@
                                 Available Date
                             </h3>
 
-                            <a href="{{ route('tanggal-available.create') }}"
-                               class="btn btn-primary btn-sm">
-                                <i class="fas fa-plus"></i> Add Date
-                            </a>
+                            <div class="d-flex gap-2 flex-wrap">
+                                {{-- Download Template --}}
+                                <a href="{{ route('tanggal-available.download-template') }}"
+                                   class="btn btn-outline-secondary btn-sm mr-2">
+                                    <i class="fas fa-file-download"></i> Template
+                                </a>
+
+                                {{-- Export --}}
+                                <a href="{{ route('tanggal-available.export', request()->query()) }}"
+                                   class="btn btn-success btn-sm mr-2">
+                                    <i class="fas fa-file-excel"></i> Export
+                                </a>
+
+                                {{-- Import Button (trigger modal) --}}
+                                <button type="button"
+                                        class="btn btn-info btn-sm mr-2"
+                                        data-toggle="modal"
+                                        data-target="#importModal">
+                                    <i class="fas fa-file-upload"></i> Import
+                                </button>
+
+                                <a href="{{ route('tanggal-available.create') }}"
+                                   class="btn btn-primary btn-sm">
+                                    <i class="fas fa-plus"></i> Add Date
+                                </a>
+                            </div>
                         </div>
                     </div>
                     <!-- END HEADER -->
 
                     <div class="card-body">
+
+                        {{-- DATE FILTER --}}
+                        <form method="GET" action="{{ route('tanggal-available.index') }}" class="mb-3 d-flex align-items-center flex-wrap">
+                            <label class="mr-2 mb-0">Filter tanggal:</label>
+                            <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control mr-2" style="width:auto;">
+                            <span class="mx-1">s/d</span>
+                            <input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control mr-2" style="width:auto;">
+                            <button type="submit" class="btn btn-secondary btn-sm mr-2">Filter</button>
+                            @if(request('date_from') || request('date_to'))
+                                <a href="{{ route('tanggal-available.index') }}" class="btn btn-link btn-sm">Reset</a>
+                            @endif
+                        </form>
 
                         <table class="table table-bordered table-hover">
                             <thead>
@@ -68,7 +102,7 @@
                             <tbody>
                                 @forelse ($tanggalAvailables as $item)
                                     <tr>
-                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $tanggalAvailables->firstItem() + $loop->index }}</td>
                                         <td>{{ $item->paketTour->nama_paket ?? '-' }}</td>
                                         <td>{{ $item->tanggal }}</td>
                                         <td>{{ $item->kuota }}</td>
@@ -82,7 +116,7 @@
                                             <!-- EDIT -->
                                             <a href="{{ route('tanggal-available.edit', $item) }}"
                                                class="btn btn-warning btn-sm">
-                                                <i class="fas fa-edit"></i> Edit
+                                                <i class="fas fa-edit"></i> 
                                             </a>
 
                                             <!-- DELETE -->
@@ -95,7 +129,7 @@
 
                                                 <button type="submit"
                                                         class="btn btn-danger btn-sm">
-                                                    <i class="fas fa-trash"></i> Delete
+                                                    <i class="fas fa-trash"></i> 
                                                 </button>
                                             </form>
 
@@ -138,6 +172,16 @@
 </script>
 @endif
 
+@if (session('error'))
+<script>
+    Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: '{{ session('error') }}',
+    });
+</script>
+@endif
+
 
 <script>
     document.querySelectorAll('.form-delete').forEach(form => {
@@ -160,5 +204,38 @@
         });
     });
 </script>
+
+{{-- IMPORT MODAL --}}
+<div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form action="{{ route('tanggal-available.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importModalLabel">Import Available Date</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Upload File Excel <span class="text-danger">*</span></label>
+                        <input type="file" name="file" class="form-control-file" accept=".xlsx,.xls,.csv" required>
+                        <small class="form-text text-muted">
+                            Format: .xlsx, .xls, atau .csv (max 2MB).
+                            <a href="{{ route('tanggal-available.download-template') }}">Download template di sini</a>.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-info">
+                        <i class="fas fa-file-upload"></i> Import
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @endsection

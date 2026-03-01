@@ -16,9 +16,4 @@ class PricingTier extends Model
     {
         return $this->belongsTo(PaketTour::class);
     }
-
-    public function pricingTiers()
-    {
-    return $this->hasMany(PricingTier::class, 'paket_tour_id');
-    }
 }
