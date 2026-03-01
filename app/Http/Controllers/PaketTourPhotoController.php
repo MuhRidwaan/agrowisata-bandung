@@ -15,8 +15,8 @@ class PaketTourPhotoController extends Controller
     
     public function index()
     {
-        // Ambil semua paket beserta foto-fotonya
-        $pakets = PaketTour::with('photos')->get();
+        // Ambil paket yang masih memiliki foto
+        $pakets = PaketTour::with('photos')->whereHas('photos')->get();
         return view('backend.paket_tour_photo.index', compact('pakets'));
     }
 

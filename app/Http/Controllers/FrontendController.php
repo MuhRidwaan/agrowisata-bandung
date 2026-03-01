@@ -13,7 +13,9 @@ class FrontendController extends Controller
     // ================= HOME =================
     public function home(Request $request)
     {
-        $query = PaketTour::with(['vendor.area','reviews','photos'])->latest();
+        $query = PaketTour::with(['vendor.area','reviews','photos'])
+            ->whereHas('photos')
+            ->latest();
 
         if ($request->area && $request->area != 'all') {
             $query->whereHas('vendor.area', function ($q) use ($request) {

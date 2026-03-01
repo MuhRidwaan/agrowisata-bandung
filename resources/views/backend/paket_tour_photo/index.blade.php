@@ -85,6 +85,10 @@
                                                 <a href="{{ route('paket-tour-photos.edit', $paket->photos->first()->id) }}" class="btn btn-warning btn-sm mr-1" title="Edit/Delete Photos">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
+                                            @else
+                                                <a href="{{ route('paket-tour-photos.create') }}" class="btn btn-warning btn-sm mr-1" title="Add Photos">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
                                             @endif
                                             <form action="{{ route('paket-tour-photos.delete-by-paket', $paket->id) }}" method="POST" class="d-inline-block form-delete" style="display:inline;">
                                                 @csrf
