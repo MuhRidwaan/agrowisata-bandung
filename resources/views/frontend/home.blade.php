@@ -137,6 +137,28 @@
                             {{ \Illuminate\Support\Str::limit($paket->deskripsi, 80) }}
                         </p>
 
+                        <!-- ================= AKTIVITAS ================= -->
+                        <div class="mb-3">
+                            <div class="d-flex flex-wrap gap-2">
+                                @forelse($paket->aktivitas ?? [] as $item)
+                                    <span 
+                                        style="
+                                            background:#e5e7eb;
+                                            color:#1f2937;
+                                            padding:6px 14px;
+                                            border-radius:999px;
+                                            font-size:13px;
+                                            font-weight:500;
+                                        ">
+                                        {{ $item }}
+                                    </span>
+                                @empty
+                                    <span class="text-muted small">Tidak ada aktivitas</span>
+                                @endforelse
+                            </div>
+                        </div>
+                        <!-- ============================================================= -->
+
                         <div class="text-muted small mb-3">
                             <i class="bi bi-clock"></i>
                             {{ $paket->jam_awal ? \Carbon\Carbon::parse($paket->jam_awal)->format('H:i') : '-' }}
@@ -252,7 +274,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 🔍 Search input
+    //Search input
     if (searchInput) {
         searchInput.addEventListener("input", filterData);
     }
