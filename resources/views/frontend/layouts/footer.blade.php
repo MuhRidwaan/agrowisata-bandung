@@ -46,12 +46,13 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     window.BOOKING_CONFIG = {
-        name: 'Kebun Strawberry Ciwidey',
-        location: 'Ciwidey, Bandung Selatan',
-        prices: [50000, 45000, 40000],
+        name: '{{ $paket->nama_paket ?? "AgroBandung" }}',
+        location: '{{ $paket->vendor->area->name ?? "Bandung" }}',
+        basePrice: {{ $paket->harga_paket ?? 0 }},
         serviceFee: 2500,
-        waNumber: '6281234567001',
-        waContact: 'Pak Ahmad'
+        pricingRules: @json($paket->pricingRules ?? []),
+        waNumber: '{{ $paket->vendor->whatsappsetting->phone_number ?? "6281234567890" }}',
+        waContact: '{{ $paket->vendor->name ?? "Admin" }}'
     };
 </script>
 <script src="{{ asset('frontend/js/booking.js') }}"></script>

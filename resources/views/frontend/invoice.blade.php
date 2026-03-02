@@ -101,17 +101,21 @@
                             <th>Deskripsi Paket Tour</th>
                             <th class="text-center">Peserta</th>
                             <th class="text-end">Harga Paket</th>
-                            <th class="text-end">Subtotal</th>
+                            <th class="text-end">Total</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                            $booking = $payment->booking;
+                            $paket = $booking->paketTour;
+                            $baseTotal = ($paket->harga_paket ?? 0) * $booking->jumlah_peserta;
+                            $discount = $baseTotal - $booking->total_price;
+                        @endphp
                         <tr>
-                            <td>{{ $payment->booking->paketTour->nama_paket ?? '-' }}</td>
-                            <td class="text-center">{{ $payment->booking->jumlah_peserta }} Pax</td>
-                            <td class="text-end">Rp
-                                {{ number_format($payment->booking->paketTour->harga_paket ?? 0, 0, ',', '.') }}</td>
-                            <td class="text-end fw-bold">Rp
-                                {{ number_format($payment->booking->total_price ?? 0, 0, ',', '.') }}</td>
+                            <td>{{ $paket->nama_paket ?? '-' }}</td>
+                            <td class="text-center">{{ $booking->jumlah_peserta }} Pax</td>
+                            <td class="text-end">Rp {{ number_format($paket->harga_paket ?? 0, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format($baseTotal, 0, ',', '.') }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -125,10 +129,22 @@
                         Agrowisata.
                     </div>
                 </div>
-                <div class="col-sm-6 text-end">
-                    <h5 class="text-muted d-inline-block me-3">Total Pembayaran:</h5>
-                    <h3 class="text-success fw-bold d-inline-block">Rp
-                        {{ number_format($payment->booking->total_price ?? 0, 0, ',', '.') }}</h3>
+                <div class="col-sm-6">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-muted">Subtotal:</span>
+                        <span class="fw-bold">Rp {{ number_format($baseTotal, 0, ',', '.') }}</span>
+                    </div>
+                    @if($discount > 0)
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-danger">Diskon:</span>
+                        <span class="text-danger fw-bold">-Rp {{ number_format($discount, 0, ',', '.') }}</span>
+                    </div>
+                    @endif
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="text-muted mb-0">Total Bayar:</h5>
+                        <h3 class="text-success fw-bold mb-0">Rp {{ number_format($booking->total_price ?? 0, 0, ',', '.') }}</h3>
+                    </div>
                 </div>
             </div>
 

@@ -52,7 +52,7 @@ class FrontendController extends Controller
     // ================= BOOKING =================
     public function booking($id)
     {
-        $paket = PaketTour::findOrFail($id);
+        $paket = PaketTour::with(['pricingRules', 'vendor'])->findOrFail($id);
 
         return view('frontend.booking', compact('paket'));
     }

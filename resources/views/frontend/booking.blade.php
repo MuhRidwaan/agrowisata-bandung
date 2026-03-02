@@ -61,17 +61,20 @@
                         <div class="card-body p-4">
                             <!-- Destination Info -->
                             <div class="d-flex gap-3 mb-4 pb-4 border-bottom">
-                                <img src="https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=200&q=80"
-                                    alt="Kebun Strawberry Ciwidey" class="rounded-3"
+                                @php
+                                    $mainPhoto = $paket->photos->first() ? asset('storage/' . $paket->photos->first()->path_foto) : 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=200&q=80';
+                                @endphp
+                                <img src="{{ $mainPhoto }}"
+                                    alt="{{ $paket->nama_paket }}" class="rounded-3"
                                     style="width: 70px; height: 70px; object-fit: cover;">
                                 <div>
-                                    <h2 class="font-display fs-5 fw-bold mb-1">Kebun Strawberry Ciwidey</h2>
+                                    <h2 class="font-display fs-5 fw-bold mb-1">{{ $paket->nama_paket }}</h2>
                                     <p class="text-muted small mb-1">
-                                        <i class="bi bi-geo-alt text-primary-agro"></i> Ciwidey, Bandung Selatan
+                                        <i class="bi bi-geo-alt text-primary-agro"></i> {{ $paket->vendor->area->name ?? 'Bandung' }}
                                     </p>
                                     <div class="d-flex align-items-center gap-3 small text-muted">
-                                        <span><i class="bi bi-star-fill star-filled"></i> 4.7</span>
-                                        <span><i class="bi bi-clock"></i> 08:00 - 17:00</span>
+                                        <span><i class="bi bi-star-fill star-filled"></i> {{ number_format($paket->reviews->avg('rating') ?? 0, 1) }}</span>
+                                        <span><i class="bi bi-clock"></i> {{ $paket->jam_operasional }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -87,41 +90,42 @@
                                 </p>
                             </div>
 
-                            <!-- Price Tiers -->
+                            <!-- Pricing Rules -->
+                            @if($paket->pricingRules->count() > 0)
                             <div class="mb-4">
                                 <h3 class="fs-6 fw-semibold mb-3 d-flex align-items-center gap-2">
-                                    <i class="bi bi-tag text-accent"></i> Harga berdasarkan jumlah peserta
+                                    <i class="bi bi-tag text-accent"></i> Penawaran Spesial (Diskon)
                                 </h3>
                                 <div class="row g-2">
-                                    <div class="col-4">
-                                        <div class="price-tier-card active">
-                                            <p class="text-muted small mb-0">1-4 orang</p>
-                                            <p class="font-display fs-5 fw-bold text-primary-agro mb-0">Rp50.000</p>
+                                    @foreach($paket->pricingRules as $rule)
+                                    <div class="col-md-4 col-6">
+                                        <div class="price-tier-card" data-min="{{ $rule->min_pax }}" data-max="{{ $rule->max_pax }}">
+                                            <p class="text-muted small mb-0">{{ $rule->min_pax }}{{ $rule->max_pax ? '-' . $rule->max_pax : '+' }} orang</p>
+                                            <p class="font-display fs-6 fw-bold text-primary-agro mb-0">
+                                                @if($rule->discount_type === 'percent')
+                                                    Potongan {{ $rule->discount_value }}%
+                                                @elseif($rule->discount_type === 'nominal')
+                                                    Potongan Rp{{ number_format($rule->discount_value, 0, ',', '.') }}
+                                                @endif
+                                            </p>
                                         </div>
                                     </div>
-                                    <div class="col-4">
-                                        <div class="price-tier-card">
-                                            <p class="text-muted small mb-0">5-9 orang</p>
-                                            <p class="font-display fs-5 fw-bold text-primary-agro mb-0">Rp45.000</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="price-tier-card">
-                                            <p class="text-muted small mb-0">10+ orang</p>
-                                            <p class="font-display fs-5 fw-bold text-primary-agro mb-0">Rp40.000</p>
-                                        </div>
-                                    </div>
+                                    @endforeach
                                 </div>
                             </div>
+                            @endif
 
                             <!-- Activities -->
                             <div>
                                 <h3 class="fs-6 fw-semibold mb-2">Aktivitas yang tersedia:</h3>
                                 <div class="d-flex flex-wrap gap-2">
-
-                                    <span class="badge-activity">Petik Strawberry</span>
-                                    <span class="badge-activity">Foto Instagramable</span>
-                                    <span class="badge-activity">Café &amp; Resto</span>
+                                    @if(is_array($paket->aktivitas))
+                                        @foreach($paket->aktivitas as $aktivitas)
+                                            <span class="badge-activity">{{ $aktivitas }}</span>
+                                        @endforeach
+                                    @else
+                                        <span class="badge-activity">-</span>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -188,31 +192,32 @@
                             <div class="d-flex flex-column gap-3">
                                 <label class="payment-method-card">
                                     <div class="d-flex align-items-center justify-content-between">
-                                        <div>
-                                            <p class="fw-medium mb-0">Transfer Bank</p>
-                                            <p class="text-muted small mb-0">BCA, Mandiri, BRI, BNI</p>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="payment-icon-circle">
+                                                <i class="bi bi-wallet2 fs-4 text-primary-agro"></i>
+                                            </div>
+                                            <div>
+                                                <p class="fw-bold mb-0">Pembayaran Otomatis (Midtrans)</p>
+                                                <p class="text-muted small mb-0">Virtual Account, E-Wallet, Kartu Kredit, dll</p>
+                                            </div>
                                         </div>
-                                        <input type="radio" name="payment" value="transfer" class="form-check-input">
+                                        <input type="radio" name="payment" value="midtrans" class="form-check-input" checked>
                                     </div>
                                 </label>
-                                <label class="payment-method-card">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <div>
-                                            <p class="fw-medium mb-0">E-Wallet</p>
-                                            <p class="text-muted small mb-0">GoPay, OVO, Dana, ShopeePay</p>
-                                        </div>
-                                        <input type="radio" name="payment" value="ewallet" class="form-check-input">
+                            </div>
+
+                            <div class="bg-agro-light rounded-3 p-3 mt-4">
+                                <div class="d-flex gap-2">
+                                    <i class="bi bi-info-circle text-primary-agro flex-shrink-0"></i>
+                                    <div>
+                                        <p class="fw-semibold small mb-1">Informasi Pembayaran:</p>
+                                        <ul class="text-muted small mb-0 ps-3">
+                                            <li>Pembayaran diproses secara aman melalui Midtrans.</li>
+                                            <li>Tiket akan langsung aktif setelah pembayaran berhasil.</li>
+                                            <li>Invoice akan dikirimkan ke email Anda secara otomatis.</li>
+                                        </ul>
                                     </div>
-                                </label>
-                                <label class="payment-method-card">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <div>
-                                            <p class="fw-medium mb-0">QRIS</p>
-                                            <p class="text-muted small mb-0">Scan QR dari semua bank & e-wallet</p>
-                                        </div>
-                                        <input type="radio" name="payment" value="qris" class="form-check-input">
-                                    </div>
-                                </label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -312,13 +317,15 @@
                         <div class="card-body p-4">
                             <h3 class="font-display fs-5 fw-semibold mb-3">Ringkasan Pesanan</h3>
                             <div class="d-flex gap-3 mb-3 pb-3 border-bottom">
-                                <img src="https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=100&q=80"
-                                    alt="Kebun Strawberry Ciwidey" class="rounded-3"
+                                @php
+                                    $mainPhoto = $paket->photos->first() ? asset('storage/' . $paket->photos->first()->path_foto) : 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=100&q=80';
+                                @endphp
+                                <img src="{{ $mainPhoto }}"
+                                    alt="{{ $paket->nama_paket }}" class="rounded-3"
                                     style="width: 50px; height: 50px; object-fit: cover;" loading="lazy">
                                 <div>
-                                    <p class="fw-medium small mb-0">Kebun Strawberry Ciwidey</p>
-                                    <p class="text-muted small mb-0"><i class="bi bi-geo-alt"></i> Ciwidey, Bandung
-                                        Selatan</p>
+                                    <p class="fw-medium small mb-0">{{ $paket->nama_paket }}</p>
+                                    <p class="text-muted small mb-0"><i class="bi bi-geo-alt"></i> {{ $paket->vendor->area->name ?? 'Bandung' }}</p>
                                 </div>
                             </div>
                             <div class="mb-3 pb-3 border-bottom">

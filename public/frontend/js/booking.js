@@ -7,7 +7,7 @@ let bookingCode = '';
 
 const config = window.BOOKING_CONFIG || {
   name: 'AgroBandung', location: 'Bandung',
-  prices: [50000, 45000, 40000], serviceFee: 2500
+  basePrice: 50000, serviceFee: 2500, pricingRules: []
 };
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -204,18 +204,46 @@ function removeParticipant(btn) {
   updatePriceTiers();
 }
 
-function getPricePerPerson() {
-  if (participantCount >= 10) return config.prices[2];
-  if (participantCount >= 5) return config.prices[1];
-  return config.prices[0];
+function getPriceCalculation() {
+  const totalBase = participantCount * config.basePrice;
+  let discount = 0;
+  let appliedRule = null;
+
+  if (config.pricingRules && config.pricingRules.length > 0) {
+    appliedRule = config.pricingRules.find(rule => {
+      const min = parseInt(rule.min_pax);
+      const max = rule.max_pax ? parseInt(rule.max_pax) : Infinity;
+      return participantCount >= min && participantCount <= max;
+    });
+
+    if (appliedRule) {
+      if (appliedRule.discount_type === 'percent') {
+        discount = (totalBase * parseFloat(appliedRule.discount_value)) / 100;
+      } else if (appliedRule.discount_type === 'nominal') {
+        discount = parseFloat(appliedRule.discount_value);
+      }
+    }
+  }
+
+  return {
+    totalBase,
+    discount,
+    totalPrice: totalBase - discount + config.serviceFee,
+    appliedRule
+  };
 }
 
 function updatePriceTiers() {
   var tiers = document.querySelectorAll('.price-tier-card');
   tiers.forEach(function(t) { t.classList.remove('active'); });
-  if (participantCount >= 10 && tiers[2]) tiers[2].classList.add('active');
-  else if (participantCount >= 5 && tiers[1]) tiers[1].classList.add('active');
-  else if (tiers[0]) tiers[0].classList.add('active');
+  
+  const calc = getPriceCalculation();
+  if (calc.appliedRule) {
+    const activeTier = Array.from(tiers).find(t => 
+      parseInt(t.dataset.min) === parseInt(calc.appliedRule.min_pax)
+    );
+    if (activeTier) activeTier.classList.add('active');
+  }
 }
 
 function updateSummary() {
@@ -225,29 +253,35 @@ function updateSummary() {
     var el = document.getElementById('summaryDate');
     if (el) el.textContent = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
   }
-  var price = getPricePerPerson();
-  var subtotal = participantCount * price;
-  var total = subtotal + config.serviceFee;
+  
+  const calc = getPriceCalculation();
 
   var pl = document.getElementById('summaryPriceLabel');
-  if (pl) pl.textContent = formatCurrency(price) + ' \u00d7 ' + participantCount;
+  if (pl) pl.textContent = formatCurrency(config.basePrice) + ' \u00d7 ' + participantCount;
+  
   var st = document.getElementById('summarySubtotal');
-  if (st) st.textContent = formatCurrency(subtotal);
+  if (st) st.textContent = formatCurrency(calc.totalBase);
+  
+  // Update Discount if exists
+  let discEl = document.getElementById('summaryDiscount');
+  if (calc.discount > 0) {
+    if (!discEl) {
+      discEl = document.createElement('div');
+      discEl.id = 'summaryDiscount';
+      discEl.className = 'd-flex justify-content-between small text-danger mb-1';
+      const subtotalEl = document.getElementById('summarySubtotal').parentElement;
+      subtotalEl.parentNode.insertBefore(discEl, subtotalEl.nextSibling);
+    }
+    discEl.innerHTML = '<span>Diskon</span><span>-' + formatCurrency(calc.discount) + '</span>';
+  } else if (discEl) {
+    discEl.remove();
+  }
+
   var sf = document.getElementById('summaryServiceFee');
   if (sf) sf.textContent = formatCurrency(config.serviceFee);
+  
   var tp = document.getElementById('totalPrice');
-  if (tp) tp.textContent = formatCurrency(total);
-}
-
-function formatCurrency(amount) {
-  return 'Rp' + amount.toLocaleString('id-ID');
-}
-
-function generateBookingCode() {
-  var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  var code = 'AGR-';
-  for (var i = 0; i < 6; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
-  return code;
+  if (tp) tp.textContent = formatCurrency(calc.totalPrice);
 }
 
 function startPaymentProcess() {
@@ -256,8 +290,9 @@ function startPaymentProcess() {
   var names = { transfer: 'Transfer Bank', ewallet: 'E-Wallet', qris: 'QRIS' };
   document.getElementById('bookingCode').textContent = bookingCode;
   document.getElementById('paymentMethodName').textContent = names[radio ? radio.value : ''] || '-';
-  var total = (participantCount * getPricePerPerson()) + config.serviceFee;
-  document.getElementById('waitingTotal').textContent = formatCurrency(total);
+  
+  const calc = getPriceCalculation();
+  document.getElementById('waitingTotal').textContent = formatCurrency(calc.totalPrice);
   document.getElementById('paymentWaiting').classList.remove('d-none');
   document.getElementById('paymentSuccess').classList.add('d-none');
 }
@@ -275,8 +310,9 @@ function confirmPayment() {
   var nameInput = document.querySelector('.participant-card input[type="text"]');
   document.getElementById('successParticipantLabel').textContent = 'Peserta (' + participantCount + ' orang)';
   document.getElementById('successParticipantName').textContent = nameInput ? nameInput.value : '-';
-  var total = (participantCount * getPricePerPerson()) + config.serviceFee;
-  document.getElementById('successTotal').textContent = formatCurrency(total);
+  
+  const calc = getPriceCalculation();
+  document.getElementById('successTotal').textContent = formatCurrency(calc.totalPrice);
 
   // Generate QR Code with booking details
   var qrContainer = document.getElementById('qrCodeContainer');

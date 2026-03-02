@@ -49,25 +49,38 @@
                 <tr style="background-color: #f8f9fa;">
                     <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Paket Tour</th>
                     <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Peserta</th>
-                    <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">Total</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">Subtotal</th>
                 </tr>
             </thead>
             <tbody>
+                @php
+                    $booking = $payment->booking;
+                    $paket = $booking->paketTour;
+                    $baseTotal = $paket->harga_paket * $booking->jumlah_peserta;
+                    $discount = $baseTotal - $booking->total_price;
+                @endphp
                 <tr>
                     <td style="padding: 10px; border: 1px solid #ddd;">
-                        {{ $payment->booking->paketTour->nama_paket ?? '-' }}</td>
+                        {{ $paket->nama_paket ?? '-' }}</td>
                     <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
-                        {{ $payment->booking->jumlah_peserta }} Pax</td>
+                        {{ $booking->jumlah_peserta }} Pax</td>
                     <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">Rp
-                        {{ number_format($payment->booking->total_price ?? 0, 0, ',', '.') }}</td>
+                        {{ number_format($baseTotal, 0, ',', '.') }}</td>
                 </tr>
             </tbody>
             <tfoot>
+                @if($discount > 0)
                 <tr>
-                    <td colspan="2" style="padding: 10px; border: 1px solid #ddd; text-align: right;"><strong>Total
+                    <td colspan="2" style="padding: 10px; border: 1px solid #ddd; text-align: right; color: #dc3545;"><strong>Potongan Diskon:</strong></td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right; color: #dc3545;"><strong>-Rp
+                            {{ number_format($discount, 0, ',', '.') }}</strong></td>
+                </tr>
+                @endif
+                <tr>
+                    <td colspan="2" style="padding: 10px; border: 1px solid #ddd; text-align: right; background-color: #f8f9fa;"><strong>Total
                             Bayar:</strong></td>
-                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right; color: #28a745;"><strong>Rp
-                            {{ number_format($payment->booking->total_price ?? 0, 0, ',', '.') }}</strong></td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right; color: #28a745; background-color: #f8f9fa;"><strong>Rp
+                            {{ number_format($booking->total_price ?? 0, 0, ',', '.') }}</strong></td>
                 </tr>
             </tfoot>
         </table>

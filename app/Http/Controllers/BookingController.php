@@ -51,9 +51,10 @@ class BookingController extends Controller
             'customer_phone' => 'required|string|max:20',
         ]);
 
-        // 2. Kalkulasi Total Harga
+        // 2. Kalkulasi Total Harga menggunakan Pricing Rules
         $paket = PaketTour::findOrFail($request->paket_tour_id);
-        $total = $paket->harga_paket * $request->jumlah_peserta;
+        $pricing = $paket->calculatePrice($request->jumlah_peserta);
+        $total = $pricing['total_price'];
         $bookingCode = 'BOOK-' . Str::upper(Str::random(6));
 
         // 3. Simpan Data Booking
@@ -123,7 +124,8 @@ class BookingController extends Controller
 
         // Kalkulasi ulang jika paket atau jumlah peserta diubah
         $paket = PaketTour::findOrFail($request->paket_tour_id);
-        $total = $paket->harga_paket * $request->jumlah_peserta;
+        $pricing = $paket->calculatePrice($request->jumlah_peserta);
+        $total = $pricing['total_price'];
 
         $booking->update([
             'paket_tour_id'  => $request->paket_tour_id,

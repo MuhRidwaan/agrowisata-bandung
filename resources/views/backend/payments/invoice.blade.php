@@ -72,20 +72,23 @@
                                     <thead class="bg-light">
                                         <tr>
                                             <th>Tour Package Details</th>
-                                            <th>Number of Participants</th>
-                                            <th class="text-right">Package Price / Pax</th>
-                                            <th class="text-right">Subtotal</th>
+                                            <th class="text-center">Pax</th>
+                                            <th class="text-right">Price / Pax</th>
+                                            <th class="text-right">Total</th>
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        @php
+                                            $booking = $payment->booking;
+                                            $paket = $booking->paketTour;
+                                            $baseTotal = $paket->harga_paket * $booking->jumlah_peserta;
+                                            $discount = $baseTotal - $booking->total_price;
+                                        @endphp
                                         <tr>
-                                            <td>{{ $payment->booking->paketTour->nama_paket }}</td>
-                                            <td>{{ $payment->booking->jumlah_peserta }} People</td>
-                                            <td class="text-right">Rp
-                                                {{ number_format($payment->booking->paketTour->harga_paket, 0, ',', '.') }}
-                                            </td>
-                                            <td class="text-right">Rp
-                                                {{ number_format($payment->booking->total_price, 0, ',', '.') }}</td>
+                                            <td>{{ $paket->nama_paket }}</td>
+                                            <td class="text-center">{{ $booking->jumlah_peserta }}</td>
+                                            <td class="text-right">Rp {{ number_format($paket->harga_paket, 0, ',', '.') }}</td>
+                                            <td class="text-right">Rp {{ number_format($baseTotal, 0, ',', '.') }}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -108,13 +111,18 @@
                                     <table class="table">
                                         <tr>
                                             <th style="width:50%">Subtotal:</th>
-                                            <td class="text-right">Rp
-                                                {{ number_format($payment->booking->total_price, 0, ',', '.') }}</td>
+                                            <td class="text-right">Rp {{ number_format($baseTotal, 0, ',', '.') }}</td>
                                         </tr>
+                                        @if($discount > 0)
+                                        <tr>
+                                            <th class="text-danger">Discount:</th>
+                                            <td class="text-right text-danger">-Rp {{ number_format($discount, 0, ',', '.') }}</td>
+                                        </tr>
+                                        @endif
                                         <tr>
                                             <th>Total Paid:</th>
-                                            <td class="text-right"><strong>Rp
-                                                    {{ number_format($payment->booking->total_price, 0, ',', '.') }}</strong>
+                                            <td class="text-right text-success">
+                                                <h4 class="mb-0 font-weight-bold">Rp {{ number_format($booking->total_price, 0, ',', '.') }}</h4>
                                             </td>
                                         </tr>
                                     </table>

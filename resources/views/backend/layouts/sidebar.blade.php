@@ -116,13 +116,13 @@
                                 <p>Pricing Rules</p>
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <!-- <li class="nav-item">
                             <a href="{{ route('pricingtiers.index') }}"
                                 class="nav-link {{ request()->routeIs('pricingtiers.*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Pricing Tier</p>
                             </a>
-                        </li>
+                        </li> -->
                         <li class="nav-item">
                             <a href="{{ route('tanggal-available.index') }}"
                                 class="nav-link {{ request()->routeIs('tanggal-available.*') ? 'active' : '' }}">
