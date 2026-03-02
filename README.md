@@ -41,7 +41,6 @@ Sistem memiliki pemisahan akses yang ketat menggunakan **Spatie Laravel Permissi
 2. Install dependencies:
    ```bash
    composer install
-   npm install && npm run build
    ```
 3. Konfigurasi Environment:
    ```bash
