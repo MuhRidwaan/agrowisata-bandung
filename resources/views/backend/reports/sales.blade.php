@@ -106,7 +106,7 @@
                             <th>No</th>
                             <th>Date</th>
                             <th>Booking Code</th>
-                            <th>Customer</th>
+                            <th>Customer Detail</th>
                             <th>Tour Package</th>
                             <th>Pax</th>
                             <th class="text-right">Total Price</th>
@@ -118,7 +118,13 @@
                             <td>{{ $payments->firstItem() + $index }}</td>
                             <td>{{ \Carbon\Carbon::parse($payment->paid_at)->format('d M Y, H:i') }}</td>
                             <td><code>{{ $payment->booking->booking_code }}</code></td>
-                            <td>{{ $payment->booking->customer_name }}</td>
+                            <td>
+                                <strong>{{ $payment->booking->customer_name }}</strong><br>
+                                <small class="text-muted">
+                                    <i class="fas fa-envelope mr-1"></i>{{ $payment->booking->customer_email }}<br>
+                                    <i class="fas fa-phone mr-1"></i>{{ $payment->booking->customer_phone }}
+                                </small>
+                            </td>
                             <td>{{ $payment->booking->paketTour->nama_paket ?? '-' }}</td>
                             <td>{{ $payment->booking->jumlah_peserta }}</td>
                             <td class="text-right">Rp {{ number_format($payment->booking->total_price, 0, ',', '.') }}</td>

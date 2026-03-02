@@ -131,7 +131,7 @@
                             <th>No</th>
                             <th>Date Created</th>
                             <th>Booking Code</th>
-                            <th>Customer Name</th>
+                            <th>Customer Detail</th>
                             <th>Tour Package</th>
                             <th>Pax</th>
                             <th>Status</th>
@@ -144,7 +144,13 @@
                             <td>{{ $bookings->firstItem() + $index }}</td>
                             <td>{{ \Carbon\Carbon::parse($booking->created_at)->format('d M Y, H:i') }}</td>
                             <td><code>{{ $booking->booking_code }}</code></td>
-                            <td>{{ $booking->customer_name }}</td>
+                            <td>
+                                <strong>{{ $booking->customer_name }}</strong><br>
+                                <small class="text-muted">
+                                    <i class="fas fa-envelope mr-1"></i>{{ $booking->customer_email }}<br>
+                                    <i class="fas fa-phone mr-1"></i>{{ $booking->customer_phone }}
+                                </small>
+                            </td>
                             <td>{{ $booking->paketTour->nama_paket ?? '-' }}</td>
                             <td>{{ $booking->jumlah_peserta }}</td>
                             <td>

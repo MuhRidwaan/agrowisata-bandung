@@ -57,6 +57,7 @@
                 <form method="GET" action="{{ route('paket-tours.index') }}" class="mb-3 d-flex align-items-center flex-wrap">
                     @if(request('search'))<input type="hidden" name="search" value="{{ request('search') }}">@endif
                     
+                    @role('Super Admin')
                     <label class="mr-2 mb-0">Vendor:</label>
                     <select name="vendor_id" class="form-control mr-3 mb-1" style="width:auto;">
                         <option value="">Semua Vendor</option>
@@ -66,6 +67,7 @@
                             </option>
                         @endforeach
                     </select>
+                    @endrole
 
                     <label class="mr-2 mb-0">Tanggal dibuat:</label>
                     <input type="date" name="created_from" value="{{ request('created_from') }}" class="form-control mr-2 mb-1" style="width:auto;">
