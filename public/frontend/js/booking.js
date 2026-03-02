@@ -7,7 +7,7 @@ let bookingCode = '';
 
 const config = window.BOOKING_CONFIG || {
   name: 'AgroBandung', location: 'Bandung',
-  basePrice: 50000, serviceFee: 2500, pricingRules: []
+  basePrice: 50000, pricingRules: []
 };
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -228,7 +228,7 @@ function getPriceCalculation() {
   return {
     totalBase,
     discount,
-    totalPrice: totalBase - discount + config.serviceFee,
+    totalPrice: totalBase - discount,
     appliedRule
   };
 }
@@ -277,9 +277,6 @@ function updateSummary() {
     discEl.remove();
   }
 
-  var sf = document.getElementById('summaryServiceFee');
-  if (sf) sf.textContent = formatCurrency(config.serviceFee);
-  
   var tp = document.getElementById('totalPrice');
   if (tp) tp.textContent = formatCurrency(calc.totalPrice);
 }

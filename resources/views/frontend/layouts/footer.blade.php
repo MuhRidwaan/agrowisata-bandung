@@ -49,7 +49,6 @@
         name: '{{ $paket->nama_paket ?? "AgroBandung" }}',
         location: '{{ $paket->vendor->area->name ?? "Bandung" }}',
         basePrice: {{ $paket->harga_paket ?? 0 }},
-        serviceFee: 2500,
         pricingRules: @json($paket->pricingRules ?? []),
         waNumber: '{{ $paket->vendor->whatsappsetting->phone_number ?? "6281234567890" }}',
         waContact: '{{ $paket->vendor->name ?? "Admin" }}'

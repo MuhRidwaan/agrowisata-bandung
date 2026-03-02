@@ -146,6 +146,11 @@ public function markAsPaid($id)
 
     private function triggerInvoiceEmail($payment)
     {
+        // Cek apakah fitur email diaktifkan di Global Settings
+        if (get_setting('enable_email_notification') !== 'true') {
+            return false;
+        }
+
         // Ambil email dari customer_email, jika kosong ambil dari email user
         $email = $payment->booking->customer_email ?? $payment->booking->user->email ?? null;
 

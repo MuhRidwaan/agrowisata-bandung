@@ -339,10 +339,6 @@
                                     <span class="text-muted" id="summaryPriceLabel">Rp50.000 &times; 1</span>
                                     <span id="summarySubtotal">Rp50.000</span>
                                 </div>
-                                <div class="d-flex justify-content-between small">
-                                    <span class="text-muted">Biaya Layanan</span>
-                                    <span id="summaryServiceFee">Rp2.500</span>
-                                </div>
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="fw-medium">Total</span>

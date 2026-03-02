@@ -55,7 +55,8 @@ class BookingController extends Controller
         $paket = PaketTour::findOrFail($request->paket_tour_id);
         $pricing = $paket->calculatePrice($request->jumlah_peserta);
         $total = $pricing['total_price'];
-        $bookingCode = 'BOOK-' . Str::upper(Str::random(6));
+        $prefix = get_setting('booking_prefix', 'BOOK-');
+        $bookingCode = $prefix . Str::upper(Str::random(6));
 
         // 3. Simpan Data Booking
         $booking = Booking::create([

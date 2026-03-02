@@ -18,6 +18,7 @@ use App\Http\Controllers\AreaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SettingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -123,6 +124,10 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::get('/reports/user', [ReportController::class, 'userReport'])->name('reports.user');
     Route::get('/reports/performance', [ReportController::class, 'tourPerformanceReport'])->name('reports.performance');
     Route::get('/reports/vendor-revenue', [ReportController::class, 'vendorRevenueReport'])->name('reports.vendor_revenue');
+
+    // GLOBAL SETTINGS
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
 });
 
 

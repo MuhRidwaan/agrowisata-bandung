@@ -171,6 +171,14 @@
                     </a>
                 </li>
 
+                <li class="nav-item">
+                    <a href="{{ route('settings.index') }}"
+                        class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-cogs"></i>
+                        <p>Global Settings</p>
+                    </a>
+                </li>
+
                 <li class="nav-header">REPORTS</li>
 
                 <li class="nav-item {{ request()->routeIs('reports.*') ? 'menu-open' : '' }}">
