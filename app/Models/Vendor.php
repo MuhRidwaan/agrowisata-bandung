@@ -7,8 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Vendor extends Model
 {
     protected $fillable = [
-        'name','email','phone','address','description','area_id','status'
+        'user_id','name','email','phone','address','description','area_id','status'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function area()
     {

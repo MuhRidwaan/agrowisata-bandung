@@ -10,9 +10,15 @@ class ReviewController extends Controller
     // ================= LIST =================
     public function index()
     {
-        $reviews = Review::with(['user', 'vendor'])
-            ->latest()
-            ->paginate(10);
+        $query = Review::with(['user', 'vendor']);
+
+        // Jika user adalah Vendor, hanya tampilkan review untuk vendor mereka
+        if (auth()->user()->hasRole('Vendor')) {
+            $vendorId = auth()->user()->vendor->id ?? null;
+            $query->where('vendor_id', $vendorId);
+        }
+
+        $reviews = $query->latest()->paginate(10);
 
         return view('backend.reviews.index', compact('reviews'));
     }

@@ -27,6 +27,14 @@ class ReportController extends Controller
         $query = Payment::with(['booking.paketTour', 'booking.user'])
             ->where('status', 'success');
 
+        // Jika user adalah Vendor, hanya tampilkan sales untuk vendor mereka
+        if (auth()->user()->hasRole('Vendor')) {
+            $vendorId = auth()->user()->vendor->id ?? null;
+            $query->whereHas('booking.paketTour', function($q) use ($vendorId) {
+                $q->where('vendor_id', $vendorId);
+            });
+        }
+
         // Filter Tanggal
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('paid_at', [$request->start_date . ' 00:00:00', $request->end_date . ' 23:59:59']);
@@ -54,6 +62,14 @@ class ReportController extends Controller
     public function bookingReport(Request $request)
     {
         $query = Booking::with(['paketTour', 'user', 'payment']);
+
+        // Jika user adalah Vendor, hanya tampilkan booking untuk vendor mereka
+        if (auth()->user()->hasRole('Vendor')) {
+            $vendorId = auth()->user()->vendor->id ?? null;
+            $query->whereHas('paketTour', function($q) use ($vendorId) {
+                $q->where('vendor_id', $vendorId);
+            });
+        }
 
         // Filter Tanggal
         if ($request->start_date && $request->end_date) {

@@ -15,6 +15,14 @@ class BookingController extends Controller
     {
         $query = Booking::with(['paketTour', 'user', 'payment']);
 
+        // Jika user adalah Vendor, hanya tampilkan booking untuk paket milik mereka
+        if (auth()->user()->hasRole('Vendor')) {
+            $vendorId = auth()->user()->vendor->id ?? null;
+            $query->whereHas('paketTour', function($q) use ($vendorId) {
+                $q->where('vendor_id', $vendorId);
+            });
+        }
+
         // Fitur Search berdasarkan kode booking atau nama user
         if ($request->search) {
             $query->where(function ($q) use ($request) {

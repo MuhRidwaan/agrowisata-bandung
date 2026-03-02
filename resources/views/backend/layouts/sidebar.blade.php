@@ -42,6 +42,7 @@
                     </a>
                 </li>
 
+                @role('Super Admin')
                 <li class="nav-header">MASTER DATA</li>
 
                 <li class="nav-item">
@@ -75,6 +76,7 @@
                         <p>Area</p>
                     </a>
                 </li>
+                @endrole
                 
                 @php
                     $isPaketTourActive =
@@ -161,6 +163,7 @@
                     </a>
                 </li>
 
+                @role('Super Admin')
                 <li class="nav-header">CONFIGURATION</li>
 
                 <li class="nav-item">
@@ -178,6 +181,7 @@
                         <p>Global Settings</p>
                     </a>
                 </li>
+                @endrole
 
                 <li class="nav-header">REPORTS</li>
 
@@ -202,24 +206,28 @@
                                 <p>Booking Report</p>
                             </a>
                         </li>
+                        @role('Super Admin')
                         <li class="nav-item">
                             <a href="{{ route('reports.user') }}" class="nav-link {{ request()->routeIs('reports.user') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>User Report</p>
                             </a>
                         </li>
+                        @endrole
                         <li class="nav-item">
                             <a href="{{ route('reports.performance') }}" class="nav-link {{ request()->routeIs('reports.performance') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Performance Report</p>
                             </a>
                         </li>
+                        @role('Super Admin')
                         <li class="nav-item">
                             <a href="{{ route('reports.vendor_revenue') }}" class="nav-link {{ request()->routeIs('reports.vendor_revenue') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Vendor Revenue</p>
                             </a>
                         </li>
+                        @endrole
                     </ul>
                 </li>
 

@@ -56,12 +56,23 @@
             <div class="card-body">
                 <form method="GET" action="{{ route('paket-tours.index') }}" class="mb-3 d-flex align-items-center flex-wrap">
                     @if(request('search'))<input type="hidden" name="search" value="{{ request('search') }}">@endif
-                    <label class="mr-2 mb-0">Filter tanggal dibuat:</label>
+                    
+                    <label class="mr-2 mb-0">Vendor:</label>
+                    <select name="vendor_id" class="form-control mr-3 mb-1" style="width:auto;">
+                        <option value="">Semua Vendor</option>
+                        @foreach($vendors as $vendor)
+                            <option value="{{ $vendor->id }}" {{ request('vendor_id') == $vendor->id ? 'selected' : '' }}>
+                                {{ $vendor->name }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <label class="mr-2 mb-0">Tanggal dibuat:</label>
                     <input type="date" name="created_from" value="{{ request('created_from') }}" class="form-control mr-2 mb-1" style="width:auto;">
                     <span class="mx-1">s/d</span>
                     <input type="date" name="created_to" value="{{ request('created_to') }}" class="form-control mr-2 mb-1" style="width:auto;">
                     <button type="submit" class="btn btn-secondary btn-sm mb-1">Filter</button>
-                    @if(request('search') || request('created_from') || request('created_to'))
+                    @if(request('search') || request('created_from') || request('created_to') || request('vendor_id'))
                         <a href="{{ route('paket-tours.index') }}" class="btn btn-link btn-sm ml-2 mb-1">Reset</a>
                     @endif
                 </form>
@@ -81,9 +92,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($paketTours as $key => $paket)
+                        @forelse ($paketTours as $paket)
                             <tr>
-                                <td>{{ $key + 1 }}</td>
+                                <td>{{ $loop->iteration + ($paketTours->currentPage() - 1) * $paketTours->perPage() }}</td>
 
                                 <td>{{ $paket->nama_paket }}</td>
 
@@ -171,6 +182,10 @@
                         @endforelse
                     </tbody>
                 </table>
+                
+                <div class="mt-3 d-flex justify-content-end">
+                    {{ $paketTours->links() }}
+                </div>
             </div>
 
         </div>

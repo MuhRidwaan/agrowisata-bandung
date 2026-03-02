@@ -19,8 +19,18 @@ class PaketTourController extends Controller
     {
         $query = PaketTour::with('vendor', 'tanggalAvailables');
 
+        // Jika user adalah Vendor, hanya tampilkan paket milik mereka
+        if (auth()->user()->hasRole('Vendor')) {
+            $vendorId = auth()->user()->vendor->id ?? null;
+            $query->where('vendor_id', $vendorId);
+        }
+
         if ($request->filled('search')) {
             $query->where('nama_paket', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('vendor_id')) {
+            $query->where('vendor_id', $request->vendor_id);
         }
 
         if ($request->filled('created_from')) {
@@ -30,8 +40,10 @@ class PaketTourController extends Controller
             $query->whereDate('created_at', '<=', $request->created_to);
         }
 
-        $paketTours = $query->get();
-        return view('backend.paket_tour.index', compact('paketTours'));
+        $paketTours = $query->latest()->paginate(10)->withQueryString();
+        $vendors = Vendor::orderBy('name')->get();
+        
+        return view('backend.paket_tour.index', compact('paketTours', 'vendors'));
     }
 
     public function create()
@@ -45,7 +57,7 @@ class PaketTourController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
+        $rules = [
             'nama_paket'  => 'required|string|max:255',
             'deskripsi'   => 'required|string',
             'jam_awal'    => 'required|date_format:H:i',
@@ -53,8 +65,17 @@ class PaketTourController extends Controller
             'harga_paket' => 'required|numeric|min:0',
             'aktivitas'   => 'required|array|min:1',
             'aktivitas.*' => 'required|string|max:255',
-            'vendor_id'   => 'required|exists:vendors,id',
-        ]);
+        ];
+
+        if (auth()->user()->hasRole('Super Admin')) {
+            $rules['vendor_id'] = 'required|exists:vendors,id';
+        }
+
+        $data = $request->validate($rules);
+
+        if (auth()->user()->hasRole('Vendor')) {
+            $data['vendor_id'] = auth()->user()->vendor->id;
+        }
 
         PaketTour::create($data);
 
