@@ -13,7 +13,16 @@ class PaymentController extends Controller
 {
     public function index(Request $request)
     {
+        $user = auth()->user();
         $query = Payment::with(['booking.paketTour', 'booking.user']);
+
+        // Jika user adalah Vendor, hanya tampilkan pembayaran untuk paket milik mereka
+        if ($user->hasRole('Vendor')) {
+            $vendorId = $user->vendor->id ?? null;
+            $query->whereHas('booking.paketTour', function ($q) use ($vendorId) {
+                $q->where('vendor_id', $vendorId);
+            });
+        }
 
         if ($request->search) {
             $query->whereHas('booking', function ($q) use ($request) {
@@ -31,7 +40,15 @@ class PaymentController extends Controller
 
     public function invoice($id)
     {
+        $user = auth()->user();
         $payment = Payment::with(['booking.paketTour', 'booking.user'])->findOrFail($id);
+
+        // Jika user adalah Vendor, pastikan invoice ini milik paket mereka
+        if ($user->hasRole('Vendor')) {
+            if ($payment->booking->paketTour->vendor_id !== ($user->vendor->id ?? null)) {
+                abort(403, 'Akses ditolak.');
+            }
+        }
 
         if ($payment->status != 'success') {
             return redirect()->route('payments.index')->with('error', 'Invoice belum tersedia karena pembayaran belum lunas.');
@@ -40,9 +57,17 @@ class PaymentController extends Controller
         return view('backend.payments.invoice', compact('payment'));
     }
 
-public function markAsPaid($id)
+    public function markAsPaid($id)
     {
+        $user = auth()->user();
         $payment = Payment::findOrFail($id);
+
+        // Jika user adalah Vendor, pastikan transaksi ini milik paket mereka
+        if ($user->hasRole('Vendor')) {
+            if ($payment->booking->paketTour->vendor_id !== ($user->vendor->id ?? null)) {
+                abort(403, 'Akses ditolak.');
+            }
+        }
 
         if ($payment->status == 'success') {
             return back();
@@ -66,7 +91,15 @@ public function markAsPaid($id)
     // FUNGSI BARU: Untuk membatalkan pembayaran yang expired
     public function markAsFailed($id)
     {
+        $user = auth()->user();
         $payment = Payment::findOrFail($id);
+
+        // Jika user adalah Vendor, pastikan transaksi ini milik paket mereka
+        if ($user->hasRole('Vendor')) {
+            if ($payment->booking->paketTour->vendor_id !== ($user->vendor->id ?? null)) {
+                abort(403, 'Akses ditolak.');
+            }
+        }
 
         if ($payment->status != 'success') {
             $payment->update([
