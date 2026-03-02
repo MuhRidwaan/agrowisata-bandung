@@ -17,6 +17,7 @@ use App\Http\Controllers\PricingRuleController;
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FrontendController;
+use App\Http\Controllers\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -115,6 +116,13 @@ Route::middleware(['auth','role:admin'])->group(function () {
 
     // AREAS
     Route::resource('areas', AreaController::class);
+
+    // REPORTS
+    Route::get('/reports/sales', [ReportController::class, 'salesReport'])->name('reports.sales');
+    Route::get('/reports/booking', [ReportController::class, 'bookingReport'])->name('reports.booking');
+    Route::get('/reports/user', [ReportController::class, 'userReport'])->name('reports.user');
+    Route::get('/reports/performance', [ReportController::class, 'tourPerformanceReport'])->name('reports.performance');
+    Route::get('/reports/vendor-revenue', [ReportController::class, 'vendorRevenueReport'])->name('reports.vendor_revenue');
 });
 
 

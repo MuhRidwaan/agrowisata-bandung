@@ -109,4 +109,9 @@ class PaketTour extends Model
     {
         return $this->hasMany(Review::class, 'vendor_id', 'vendor_id');
     }
+
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
 }

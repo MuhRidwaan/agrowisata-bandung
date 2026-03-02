@@ -19,4 +19,9 @@ class Vendor extends Model
     {
         return $this->hasMany(Review::class);
     }
+
+    public function paketTours()
+    {
+        return $this->hasMany(PaketTour::class);
+    }
 }
