@@ -14,7 +14,15 @@ class TanggalAvailableController extends Controller
 {
     public function index(Request $request)
     {
+        $user = auth()->user();
         $query = TanggalAvailable::with('paketTour')->orderBy('tanggal', 'desc');
+
+        if ($user->hasRole('Vendor')) {
+            $vendorId = $user->vendor->id ?? null;
+            $query->whereHas('paketTour', function($q) use ($vendorId) {
+                $q->where('vendor_id', $vendorId);
+            });
+        }
 
         if ($request->filled('date_from')) {
             $query->whereDate('tanggal', '>=', $request->date_from);
@@ -29,7 +37,14 @@ class TanggalAvailableController extends Controller
 
     public function create()
     {
-        $paketTours = PaketTour::all();
+        $user = auth()->user();
+        $query = PaketTour::query();
+
+        if ($user->hasRole('Vendor')) {
+            $query->where('vendor_id', $user->vendor->id ?? null);
+        }
+
+        $paketTours = $query->get();
         return view('backend.tanggal_available.form', [
             'tanggalAvailable' => new TanggalAvailable(),
             'paketTours' => $paketTours,
@@ -40,8 +55,22 @@ class TanggalAvailableController extends Controller
 
     public function store(Request $request)
     {
+        $user = auth()->user();
         $validated = $request->validate([
-            'paket_tour_id' => 'required|exists:paket_tours,id',
+            'paket_tour_id' => [
+                'required',
+                'exists:paket_tours,id',
+                function ($attribute, $value, $fail) use ($user) {
+                    if ($user->hasRole('Vendor')) {
+                        $exists = PaketTour::where('id', $value)
+                            ->where('vendor_id', $user->vendor->id ?? null)
+                            ->exists();
+                        if (!$exists) {
+                            $fail('Paket tour yang dipilih tidak valid.');
+                        }
+                    }
+                },
+            ],
             'tanggal' => 'required|date',
             'kuota' => 'required|integer|min:1',
             'status' => 'required|in:aktif,nonaktif',
@@ -61,7 +90,19 @@ class TanggalAvailableController extends Controller
 
     public function edit(TanggalAvailable $tanggalAvailable)
     {
-        $paketTours = PaketTour::all();
+        $user = auth()->user();
+        $query = PaketTour::query();
+
+        if ($user->hasRole('Vendor')) {
+            $vendorId = $user->vendor->id ?? null;
+            $query->where('vendor_id', $vendorId);
+            // Pastikan data yang diedit milik vendor yang login
+            if ($tanggalAvailable->paketTour->vendor_id !== $vendorId) {
+                abort(403, 'Akses ditolak.');
+            }
+        }
+
+        $paketTours = $query->get();
 
         // Ambil semua available dates untuk paket tour yang sama (detail view-only)
         $details = TanggalAvailable::where('paket_tour_id', $tanggalAvailable->paket_tour_id)
@@ -78,8 +119,22 @@ class TanggalAvailableController extends Controller
 
     public function update(Request $request, TanggalAvailable $tanggalAvailable)
     {
+        $user = auth()->user();
         $validated = $request->validate([
-            'paket_tour_id' => 'required|exists:paket_tours,id',
+            'paket_tour_id' => [
+                'required',
+                'exists:paket_tours,id',
+                function ($attribute, $value, $fail) use ($user) {
+                    if ($user->hasRole('Vendor')) {
+                        $exists = PaketTour::where('id', $value)
+                            ->where('vendor_id', $user->vendor->id ?? null)
+                            ->exists();
+                        if (!$exists) {
+                            $fail('Paket tour yang dipilih tidak valid.');
+                        }
+                    }
+                },
+            ],
             'tanggal' => 'required|date',
             'kuota' => 'required|integer|min:1',
             'status' => 'required|in:aktif,nonaktif',

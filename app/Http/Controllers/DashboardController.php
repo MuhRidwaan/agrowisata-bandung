@@ -12,14 +12,37 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Data untuk Statistik Utama
-        $totalBookings = Booking::count();
-        $totalRevenue = Booking::where('status', 'paid')->sum('total_price');
-        $totalUsers = User::count();
-        $totalPaketTours = PaketTour::count();
+        $user = auth()->user();
+        $vendorId = $user->hasRole('Vendor') ? ($user->vendor->id ?? null) : null;
 
-        // Ambil 5 booking terbaru untuk ditampilkan di tabel
-        $recentBookings = Booking::with(['user', 'paketTour'])->latest()->take(5)->get();
+        // Data untuk Statistik Utama
+        $queryBooking = Booking::query();
+        $queryRevenue = Booking::where('status', 'paid');
+        $queryPaket = PaketTour::query();
+
+        if ($vendorId) {
+            $queryBooking->whereHas('paketTour', function($q) use ($vendorId) {
+                $q->where('vendor_id', $vendorId);
+            });
+            $queryRevenue->whereHas('paketTour', function($q) use ($vendorId) {
+                $q->where('vendor_id', $vendorId);
+            });
+            $queryPaket->where('vendor_id', $vendorId);
+        }
+
+        $totalBookings = $queryBooking->count();
+        $totalRevenue = $queryRevenue->sum('total_price');
+        $totalUsers = User::count(); // Tetap total user untuk dashboard
+        $totalPaketTours = $queryPaket->count();
+
+        // Ambil 5 booking terbaru
+        $recentQuery = Booking::with(['user', 'paketTour']);
+        if ($vendorId) {
+            $recentQuery->whereHas('paketTour', function($q) use ($vendorId) {
+                $q->where('vendor_id', $vendorId);
+            });
+        }
+        $recentBookings = $recentQuery->latest()->take(5)->get();
 
         return view('backend.dashboard', compact(
             'totalBookings',

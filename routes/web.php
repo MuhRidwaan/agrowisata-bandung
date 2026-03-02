@@ -85,15 +85,15 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth','role:admin'])->group(function () {
+Route::middleware(['auth'])->group(function () {
 
-    // DASHBOARD
+    // DASHBOARD (Super Admin & Vendor)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // BOOKINGS
+    // BOOKINGS (Super Admin & Vendor)
     Route::resource('bookings', BookingController::class);
 
-    // PAYMENTS
+    // PAYMENTS (Super Admin & Vendor)
     Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::post('/payments/{payment}/paid', [PaymentController::class, 'markAsPaid'])->name('payments.paid');
     Route::post('/payments/{payment}/cancel',[PaymentController::class, 'markAsFailed'])->name('payments.cancel');
@@ -101,33 +101,42 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::post('/midtrans/callback', [PaymentController::class, 'callback'])->name('midtrans.callback');
     Route::post('payments/{id}/send-email', [PaymentController::class, 'sendEmail'])->name('payments.send_email');
 
-    // VENDORS
-    Route::get('/vendors/{id}/contact', [VendorController::class, 'contact'])->name('vendors.contact');
-    Route::resource('vendors', VendorController::class);
-
-    // REVIEWS
+    // REVIEWS (Super Admin & Vendor)
     Route::get('/review', [ReviewController::class, 'index'])->name('review.index');
     Route::post('/review/{id}/approve', [ReviewController::class, 'approve'])->name('review.approve');
     Route::post('/review/{id}/reject', [ReviewController::class, 'reject'])->name('review.reject');
     Route::post('/review/{id}/reply', [ReviewController::class, 'reply'])->name('review.reply');
     Route::delete('/review/{id}', [ReviewController::class, 'destroy'])->name('review.destroy');
 
-    // WHATSAPP
-    Route::resource('whatsappsetting', WhatsappSettingController::class);
+    // REPORTS (Super Admin & Vendor)
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/sales', [ReportController::class, 'salesReport'])->name('sales');
+        Route::get('/booking', [ReportController::class, 'bookingReport'])->name('booking');
+        Route::get('/performance', [ReportController::class, 'tourPerformanceReport'])->name('performance');
 
-    // AREAS
-    Route::resource('areas', AreaController::class);
+        // Super Admin Only Reports
+        Route::middleware(['role:Super Admin'])->group(function () {
+            Route::get('/user', [ReportController::class, 'userReport'])->name('user');
+            Route::get('/vendor-revenue', [ReportController::class, 'vendorRevenueReport'])->name('vendor_revenue');
+        });
+    });
 
-    // REPORTS
-    Route::get('/reports/sales', [ReportController::class, 'salesReport'])->name('reports.sales');
-    Route::get('/reports/booking', [ReportController::class, 'bookingReport'])->name('reports.booking');
-    Route::get('/reports/user', [ReportController::class, 'userReport'])->name('reports.user');
-    Route::get('/reports/performance', [ReportController::class, 'tourPerformanceReport'])->name('reports.performance');
-    Route::get('/reports/vendor-revenue', [ReportController::class, 'vendorRevenueReport'])->name('reports.vendor_revenue');
+    // SUPER ADMIN ONLY
+    Route::middleware(['role:Super Admin'])->group(function () {
+        // VENDORS
+        Route::get('/vendors/{id}/contact', [VendorController::class, 'contact'])->name('vendors.contact');
+        Route::resource('vendors', VendorController::class);
 
-    // GLOBAL SETTINGS
-    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
-    Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+        // AREAS
+        Route::resource('areas', AreaController::class);
+
+        // WHATSAPP SETTINGS
+        Route::resource('whatsappsetting', WhatsappSettingController::class);
+
+        // GLOBAL SETTINGS
+        Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+        Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+    });
 });
 
 

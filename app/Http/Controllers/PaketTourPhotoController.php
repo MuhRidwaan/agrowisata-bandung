@@ -15,21 +15,48 @@ class PaketTourPhotoController extends Controller
     
     public function index()
     {
-        // Ambil paket yang masih memiliki foto
-        $pakets = PaketTour::with('photos')->whereHas('photos')->get();
+        $user = auth()->user();
+        $query = PaketTour::with('photos')->whereHas('photos');
+
+        if ($user->hasRole('Vendor')) {
+            $query->where('vendor_id', $user->vendor->id ?? null);
+        }
+
+        $pakets = $query->get();
         return view('backend.paket_tour_photo.index', compact('pakets'));
     }
 
     public function create()
     {
-        $paketTours = PaketTour::all();
+        $user = auth()->user();
+        $query = PaketTour::query();
+
+        if ($user->hasRole('Vendor')) {
+            $query->where('vendor_id', $user->vendor->id ?? null);
+        }
+
+        $paketTours = $query->get();
         return view('backend.paket_tour_photo.form', ['photo' => new PaketTourPhoto(), 'paketTours' => $paketTours]);
     }
 
     public function store(Request $request)
     {
+        $user = auth()->user();
         $data = $request->validate([
-            'paket_tour_id' => 'required|exists:paket_tours,id',
+            'paket_tour_id' => [
+                'required',
+                'exists:paket_tours,id',
+                function ($attribute, $value, $fail) use ($user) {
+                    if ($user->hasRole('Vendor')) {
+                        $exists = PaketTour::where('id', $value)
+                            ->where('vendor_id', $user->vendor->id ?? null)
+                            ->exists();
+                        if (!$exists) {
+                            $fail('Paket tour yang dipilih tidak valid.');
+                        }
+                    }
+                },
+            ],
             'path_foto' => 'required',
             'path_foto.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
@@ -57,7 +84,18 @@ class PaketTourPhotoController extends Controller
 
     public function edit(PaketTourPhoto $paketTourPhoto)
     {
-        $paketTours = PaketTour::all();
+        $user = auth()->user();
+        $query = PaketTour::query();
+
+        if ($user->hasRole('Vendor')) {
+            $query->where('vendor_id', $user->vendor->id ?? null);
+            // Pastikan foto yang di-edit milik vendor yang login
+            if ($paketTourPhoto->paketTour->vendor_id !== $user->vendor->id) {
+                abort(403, 'Akses ditolak.');
+            }
+        }
+
+        $paketTours = $query->get();
         // Ambil semua foto untuk paket ini
         $allPhotos = PaketTourPhoto::where('paket_tour_id', $paketTourPhoto->paket_tour_id)->get();
         return view('backend.paket_tour_photo.form', [
@@ -69,8 +107,22 @@ class PaketTourPhotoController extends Controller
 
     public function update(Request $request, PaketTourPhoto $paketTourPhoto)
     {
+        $user = auth()->user();
         $data = $request->validate([
-            'paket_tour_id' => 'required|exists:paket_tours,id',
+            'paket_tour_id' => [
+                'required',
+                'exists:paket_tours,id',
+                function ($attribute, $value, $fail) use ($user) {
+                    if ($user->hasRole('Vendor')) {
+                        $exists = PaketTour::where('id', $value)
+                            ->where('vendor_id', $user->vendor->id ?? null)
+                            ->exists();
+                        if (!$exists) {
+                            $fail('Paket tour yang dipilih tidak valid.');
+                        }
+                    }
+                },
+            ],
             'path_foto' => $request->hasFile('path_foto') ? 'image|mimes:jpeg,png,jpg,gif|max:2048' : '',
             'delete_photos' => 'array',
             'delete_photos.*' => 'integer|exists:paket_tour_photos,id',

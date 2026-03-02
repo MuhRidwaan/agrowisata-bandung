@@ -10,21 +10,52 @@ class PricingRuleController extends Controller
 {
     public function index()
     {
-        $rules = PricingRule::with('paketTour')->latest()->get();
+        $user = auth()->user();
+        $query = PricingRule::with('paketTour');
+
+        if ($user->hasRole('Vendor')) {
+            $vendorId = $user->vendor->id ?? null;
+            $query->whereHas('paketTour', function($q) use ($vendorId) {
+                $q->where('vendor_id', $vendorId);
+            });
+        }
+
+        $rules = $query->latest()->get();
         $grouped = $rules->groupBy('paket_tour_id');
         return view('backend.pricingrules.index', compact('grouped'));
     }
 
     public function create()
     {
-        $packages = PaketTour::pluck('nama_paket','id');
+        $user = auth()->user();
+        $query = PaketTour::query();
+
+        if ($user->hasRole('Vendor')) {
+            $query->where('vendor_id', $user->vendor->id ?? null);
+        }
+
+        $packages = $query->pluck('nama_paket','id');
         return view('backend.pricingrules.form', compact('packages'));
     }
 
     public function store(Request $request)
     {
+        $user = auth()->user();
         $validated = $request->validate([
-            'paket_tour_id' => 'required|exists:paket_tours,id',
+            'paket_tour_id' => [
+                'required',
+                'exists:paket_tours,id',
+                function ($attribute, $value, $fail) use ($user) {
+                    if ($user->hasRole('Vendor')) {
+                        $exists = PaketTour::where('id', $value)
+                            ->where('vendor_id', $user->vendor->id ?? null)
+                            ->exists();
+                        if (!$exists) {
+                            $fail('Paket tour yang dipilih tidak valid.');
+                        }
+                    }
+                },
+            ],
             'rules' => 'required|array|min:1',
             'rules.*.min_pax' => 'required|integer|min:1',
             'rules.*.max_pax' => 'required|integer|gte:rules.*.min_pax',
@@ -91,7 +122,19 @@ class PricingRuleController extends Controller
 
     public function edit(PricingRule $pricingrule)
     {
-        $packages = PaketTour::pluck('nama_paket','id');
+        $user = auth()->user();
+        $query = PaketTour::query();
+
+        if ($user->hasRole('Vendor')) {
+            $vendorId = $user->vendor->id ?? null;
+            $query->where('vendor_id', $vendorId);
+            // Pastikan data milik vendor yang login
+            if ($pricingrule->paketTour->vendor_id !== $vendorId) {
+                abort(403, 'Akses ditolak.');
+            }
+        }
+
+        $packages = $query->pluck('nama_paket','id');
         // Ambil semua rules untuk paket ini
         $rules = PricingRule::where('paket_tour_id', $pricingrule->paket_tour_id)->orderBy('min_pax')->get()->map(function($r) {
             return [
