@@ -137,6 +137,39 @@
         });
     });
 </script>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+{{-- ================= GLOBAL SWEET ALERT ================= --}}
+@if(session('success'))
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    Swal.fire({
+        icon: 'success',
+        title: 'Berhasil',
+        text: "{{ session('success') }}",
+        confirmButtonColor: '#2f6d4f',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+        backdrop: 'rgba(0,0,0,0.4)'
+    });
+});
+</script>
+@endif
+
+@if(session('error'))
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: "{{ session('error') }}",
+        confirmButtonColor: '#d33'
+    });
+});
+</script>
+@endif
 
 </body>
 

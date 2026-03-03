@@ -1,7 +1,8 @@
-@include('frontend.layouts.header')
 <!-- Navigasi -->
-@include('frontend.layouts.nav')
-
+@if(!isset($hideHeader))
+    @include('frontend.layouts.header')
+    @include('frontend.layouts.nav')
+@endif
 <!-- Content -->
 @yield('content')
 

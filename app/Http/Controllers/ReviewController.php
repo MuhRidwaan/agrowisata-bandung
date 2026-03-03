@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Review;
+use App\Models\PaketTour;
 
 class ReviewController extends Controller
 {
@@ -22,6 +23,31 @@ class ReviewController extends Controller
 
         return view('backend.reviews.index', compact('reviews'));
     }
+
+    // ================= STORE (USER SUBMIT) =================
+    public function store(Request $request)
+{
+    $request->validate([
+        'paket_id' => 'required|exists:paket_tours,id',
+        'name'     => 'required|string|max:255',
+        'rating'   => 'required|integer|min:1|max:5',
+        'comment'  => 'required|string|max:1000',
+    ]);
+
+    $paket = PaketTour::findOrFail($request->paket_id);
+
+    Review::create([
+        'paket_id'  => $request->paket_id,
+        'vendor_id' => $paket->vendor_id ?? null,
+        'user_id'   => auth()->id(), // tetap boleh null
+        'name'      => $request->name,
+        'rating'    => $request->rating,
+        'comment'   => $request->comment,
+        'status'    => 'pending',
+    ]);
+
+    return back()->with('success', 'Ulasan berhasil dikirim');
+}
 
     // ================= APPROVE =================
     public function approve($id)

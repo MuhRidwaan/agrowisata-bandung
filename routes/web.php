@@ -45,6 +45,11 @@ Route::get('/success', [FrontendController::class, 'success'])->name('success');
 // Midtrans Callback (public, no auth, no CSRF)
 Route::post('/midtrans/callback', [PaymentController::class, 'callback'])->name('midtrans.callback');
 
+// Ulasan
+Route::middleware('auth')->group(function () {
+    Route::post('/reviews/store', [ReviewController::class, 'store'])->name('reviews.store');
+});
+
 
 /*
 |--------------------------------------------------------------------------
