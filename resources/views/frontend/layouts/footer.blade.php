@@ -44,6 +44,8 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+@if(isset($paket))
+<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
 <script>
     window.BOOKING_CONFIG = {
         name: '{{ $paket->nama_paket ?? "AgroBandung" }}',
@@ -51,10 +53,14 @@
         basePrice: {{ $paket->harga_paket ?? 0 }},
         pricingRules: @json($paket->pricingRules ?? []),
         waNumber: '{{ $paket->vendor->whatsappsetting->phone_number ?? "6281234567890" }}',
-        waContact: '{{ $paket->vendor->name ?? "Admin" }}'
+        waContact: '{{ $paket->vendor->name ?? "Admin" }}',
+        storeUrl: '{{ route("booking.store") }}',
+        csrfToken: '{{ csrf_token() }}',
+        invoiceUrl: '{{ url("/pembayaran/invoice") }}'
     };
 </script>
 <script src="{{ asset('frontend/js/booking.js') }}"></script>
+@endif
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var pills = document.querySelectorAll('.region-pill');

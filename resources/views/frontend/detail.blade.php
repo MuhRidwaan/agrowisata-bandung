@@ -21,14 +21,9 @@
     <!-- ================= GALLERY ================= -->
     <div class="mb-4">
         <div class="gallery-main bg-secondary" id="mainGallery">
-            <picture>
-                <source srcset="{{ $paket->photos->first() ? asset('storage/' . $paket->photos->first()->path_foto) : 'https://via.placeholder.com/400x250' }}"
-                    type="image/webp">
-                <img src="{{ $paket->photos->first() ? asset('storage/' . $paket->photos->first()->path_foto) : 'https://via.placeholder.com/400x250' }}"
-                    class="img-fluid rounded w-100" alt="Gambar Paket">
-            </picture>         
-            class="img-fluid rounded w-100">
-    </div>
+            <img src="{{ $paket->photos->first() ? asset('storage/' . $paket->photos->first()->path_foto) : 'https://via.placeholder.com/400x250' }}"
+                class="img-fluid rounded w-100" alt="Gambar Paket">
+        </div>
 
     <div class="row g-4">
 
@@ -74,7 +69,7 @@
                         <div class="row">
                             @foreach($paket->photos as $photo)
                                 <div class="col-md-4 mb-3">
-                                    <img src="{{ asset('storage/' . $photo->photo) }}"
+                                    <img src="{{ asset('storage/' . $photo->path_foto) }}"
                                         class="img-fluid rounded">
                                 </div>
                             @endforeach

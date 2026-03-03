@@ -16,6 +16,8 @@ class Booking extends Model
         'customer_name',
         'customer_email',
         'customer_phone',
+        'visit_date',
+        'tanggal',
     ];
 
     public function paketTour()

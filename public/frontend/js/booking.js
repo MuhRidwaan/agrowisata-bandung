@@ -1,21 +1,24 @@
-// Booking Wizard - Multi-step booking system
+// Booking Wizard - Multi-step booking system with Midtrans Integration
 'use strict';
 
 let currentStep = 1;
 let participantCount = 1;
 let bookingCode = '';
+let isProcessing = false;
 
 const config = window.BOOKING_CONFIG || {
   name: 'AgroBandung', location: 'Bandung',
-  basePrice: 50000, pricingRules: []
+  basePrice: 50000, pricingRules: [],
+  storeUrl: '', csrfToken: '', invoiceUrl: ''
 };
 
+function formatCurrency(amount) {
+  return 'Rp' + Math.round(amount).toLocaleString('id-ID');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
   const dateInput = document.getElementById('visitDate');
   if (dateInput) {
-    dateInput.min = tomorrow.toISOString().split('T')[0];
     dateInput.addEventListener('change', updateSummary);
   }
   initPaymentOptions();
@@ -34,13 +37,20 @@ function initPaymentOptions() {
 }
 
 function nextStep() {
+  if (isProcessing) return;
   if (!validateStep(currentStep)) return;
+
+  // Step 3 → Step 4: Submit booking to backend & open Midtrans
+  if (currentStep === 3) {
+    submitBooking();
+    return;
+  }
+
   if (currentStep < 4) {
     currentStep++;
     showStep(currentStep);
     updateStepper();
     updateNavButtons();
-    if (currentStep === 4) startPaymentProcess();
   }
 }
 
@@ -281,85 +291,166 @@ function updateSummary() {
   if (tp) tp.textContent = formatCurrency(calc.totalPrice);
 }
 
-function startPaymentProcess() {
-  bookingCode = generateBookingCode();
-  var radio = document.querySelector('input[name="payment"]:checked');
-  var names = { transfer: 'Transfer Bank', ewallet: 'E-Wallet', qris: 'QRIS' };
-  document.getElementById('bookingCode').textContent = bookingCode;
-  document.getElementById('paymentMethodName').textContent = names[radio ? radio.value : ''] || '-';
-  
-  const calc = getPriceCalculation();
-  document.getElementById('waitingTotal').textContent = formatCurrency(calc.totalPrice);
-  document.getElementById('paymentWaiting').classList.remove('d-none');
-  document.getElementById('paymentSuccess').classList.add('d-none');
+// ================= SUBMIT BOOKING TO BACKEND =================
+function submitBooking() {
+  if (isProcessing) return;
+  isProcessing = true;
+
+  var btnNext = document.getElementById('btnNext');
+  btnNext.disabled = true;
+  btnNext.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+
+  // Gather form data
+  var nameInput = document.querySelector('.participant-card input[type="text"]');
+  var phoneInput = document.querySelector('.participant-card input[type="tel"]');
+  var emailInput = document.querySelector('.participant-card input[type="email"]');
+  var dateInput = document.getElementById('visitDate');
+  var paketId = document.getElementById('paketTourId').value;
+
+  var payload = {
+    paket_tour_id: paketId,
+    jumlah_peserta: participantCount,
+    customer_name: nameInput ? nameInput.value.trim() : '',
+    customer_email: emailInput ? emailInput.value.trim() : '',
+    customer_phone: phoneInput ? phoneInput.value.trim() : '',
+    visit_date: dateInput ? dateInput.value : ''
+  };
+
+  fetch(config.storeUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': config.csrfToken,
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(function(response) {
+    if (!response.ok) {
+      return response.json().then(function(err) { throw err; });
+    }
+    return response.json();
+  })
+  .then(function(data) {
+    if (data.success && data.snap_token) {
+      bookingCode = data.booking_code;
+
+      // Open Midtrans Snap popup
+      window.snap.pay(data.snap_token, {
+        onSuccess: function(result) {
+          handlePaymentResult('success', data, result);
+        },
+        onPending: function(result) {
+          handlePaymentResult('pending', data, result);
+        },
+        onError: function(result) {
+          handlePaymentResult('error', data, result);
+        },
+        onClose: function() {
+          // User closed the popup without completing payment
+          handlePaymentResult('pending', data, null);
+        }
+      });
+    } else {
+      showToast('Gagal membuat booking. Silakan coba lagi.');
+    }
+  })
+  .catch(function(err) {
+    console.error('Booking error:', err);
+    var msg = 'Terjadi kesalahan. Silakan coba lagi.';
+    if (err && err.errors) {
+      var firstKey = Object.keys(err.errors)[0];
+      msg = err.errors[firstKey][0];
+    } else if (err && err.message) {
+      msg = err.message;
+    }
+    showToast(msg);
+  })
+  .finally(function() {
+    isProcessing = false;
+    btnNext.disabled = false;
+    btnNext.innerHTML = 'Bayar Sekarang';
+  });
 }
 
-function confirmPayment() {
-  document.getElementById('paymentWaiting').classList.add('d-none');
-  document.getElementById('paymentSuccess').classList.remove('d-none');
-  document.getElementById('successBookingCode').textContent = bookingCode;
+function handlePaymentResult(status, bookingData, midtransResult) {
+  // Move to step 4
+  currentStep = 4;
+  showStep(4);
+  updateStepper();
+  updateNavButtons();
+
+  if (status === 'success') {
+    // Show success directly
+    document.getElementById('paymentWaiting').classList.add('d-none');
+    document.getElementById('paymentSuccess').classList.remove('d-none');
+    showSuccessDetails(bookingData);
+  } else {
+    // Show waiting payment (pending or closed popup)
+    document.getElementById('paymentWaiting').classList.remove('d-none');
+    document.getElementById('paymentSuccess').classList.add('d-none');
+    document.getElementById('bookingCode').textContent = bookingData.booking_code;
+    document.getElementById('paymentMethodName').textContent = 'Midtrans';
+    document.getElementById('waitingTotal').textContent = formatCurrency(bookingData.total_price);
+  }
+}
+
+function showSuccessDetails(bookingData) {
+  document.getElementById('successBookingCode').textContent = bookingData.booking_code;
   document.getElementById('successDestination').textContent = config.name;
+
   var dateInput = document.getElementById('visitDate');
   if (dateInput && dateInput.value) {
     var d = new Date(dateInput.value + 'T00:00:00');
     document.getElementById('successDate').textContent = d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   }
+
   var nameInput = document.querySelector('.participant-card input[type="text"]');
   document.getElementById('successParticipantLabel').textContent = 'Peserta (' + participantCount + ' orang)';
   document.getElementById('successParticipantName').textContent = nameInput ? nameInput.value : '-';
-  
-  const calc = getPriceCalculation();
-  document.getElementById('successTotal').textContent = formatCurrency(calc.totalPrice);
+  document.getElementById('successTotal').textContent = formatCurrency(bookingData.total_price);
 
-  // Generate QR Code with booking details
-  var qrContainer = document.getElementById('qrCodeContainer');
-  if (!qrContainer) {
-    var dateEl = document.getElementById('successDate');
-    var qrData = 'AGROBANDUNG BOOKING\n'
-      + 'Kode: ' + bookingCode + '\n'
-      + 'Destinasi: ' + config.name + '\n'
-      + 'Lokasi: ' + config.location + '\n'
-      + 'Tanggal: ' + (dateEl ? dateEl.textContent : '-') + '\n'
-      + 'Peserta: ' + participantCount + ' orang\n'
-      + 'Total: ' + formatCurrency(total);
-
-    var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&format=svg&data=' + encodeURIComponent(qrData);
-
-    qrContainer = document.createElement('div');
-    qrContainer.id = 'qrCodeContainer';
-    qrContainer.className = 'mb-4 mx-auto text-center';
-    qrContainer.style.maxWidth = '400px';
-    qrContainer.innerHTML = '<div class="border rounded-3 p-3 d-inline-block bg-white">'
-      + '<img src="' + qrUrl + '" alt="QR Code Booking ' + bookingCode + '" width="180" height="180" class="mb-2" id="qrCodeImg">'
-      + '<p class="text-muted small mb-0"><i class="bi bi-qr-code me-1"></i>Scan untuk menyimpan detail booking</p>'
-      + '</div>';
-
-    // Insert after the booking details card (before Total Bayar)
-    var totalRow = document.querySelector('#paymentSuccess .d-flex.align-items-center.justify-content-between.mb-4');
-    if (totalRow) {
-      totalRow.parentNode.insertBefore(qrContainer, totalRow);
+  // Inject Invoice link
+  var invoiceContainer = document.getElementById('invoiceLinkContainer');
+  if (!invoiceContainer && config.invoiceUrl) {
+    invoiceContainer = document.createElement('div');
+    invoiceContainer.id = 'invoiceLinkContainer';
+    invoiceContainer.className = 'mt-3 mx-auto';
+    invoiceContainer.style.maxWidth = '400px';
+    invoiceContainer.innerHTML = '<a href="' + config.invoiceUrl + '/' + bookingData.booking_code + '" target="_blank" class="btn btn-outline-primary w-100 mb-2">'
+      + '<i class="bi bi-file-earmark-text me-2"></i>Lihat Invoice</a>';
+    var homeBtn = document.querySelector('#paymentSuccess .btn-agro-primary');
+    if (homeBtn) {
+      homeBtn.parentNode.insertBefore(invoiceContainer, homeBtn);
     }
   }
 
-  // Inject WhatsApp button after successful payment
+  // Inject WhatsApp button
   if (config.waNumber && config.waContact) {
     var waContainer = document.getElementById('waSuccessContainer');
     if (!waContainer) {
       waContainer = document.createElement('div');
       waContainer.id = 'waSuccessContainer';
-      waContainer.className = 'mt-3 mx-auto';
+      waContainer.className = 'mt-2 mx-auto';
       waContainer.style.maxWidth = '400px';
-      var waMsg = encodeURIComponent('Halo ' + config.waContact + ', saya sudah melakukan pemesanan ' + config.name + ' dengan kode ' + bookingCode + '. Mohon konfirmasinya. Terima kasih!');
-      waContainer.innerHTML = '<a href="https://wa.me/' + config.waNumber + '?text=' + waMsg + '" target="_blank" class="btn btn-whatsapp w-100 d-flex align-items-center justify-content-center gap-2">'
+      var waMsg = encodeURIComponent('Halo ' + config.waContact + ', saya sudah melakukan pemesanan ' + config.name + ' dengan kode ' + bookingData.booking_code + '. Mohon konfirmasinya. Terima kasih!');
+      waContainer.innerHTML = '<a href="https://wa.me/' + config.waNumber + '?text=' + waMsg + '" target="_blank" class="btn btn-success w-100 d-flex align-items-center justify-content-center gap-2">'
         + '<i class="bi bi-whatsapp"></i> Hubungi ' + config.waContact
-        + '</a>'
-        + '<p class="text-muted small text-center mt-2 mb-0">Konfirmasi pembayaran via WhatsApp</p>';
+        + '</a>';
       var homeBtn = document.querySelector('#paymentSuccess .btn-agro-primary');
       if (homeBtn) {
         homeBtn.parentNode.insertBefore(waContainer, homeBtn);
       }
     }
   }
+}
+
+function confirmPayment() {
+  // User clicked "Saya Sudah Bayar" - show success
+  document.getElementById('paymentWaiting').classList.add('d-none');
+  document.getElementById('paymentSuccess').classList.remove('d-none');
+
+  showSuccessDetails({ booking_code: bookingCode, total_price: getPriceCalculation().totalPrice });
 }
 
 function copyBookingCode() {

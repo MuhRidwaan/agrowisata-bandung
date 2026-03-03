@@ -34,12 +34,16 @@ Route::get('/detail/{id}', [FrontendController::class, 'detail'])->name('detail'
 
 // Booking
 Route::get('/booking/{id}', [FrontendController::class, 'booking'])->name('booking');
+Route::post('/booking/store', [FrontendController::class, 'storeBooking'])->name('booking.store');
 
 // Payment
 Route::get('/payment/{id}', [FrontendController::class, 'payment'])->name('payment');
 
 // Success Page
 Route::get('/success', [FrontendController::class, 'success'])->name('success');
+
+// Midtrans Callback (public, no auth, no CSRF)
+Route::post('/midtrans/callback', [PaymentController::class, 'callback'])->name('midtrans.callback');
 
 
 /*
@@ -98,7 +102,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/payments/{payment}/paid', [PaymentController::class, 'markAsPaid'])->name('payments.paid');
     Route::post('/payments/{payment}/cancel',[PaymentController::class, 'markAsFailed'])->name('payments.cancel');
     Route::get('/payments/{payment}/invoice', [PaymentController::class, 'invoice'])->name('payments.invoice');
-    Route::post('/midtrans/callback', [PaymentController::class, 'callback'])->name('midtrans.callback');
     Route::post('payments/{id}/send-email', [PaymentController::class, 'sendEmail'])->name('payments.send_email');
 
     // REVIEWS (Super Admin & Vendor)

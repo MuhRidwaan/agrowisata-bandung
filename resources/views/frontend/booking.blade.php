@@ -84,9 +84,17 @@
                                 <h3 class="fs-6 fw-semibold mb-3 d-flex align-items-center gap-2">
                                     <i class="bi bi-calendar-event text-primary-agro"></i> Tanggal Kunjungan
                                 </h3>
-                                <input type="date" class="form-control form-control-lg" id="visitDate" required>
+                                <input type="hidden" id="paketTourId" value="{{ $paket->id }}">
+                                <select class="form-control form-control-lg" id="visitDate" required>
+                                    <option value="">-- Pilih Tanggal --</option>
+                                    @foreach($availableDates as $tgl)
+                                        <option value="{{ $tgl->tanggal }}" data-kuota="{{ $tgl->kuota }}">
+                                            {{ \Carbon\Carbon::parse($tgl->tanggal)->translatedFormat('l, d F Y') }} (Kuota: {{ $tgl->kuota }})
+                                        </option>
+                                    @endforeach
+                                </select>
                                 <p class="text-muted small mt-2 mb-0">
-                                    <i class="bi bi-info-circle"></i> Pemesanan minimal 24 jam sebelum kunjungan
+                                    <i class="bi bi-info-circle"></i> Pilih tanggal yang tersedia untuk kunjungan Anda
                                 </p>
                             </div>
 
@@ -301,7 +309,7 @@
                                 <span class="text-muted">Total Bayar</span>
                                 <span class="font-display fs-4 fw-bold text-primary-agro" id="successTotal">Rp0</span>
                             </div>
-                            <a href="index.html" class="btn btn-agro-primary w-100" style="max-width: 400px;">
+                            <a href="{{ route('home') }}" class="btn btn-agro-primary w-100" style="max-width: 400px;">
                                 Kembali ke Beranda
                             </a>
                         </div>
@@ -336,13 +344,13 @@
                             </div>
                             <div class="mb-3 pb-3 border-bottom">
                                 <div class="d-flex justify-content-between small mb-1">
-                                    <span class="text-muted" id="summaryPriceLabel">Rp50.000 &times; 1</span>
-                                    <span id="summarySubtotal">Rp50.000</span>
+                                    <span class="text-muted" id="summaryPriceLabel">Rp{{ number_format($paket->harga_paket, 0, ',', '.') }} &times; 1</span>
+                                    <span id="summarySubtotal">Rp{{ number_format($paket->harga_paket, 0, ',', '.') }}</span>
                                 </div>
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="fw-medium">Total</span>
-                                <span class="font-display fs-4 fw-bold text-primary-agro" id="totalPrice">Rp52.500</span>
+                                <span class="font-display fs-4 fw-bold text-primary-agro" id="totalPrice">Rp{{ number_format($paket->harga_paket, 0, ',', '.') }}</span>
                             </div>
                         </div>
                     </div>
