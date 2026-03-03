@@ -52,11 +52,12 @@ class BookingController extends Controller
     {
         // 1. Validasi Input termasuk data diri
         $request->validate([
-            'paket_tour_id' => 'required|exists:paket_tours,id',
+            'paket_tour_id'  => 'required|exists:paket_tours,id',
             'jumlah_peserta' => 'required|integer|min:1',
             'customer_name'  => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|string|max:20',
+            'visit_date'     => 'required|date|after_or_equal:today',
         ]);
 
         // 2. Kalkulasi Total Harga menggunakan Pricing Rules
@@ -77,40 +78,48 @@ class BookingController extends Controller
             'customer_name'  => $request->customer_name,
             'customer_email' => $request->customer_email,
             'customer_phone' => $request->customer_phone,
+            'visit_date'     => $request->visit_date,
         ]);
 
         // 4. Konfigurasi Midtrans
-        \Midtrans\Config::$serverKey = config('midtrans.server_key');
-        \Midtrans\Config::$isProduction = config('midtrans.is_production');
-        \Midtrans\Config::$isSanitized = config('midtrans.is_sanitized');
-        \Midtrans\Config::$is3ds = config('midtrans.is_3ds');
+        try {
+            \Midtrans\Config::$serverKey = config('midtrans.server_key');
+            \Midtrans\Config::$isProduction = config('midtrans.is_production');
+            \Midtrans\Config::$isSanitized = config('midtrans.is_sanitized');
+            \Midtrans\Config::$is3ds = config('midtrans.is_3ds');
 
-        // 5. Susun Parameter untuk Midtrans
-        $params = array(
-            'transaction_details' => array(
-                'order_id'     => $bookingCode,
-                'gross_amount' => $total,
-            ),
-            'customer_details' => array(
-                'first_name' => $request->customer_name,
-                'email'      => $request->customer_email,
-                'phone'      => $request->customer_phone,
-            ),
-        );
+            // 5. Susun Parameter untuk Midtrans
+            $params = array(
+                'transaction_details' => array(
+                    'order_id'     => $bookingCode,
+                    'gross_amount' => (int) $total,
+                ),
+                'customer_details' => array(
+                    'first_name' => $request->customer_name,
+                    'email'      => $request->customer_email,
+                    'phone'      => $request->customer_phone,
+                ),
+            );
 
-        // 6. Dapatkan Snap Token dari Midtrans
-        $snapToken = \Midtrans\Snap::getSnapToken($params);
+            // 6. Dapatkan Snap Token dari Midtrans
+            $snapToken = \Midtrans\Snap::getSnapToken($params);
 
-        // 7. Simpan Data Payment
-        Payment::create([
-            'booking_id' => $booking->id,
-            'status'     => 'pending',
-            'snap_token' => $snapToken,
-        ]);
+            // 7. Simpan Data Payment
+            Payment::create([
+                'booking_id' => $booking->id,
+                'status'     => 'pending',
+                'snap_token' => $snapToken,
+            ]);
 
-        return redirect()
-            ->route('bookings.index')
-            ->with('success', 'Booking berhasil ditambahkan! Silakan lakukan pembayaran.');
+            return redirect()
+                ->route('bookings.index')
+                ->with('success', 'Booking berhasil ditambahkan! Silakan lakukan pembayaran.');
+
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('bookings.index')
+                ->with('error', 'Booking tersimpan, namun gagal menghubungkan ke Midtrans: ' . $e->getMessage());
+        }
     }
 
     public function edit(Booking $booking)
@@ -129,6 +138,7 @@ class BookingController extends Controller
             'customer_name'  => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|string|max:20',
+            'visit_date'     => 'required|date',
         ]);
 
         // Kalkulasi ulang jika paket atau jumlah peserta diubah
@@ -144,6 +154,7 @@ class BookingController extends Controller
             'customer_name'  => $request->customer_name,
             'customer_email' => $request->customer_email,
             'customer_phone' => $request->customer_phone,
+            'visit_date'     => $request->visit_date,
         ]);
 
         return redirect()

@@ -60,6 +60,12 @@
                                         placeholder="Enter number of participants (Min: 1)" min="1" required>
                                 </div>
 
+                                <div class="form-group">
+                                    <label>Visit Date</label>
+                                    <input type="date" name="visit_date" class="form-control"
+                                        value="{{ old('visit_date', $booking->visit_date ?? '') }}" required>
+                                </div>
+
                                 <h5 class="text-primary border-bottom pb-2 mt-4 mb-3">Customer Information</h5>
 
                                 <div class="form-group">

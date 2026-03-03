@@ -83,7 +83,7 @@
                                 <div class="form-group">
                                     <label>Role</label>
 
-                                    <select name="role" class="form-control">
+                                    <select name="role" id="role-select" class="form-control">
 
                                         <option value="">-- Select role --</option>
 
@@ -95,6 +95,21 @@
                                         @endforeach
 
                                     </select>
+                                </div>
+
+                                <!-- VENDOR ASSOCIATION (Only for Vendor Role) -->
+                                <div class="form-group" id="vendor-group" style="display: none;">
+                                    <label>Assign to Vendor</label>
+                                    <select name="vendor_id" class="form-control">
+                                        <option value="">-- Select Vendor --</option>
+                                        @foreach ($vendors as $v)
+                                            <option value="{{ $v->id }}"
+                                                {{ (isset($user) && $user->vendor && $user->vendor->id == $v->id) ? 'selected' : '' }}>
+                                                {{ $v->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <small class="text-muted">Required if role is Vendor to enable multi-tenancy.</small>
                                 </div>
 
 
@@ -119,4 +134,22 @@
 
         </div>
     </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const roleSelect = document.getElementById('role-select');
+            const vendorGroup = document.getElementById('vendor-group');
+
+            function toggleVendor() {
+                if (roleSelect.value === 'Vendor') {
+                    vendorGroup.style.display = 'block';
+                } else {
+                    vendorGroup.style.display = 'none';
+                }
+            }
+
+            roleSelect.addEventListener('change', toggleVendor);
+            toggleVendor(); // Run on load
+        });
+    </script>
 @endsection

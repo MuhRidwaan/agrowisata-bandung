@@ -54,6 +54,7 @@
                                         <th>Booking Code</th>
                                         <th>Customer Name</th>
                                         <th>Tour Package</th>
+                                        <th class="text-center">Visit Date</th>
                                         <th class="text-center">Participants</th>
                                         <th>Total Price</th>
                                         <th class="text-center">Status</th>
@@ -72,6 +73,7 @@
                                                 <small class="text-muted">{{ $booking->customer_phone ?? '' }}</small>
                                             </td>
                                             <td>{{ $booking->paketTour->nama_paket ?? '-' }}</td>
+                                            <td class="text-center">{{ \Carbon\Carbon::parse($booking->visit_date)->format('d M Y') }}</td>
                                             <td class="text-center">{{ $booking->jumlah_peserta }} Pax</td>
                                             <td>Rp {{ number_format($booking->total_price, 0, ',', '.') }}</td>
                                             <td class="text-center">

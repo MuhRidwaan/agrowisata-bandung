@@ -102,38 +102,47 @@ class FrontendController extends Controller
         ]);
 
         // Konfigurasi & buat Snap Token Midtrans
-        \Midtrans\Config::$serverKey = config('midtrans.server_key');
-        \Midtrans\Config::$isProduction = config('midtrans.is_production');
-        \Midtrans\Config::$isSanitized = config('midtrans.is_sanitized');
-        \Midtrans\Config::$is3ds = config('midtrans.is_3ds');
+        try {
+            \Midtrans\Config::$serverKey = config('midtrans.server_key');
+            \Midtrans\Config::$isProduction = config('midtrans.is_production');
+            \Midtrans\Config::$isSanitized = config('midtrans.is_sanitized');
+            \Midtrans\Config::$is3ds = config('midtrans.is_3ds');
 
-        $params = [
-            'transaction_details' => [
-                'order_id'     => $bookingCode,
-                'gross_amount' => (int) $total,
-            ],
-            'customer_details' => [
-                'first_name' => $request->customer_name,
-                'email'      => $request->customer_email,
-                'phone'      => $request->customer_phone,
-            ],
-        ];
+            $params = [
+                'transaction_details' => [
+                    'order_id'     => $bookingCode,
+                    'gross_amount' => (int) $total,
+                ],
+                'customer_details' => [
+                    'first_name' => $request->customer_name,
+                    'email'      => $request->customer_email,
+                    'phone'      => $request->customer_phone,
+                ],
+            ];
 
-        $snapToken = \Midtrans\Snap::getSnapToken($params);
+            $snapToken = \Midtrans\Snap::getSnapToken($params);
 
-        // Simpan payment
-        Payment::create([
-            'booking_id' => $booking->id,
-            'status'     => 'pending',
-            'snap_token' => $snapToken,
-        ]);
+            // Simpan payment
+            Payment::create([
+                'booking_id' => $booking->id,
+                'status'     => 'pending',
+                'snap_token' => $snapToken,
+            ]);
 
-        return response()->json([
-            'success'      => true,
-            'booking_code' => $bookingCode,
-            'snap_token'   => $snapToken,
-            'total_price'  => $total,
-        ]);
+            return response()->json([
+                'success'      => true,
+                'booking_code' => $bookingCode,
+                'snap_token'   => $snapToken,
+                'total_price'  => $total,
+            ]);
+
+        } catch (\Exception $e) {
+            // Jika gagal generate token, booking tetap tersimpan tapi payment belum ada
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghubungkan ke layanan pembayaran: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     // ================= PAYMENT =================

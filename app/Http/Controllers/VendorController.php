@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Vendor;
 use App\Models\Area;
+use App\Models\User;
 use App\Models\WhatsappSetting;
 use Illuminate\Http\Request;
 
@@ -20,7 +21,9 @@ class VendorController extends Controller
     public function create()
     {
         $areas = Area::all();
-        return view('.backend.vendors.form', compact('areas'));
+        // Ambil user yang punya role Vendor tapi belum terikat dengan vendor manapun
+        $users = User::role('Vendor')->whereDoesntHave('vendor')->get();
+        return view('.backend.vendors.form', compact('areas', 'users'));
     }
 
     // ================= STORE =================
@@ -33,6 +36,7 @@ class VendorController extends Controller
             'area_id' => 'required|exists:areas,id',
             'address' => 'required',
             'description' => 'required',
+            'user_id' => 'nullable|exists:users,id',
         ]);
 
         Vendor::create($validated);
@@ -46,9 +50,13 @@ class VendorController extends Controller
     {
         $vendor = Vendor::findOrFail($id);
         $areas = Area::orderBy('name', 'asc')->get();
+        // Ambil user yang punya role Vendor tapi belum terikat, ATAU user yang sedang terikat dengan vendor ini
+        $users = User::role('Vendor')->where(function($q) use ($vendor) {
+            $q->whereDoesntHave('vendor')
+              ->orWhere('id', $vendor->user_id);
+        })->get();
 
-
-        return view('.backend.vendors.form', compact('vendor', 'areas'));
+        return view('.backend.vendors.form', compact('vendor', 'areas', 'users'));
     }
 
     // ================= UPDATE =================
@@ -61,6 +69,7 @@ class VendorController extends Controller
             'area_id' => 'required|exists:areas,id',
             'address' => 'required',
             'description' => 'required',
+            'user_id' => 'nullable|exists:users,id',
         ]);
 
         $vendor = Vendor::findOrFail($id);

@@ -87,6 +87,29 @@
                                 placeholder="Vendor description..." required>{{ old('description', $vendor->description ?? '') }}</textarea>
                         </div>
 
+                            <hr>
+                        <h5 class="text-primary"><i class="fas fa-user-lock"></i> Account Association</h5>
+                        <p class="text-muted small">Link this vendor to a user account with the 'Vendor' role to enable dashboard access.</p>
+
+                        <!-- USER ASSOCIATION -->
+                        <div class="form-group">
+                            <label>Admin User</label>
+                            <select name="user_id" class="form-control">
+                                <option value="">-- Select User (Role: Vendor) --</option>
+                                @foreach ($users as $user)
+                                    <option value="{{ $user->id }}"
+                                        {{ old('user_id', $vendor->user_id ?? '') == $user->id ? 'selected' : '' }}>
+                                        {{ $user->name }} ({{ $user->email }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            @if($users->isEmpty())
+                                <small class="text-danger">No available users with 'Vendor' role found. <a href="{{ route('users.create') }}">Create one first</a>.</small>
+                            @else
+                                <small class="text-muted">Only users with the 'Vendor' role who are not yet linked to a vendor are shown.</small>
+                            @endif
+                        </div>
+
                     </div>
 
                     <div class="card-footer">

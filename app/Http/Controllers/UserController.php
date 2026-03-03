@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
+use App\Models\Vendor;
 
 use App\Exports\UsersExport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -40,7 +41,8 @@ public function create()
 {
     // pakai 1 form
     $roles = Role::all();
-    return view('backend.users.form', compact('roles'));
+    $vendors = Vendor::whereNull('user_id')->get();
+    return view('backend.users.form', compact('roles', 'vendors'));
 }
 
 
@@ -53,6 +55,7 @@ public function store(Request $request)
         'name' => 'required',
         'email' => 'required|email|unique:users,email',
         'password' => 'required|min:6',
+        'vendor_id' => 'nullable|exists:vendors,id',
     ]);
 
     $user=User::create([
@@ -62,6 +65,14 @@ public function store(Request $request)
     ]);
 
     $user->assignRole($request->role);
+
+    // Jika role-nya Vendor dan ada vendor_id terpilih, link ke vendor tersebut
+    if ($request->role === 'Vendor' && $request->vendor_id) {
+        $vendor = Vendor::find($request->vendor_id);
+        if ($vendor) {
+            $vendor->update(['user_id' => $user->id]);
+        }
+    }
 
     return redirect()
         ->route('users.index')
@@ -76,7 +87,13 @@ public function edit(User $user)
 {
     // kirim data user ke form yang sama
     $roles = Role::all();
-    return view('backend.users.form', compact('user', 'roles'));
+    // Ambil vendor yang belum punya user, ATAU vendor yang sudah terikat dengan user ini
+    $vendors = Vendor::where(function($q) use ($user) {
+        $q->whereNull('user_id')
+          ->orWhere('user_id', $user->id);
+    })->get();
+
+    return view('backend.users.form', compact('user', 'roles', 'vendors'));
 }
 
 
@@ -89,6 +106,7 @@ public function update(Request $request, User $user)
         'name' => 'required',
         'email' => 'required|email|unique:users,email,' . $user->id,
         'password' => 'nullable|min:6',
+        'vendor_id' => 'nullable|exists:vendors,id',
     ]);
 
     $data = [
@@ -103,6 +121,23 @@ public function update(Request $request, User $user)
 
     $user->update($data);
     $user->syncRoles($request->role);
+
+    // Update relasi Vendor
+    if ($request->role === 'Vendor') {
+        // Hapus link dari vendor lama (jika ada)
+        Vendor::where('user_id', $user->id)->update(['user_id' => null]);
+        
+        // Link ke vendor baru
+        if ($request->vendor_id) {
+            $vendor = Vendor::find($request->vendor_id);
+            if ($vendor) {
+                $vendor->update(['user_id' => $user->id]);
+            }
+        }
+    } else {
+        // Jika role diubah dari Vendor ke lainnya, hapus link vendor
+        Vendor::where('user_id', $user->id)->update(['user_id' => null]);
+    }
     
 
     return redirect()
