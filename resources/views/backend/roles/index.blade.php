@@ -40,20 +40,25 @@
                                         </div>
                                     </form>
 
-                                    <a href="{{ route('roles.create') }}" class="btn btn-primary btn-sm">
+                                    {{-- Add button hidden as roles are hardcoded --}}
+                                    {{-- <a href="{{ route('roles.create') }}" class="btn btn-primary btn-sm">
                                         <i class="fas fa-plus"></i> Add Role
-                                    </a>
+                                    </a> --}}
                                 </div>
                             </div>
                         </div>
 
                         <div class="card-body">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> Roles are managed by the system to maintain multi-tenant logic consistency.
+                            </div>
+
                             <table class="table table-bordered table-hover">
                                 <thead>
                                     <tr>
                                         <th width="5%">No</th>
                                         <th>Role Name</th>
-                                        <th width="15%">Action</th>
+                                        {{-- <th width="15%">Action</th> --}}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -63,7 +68,7 @@
                                             <td>{{ ($roles->currentPage() - 1) * $roles->perPage() + $loop->iteration }}
                                             </td>
                                             <td><strong>{{ $role->name }}</strong></td>
-                                            <td>
+                                            {{-- <td>
                                                 <a href="{{ route('roles.edit', $role->id) }}"
                                                     class="btn btn-warning btn-sm">
                                                     <i class="fas fa-edit"></i>
@@ -77,11 +82,11 @@
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
-                                            </td>
+                                            </td> --}}
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="3" class="text-center">Role data is empty</td>
+                                            <td colspan="2" class="text-center">Role data is empty</td>
                                         </tr>
                                     @endforelse
                                 </tbody>

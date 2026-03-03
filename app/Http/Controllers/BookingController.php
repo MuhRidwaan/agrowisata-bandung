@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\PaketTour;
 use App\Models\Payment;
+use App\Models\TransactionLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -81,6 +82,16 @@ class BookingController extends Controller
             'visit_date'     => $request->visit_date,
         ]);
 
+        // Audit Log
+        TransactionLog::create([
+            'booking_id' => $booking->id,
+            'user_id'    => auth()->id(),
+            'action'     => 'booking_created',
+            'new_status' => 'pending',
+            'amount'     => $total,
+            'description'=> "Booking baru dibuat oleh " . auth()->user()->name,
+        ]);
+
         // 4. Konfigurasi Midtrans
         try {
             \Midtrans\Config::$serverKey = config('midtrans.server_key');
@@ -146,6 +157,7 @@ class BookingController extends Controller
         $pricing = $paket->calculatePrice($request->jumlah_peserta);
         $total = $pricing['total_price'];
 
+        $oldStatus = $booking->status;
         $booking->update([
             'paket_tour_id'  => $request->paket_tour_id,
             'jumlah_peserta' => $request->jumlah_peserta,
@@ -156,6 +168,18 @@ class BookingController extends Controller
             'customer_phone' => $request->customer_phone,
             'visit_date'     => $request->visit_date,
         ]);
+
+        // Audit Log if status changed
+        if($oldStatus != $request->status) {
+            TransactionLog::create([
+                'booking_id' => $booking->id,
+                'user_id'    => auth()->id(),
+                'action'     => 'status_updated',
+                'old_status' => $oldStatus,
+                'new_status' => $request->status,
+                'description'=> "Status booking diubah secara manual oleh " . auth()->user()->name,
+            ]);
+        }
 
         return redirect()
             ->route('bookings.index')

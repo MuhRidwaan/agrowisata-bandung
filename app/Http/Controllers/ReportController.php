@@ -18,9 +18,42 @@ use App\Exports\UsersExport;
 
 use App\Models\User;
 use App\Models\PaketTour;
+use App\Models\TransactionLog;
 
 class ReportController extends Controller
 {
+    // ================= TRANSACTION LOGS (AUDIT TRAIL) =================
+    public function transactionLogs(Request $request)
+    {
+        // Hanya Super Admin yang boleh melihat audit trail keuangan
+        if (!auth()->user()->hasRole('Super Admin')) {
+            abort(403, 'Akses ditolak. Hanya Super Admin yang dapat melihat log transaksi.');
+        }
+
+        $query = TransactionLog::with(['booking.paketTour', 'user']);
+
+        // Filter by Booking Code
+        if ($request->search) {
+            $query->whereHas('booking', function($q) use ($request) {
+                $q->where('booking_code', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        // Filter by Action
+        if ($request->action) {
+            $query->where('action', $request->action);
+        }
+
+        // Filter Tanggal
+        if ($request->start_date && $request->end_date) {
+            $query->whereBetween('created_at', [$request->start_date . ' 00:00:00', $request->end_date . ' 23:59:59']);
+        }
+
+        $logs = $query->latest()->paginate(20)->withQueryString();
+
+        return view('backend.reports.transaction_logs', compact('logs'));
+    }
+
     // ================= SALES REPORT =================
     public function salesReport(Request $request)
     {

@@ -54,14 +54,6 @@
                 </li>
 
                 <li class="nav-item">
-                    <a href="{{ route('roles.index') }}"
-                        class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-user-shield"></i>
-                        <p>Role & Permission</p>
-                    </a>
-                </li>
-
-                <li class="nav-item">
                     <a href="{{ route('vendors.index') }}"
                         class="nav-link {{ request()->routeIs('vendors.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-store"></i>
@@ -225,6 +217,12 @@
                             <a href="{{ route('reports.vendor_revenue') }}" class="nav-link {{ request()->routeIs('reports.vendor_revenue') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Vendor Revenue</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('reports.transaction_logs') }}" class="nav-link {{ request()->routeIs('reports.transaction_logs') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Financial Audit Trail</p>
                             </a>
                         </li>
                         @endrole

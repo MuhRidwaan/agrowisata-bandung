@@ -121,6 +121,7 @@ Route::middleware(['auth'])->group(function () {
         Route::middleware(['role:Super Admin'])->group(function () {
             Route::get('/user', [ReportController::class, 'userReport'])->name('user');
             Route::get('/vendor-revenue', [ReportController::class, 'vendorRevenueReport'])->name('vendor_revenue');
+            Route::get('/transaction-logs', [ReportController::class, 'transactionLogs'])->name('transaction_logs');
         });
     });
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Booking;
+use App\Models\TransactionLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\InvoiceMail;
@@ -82,6 +83,17 @@ class PaymentController extends Controller
             'status' => 'paid'
         ]);
 
+        // Audit Log
+        TransactionLog::create([
+            'booking_id' => $payment->booking_id,
+            'user_id'    => auth()->id(),
+            'action'     => 'payment_confirmed_manual',
+            'old_status' => 'pending',
+            'new_status' => 'paid',
+            'amount'     => $payment->booking->total_price,
+            'description'=> "Pembayaran dikonfirmasi lunas secara manual oleh " . auth()->user()->name,
+        ]);
+
         // AUTO KIRIM EMAIL (Manual Mark Paid)
         $this->triggerInvoiceEmail($payment);
 
@@ -136,6 +148,17 @@ class PaymentController extends Controller
                                 'payment_method' => $request->payment_type
                             ]);
 
+                            // Audit Log
+                            TransactionLog::create([
+                                'booking_id' => $booking->id,
+                                'action'     => 'payment_callback_success',
+                                'new_status' => 'paid',
+                                'amount'     => $request->gross_amount,
+                                'payment_method' => $request->payment_type,
+                                'description'=> "Pembayaran lunas via Midtrans (" . $request->payment_type . ")",
+                                'payload'    => $request->all(),
+                            ]);
+
                             $paymentForEmail = Payment::with(['booking.paketTour', 'booking.user'])->find($booking->payment->id);
                             $this->triggerInvoiceEmail($paymentForEmail);
                         }
@@ -148,6 +171,16 @@ class PaymentController extends Controller
                         if ($booking->payment) {
                             $booking->payment->update([
                                 'status' => 'failed'
+                            ]);
+
+                            // Audit Log
+                            TransactionLog::create([
+                                'booking_id' => $booking->id,
+                                'action'     => 'payment_callback_failed',
+                                'new_status' => 'cancelled',
+                                'amount'     => $request->gross_amount,
+                                'description'=> "Pembayaran gagal/expired via Midtrans: " . $request->transaction_status,
+                                'payload'    => $request->all(),
                             ]);
                         }
                     }

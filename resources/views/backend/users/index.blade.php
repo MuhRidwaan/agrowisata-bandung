@@ -111,6 +111,7 @@
                                                 </a>
 
                                                 <!-- DELETE -->
+                                                @if($user->id != 1)
                                                 <form action="{{ route('users.destroy', $user->id) }}" method="POST"
                                                     style="display:inline-block" class="form-delete">
 
@@ -122,6 +123,11 @@
                                                     </button>
 
                                                 </form>
+                                                @else
+                                                <button class="btn btn-danger btn-sm disabled" title="Main Super Admin (ID 1) cannot be deleted" disabled>
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                                @endif
 
 
 
@@ -160,6 +166,18 @@
                 title: 'Success',
                 text: '{{ session('success') }}',
                 timer: 2000,
+                showConfirmButton: false
+            });
+        </script>
+    @endif
+
+    @if (session('error'))
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: '{{ session('error') }}',
+                timer: 3000,
                 showConfirmButton: false
             });
         </script>

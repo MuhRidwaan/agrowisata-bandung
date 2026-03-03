@@ -39,8 +39,8 @@ class UserController extends Controller
    
 public function create()
 {
-    // pakai 1 form
-    $roles = Role::all();
+    // Batasi hanya role Super Admin dan Vendor
+    $roles = Role::whereIn('name', ['Super Admin', 'Vendor'])->get();
     $vendors = Vendor::whereNull('user_id')->get();
     return view('backend.users.form', compact('roles', 'vendors'));
 }
@@ -55,6 +55,7 @@ public function store(Request $request)
         'name' => 'required',
         'email' => 'required|email|unique:users,email',
         'password' => 'required|min:6',
+        'role' => 'required|in:Super Admin,Vendor',
         'vendor_id' => 'nullable|exists:vendors,id',
     ]);
 
@@ -85,8 +86,8 @@ public function store(Request $request)
 ====================== */
 public function edit(User $user)
 {
-    // kirim data user ke form yang sama
-    $roles = Role::all();
+    // Batasi hanya role Super Admin dan Vendor
+    $roles = Role::whereIn('name', ['Super Admin', 'Vendor'])->get();
     // Ambil vendor yang belum punya user, ATAU vendor yang sudah terikat dengan user ini
     $vendors = Vendor::where(function($q) use ($user) {
         $q->whereNull('user_id')
@@ -102,10 +103,19 @@ public function edit(User $user)
 ====================== */
 public function update(Request $request, User $user)
 {
+    // Proteksi User ID 1: Email dan Role tidak boleh diubah
+    if ($user->id == 1) {
+        $request->merge([
+            'email' => $user->email,
+            'role' => 'Super Admin'
+        ]);
+    }
+
     $request->validate([
         'name' => 'required',
         'email' => 'required|email|unique:users,email,' . $user->id,
         'password' => 'nullable|min:6',
+        'role' => 'required|in:Super Admin,Vendor',
         'vendor_id' => 'nullable|exists:vendors,id',
     ]);
 
@@ -147,6 +157,13 @@ public function update(Request $request, User $user)
 
 public function destroy(User $user)
 {
+    // Proteksi User ID 1 (Super Admin utama) agar tidak bisa dihapus
+    if ($user->id == 1) {
+        return redirect()
+            ->route('users.index')
+            ->with('error', 'User Super Admin Utama (ID: 1) tidak boleh dihapus demi keamanan sistem!');
+    }
+
     $user->delete();
 
     return redirect()

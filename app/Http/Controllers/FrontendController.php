@@ -8,6 +8,7 @@ use App\Models\Review;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\Area;
+use App\Models\TransactionLog;
 use Illuminate\Support\Str;
 
 class FrontendController extends Controller
@@ -99,6 +100,16 @@ class FrontendController extends Controller
             'customer_email' => $request->customer_email,
             'customer_phone' => $request->customer_phone,
             'visit_date'     => $request->visit_date,
+        ]);
+
+        // Audit Log
+        TransactionLog::create([
+            'booking_id' => $booking->id,
+            'user_id'    => auth()->id() ?? null,
+            'action'     => 'booking_created_frontend',
+            'new_status' => 'pending',
+            'amount'     => $total,
+            'description'=> "Booking baru dibuat dari Frontend oleh Customer " . $request->customer_name,
         ]);
 
         // Konfigurasi & buat Snap Token Midtrans

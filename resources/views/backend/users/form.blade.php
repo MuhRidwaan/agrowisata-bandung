@@ -65,7 +65,11 @@
                                 <div class="form-group">
                                     <label>Email</label>
                                     <input type="email" name="email" class="form-control"
-                                        value="{{ old('email', $user->email ?? '') }}" placeholder="Enter email">
+                                        value="{{ old('email', $user->email ?? '') }}" placeholder="Enter email"
+                                        {{ isset($user) && $user->id == 1 ? 'readonly' : '' }}>
+                                    @if(isset($user) && $user->id == 1)
+                                        <small class="text-danger">Main Super Admin email cannot be changed for security reasons.</small>
+                                    @endif
                                 </div>
 
                                 <!-- PASSWORD -->
@@ -83,18 +87,23 @@
                                 <div class="form-group">
                                     <label>Role</label>
 
-                                    <select name="role" id="role-select" class="form-control">
+                                    <select name="role" id="role-select" class="form-control"
+                                        {{ isset($user) && $user->id == 1 ? 'disabled' : '' }}>
 
                                         <option value="">-- Select role --</option>
 
                                         @foreach ($roles as $role)
                                             <option value="{{ $role->name }}"
-                                                {{ isset($user) && $user->hasRole($role->name) ? 'selected' : '' }}>
+                                                {{ (isset($user) && $user->hasRole($role->name)) || (isset($user) && $user->id == 1 && $role->name == 'Super Admin') ? 'selected' : '' }}>
                                                 {{ $role->name }}
                                             </option>
                                         @endforeach
 
                                     </select>
+                                    @if(isset($user) && $user->id == 1)
+                                        <input type="hidden" name="role" value="Super Admin">
+                                        <small class="text-danger">Main Super Admin role cannot be changed.</small>
+                                    @endif
                                 </div>
 
                                 <!-- VENDOR ASSOCIATION (Only for Vendor Role) -->
