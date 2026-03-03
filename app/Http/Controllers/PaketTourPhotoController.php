@@ -57,8 +57,8 @@ class PaketTourPhotoController extends Controller
                     }
                 },
             ],
-            'path_foto' => 'required',
-            'path_foto.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'path_foto' => 'required|array',
+            'path_foto.*' => 'required|file|image|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
         $files = $request->file('path_foto');
         if (!$files) {
@@ -123,22 +123,37 @@ class PaketTourPhotoController extends Controller
                     }
                 },
             ],
-            'path_foto' => $request->hasFile('path_foto') ? 'image|mimes:jpeg,png,jpg,gif|max:2048' : '',
-            'delete_photos' => 'array',
+            'path_foto' => 'nullable|array',
+            'path_foto.*' => 'file|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'delete_photos' => 'nullable|array',
             'delete_photos.*' => 'integer|exists:paket_tour_photos,id',
         ]);
+
         // Hapus foto yang dicentang
         if (!empty($data['delete_photos'])) {
             PaketTourPhoto::whereIn('id', $data['delete_photos'])->delete();
         }
-        if ($request->hasFile('path_foto')) {
-            $file = $request->file('path_foto');
-            $path = $file->store('paket_tour_photos', 'public');
-            $data['path_foto'] = $path;
-        } else {
-            unset($data['path_foto']);
+
+        // Tambah foto baru (buat record baru, bukan replace)
+        $files = $request->file('path_foto');
+        if ($files) {
+            if (!is_array($files)) {
+                $files = [$files];
+            }
+            foreach ($files as $file) {
+                if ($file && $file->isValid()) {
+                    $path = $file->store('paket_tour_photos', 'public');
+                    PaketTourPhoto::create([
+                        'paket_tour_id' => $data['paket_tour_id'],
+                        'path_foto' => $path,
+                    ]);
+                }
+            }
         }
-        $paketTourPhoto->update($data);
+
+        // Update paket_tour_id jika berubah
+        $paketTourPhoto->update(['paket_tour_id' => $data['paket_tour_id']]);
+
         return redirect()->route('paket-tour-photos.index')->with('success', 'Foto berhasil diupdate!');
     }
 

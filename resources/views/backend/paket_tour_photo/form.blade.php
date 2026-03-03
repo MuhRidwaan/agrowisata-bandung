@@ -85,11 +85,12 @@
                                 </label>
 
                                 <input type="file"
-                                    name="{{ isset($photo->id) ? 'path_foto' : 'path_foto[]' }}"
+                                    name="path_foto[]"
                                     id="path_foto"
                                     accept="image/*"
                                     class="form-control @error('path_foto') is-invalid @enderror"
-                                    @if(!isset($photo->id)) multiple required @endif
+                                    multiple
+                                    @if(!isset($photo->id)) required @endif
                                     onchange="previewImages(event)">
                                 <div id="preview-container" class="mt-3"></div>
 @push('scripts')
@@ -138,7 +139,7 @@ function previewImages(event) {
                                         <div style="display:flex; flex-wrap:wrap; gap:10px;">
                                             @foreach($allPhotos as $p)
                                                 <div style="text-align:center;">
-                                                    <img src="{{ Storage::url($p->path_foto) }}" alt="Photo" style="max-width:120px; border-radius:8px; display:block; margin-bottom:4px;">
+                                                    <img src="{{ asset('storage/' . $p->path_foto) }}" alt="Photo" style="max-width:120px; border-radius:8px; display:block; margin-bottom:4px;">
                                                     <label style="font-size:13px;">
                                                         <input type="checkbox" name="delete_photos[]" value="{{ $p->id }}"> Delete
                                                     </label>
