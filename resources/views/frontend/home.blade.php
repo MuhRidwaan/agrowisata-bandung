@@ -66,7 +66,7 @@
             <!-- FILTER -->
             <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
 
-                <button type="submit" name="area" value="all"
+                <button type="button" value="all"
                     class="region-pill active">
                     <i class="bi bi-grid-3x3-gap"></i> 
                     Semua
@@ -74,7 +74,7 @@
                 </button>
 
                 @foreach($areas as $area)
-                <button type="submit" name="area" value="{{ $area->name }}"
+                <button type="button" value="{{ $area->name }}"
                     class="region-pill">
                     <i class="bi bi-geo-alt"></i> {{ $area->name }}
                     <span class="count-badge">
@@ -95,6 +95,7 @@
                 class="col-md-6 col-lg-4 paket-item"
                 data-name="{{ strtolower($paket->nama_paket) }}"
                 data-area="{{ strtolower($paket->vendor->area->name ?? '') }}"
+                data-vendor="{{ strtolower($paket->vendor->name ?? '') }}"
             >
 
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
@@ -209,11 +210,10 @@
 
 @endsection
 
-<!-- ================= JS ================= -->
+<!-- ================= JS FILTER WITH SMOOTH FADE ================= -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    const form = document.querySelector("form");
     const searchInput = document.getElementById("searchInput");
     const buttons = document.querySelectorAll(".region-pill");
     const items = document.querySelectorAll(".paket-item");
@@ -221,71 +221,81 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let currentFilter = "all";
 
-    //Disable submit reload
-    if (form) {
-        form.addEventListener("submit", function(e){
-            e.preventDefault();
-        });
-    }
+    // kasih transition sekali saja
+    items.forEach(item => {
+        item.style.transition = "opacity 0.25s ease";
+    });
 
     function filterData() {
-        const keyword = (searchInput?.value || "").toLowerCase().trim();
-        let visible = 0;
 
-        items.forEach(item => {
-            const name = item.dataset.name || "";
-            const area = item.dataset.area || "";
+    const keyword = (searchInput?.value || "").toLowerCase().trim();
+    let visible = 0;
 
-            const matchSearch = name.includes(keyword);
-            const matchFilter = currentFilter === "all" || area === currentFilter;
+    items.forEach(item => {
 
-            if (matchSearch && matchFilter) {
+        const name   = item.dataset.name || "";
+        const area   = item.dataset.area || "";
+        const vendor = item.dataset.vendor || "";
 
-                //FADE IN (smooth & slow)
-                item.style.display = "";
-                item.style.transition = "all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1)";
-                item.style.opacity = "0";
-                item.style.transform = "translateY(20px)";
+        const matchSearch =
+            keyword === "" ||
+            name.includes(keyword) ||
+            area.includes(keyword) ||
+            vendor.includes(keyword);
 
-                setTimeout(() => {
-                    item.style.opacity = "1";
-                    item.style.transform = "translateY(0)";
-                }, 80);
+        let matchFilter =
+            currentFilter === "all" ||
+            area.includes(currentFilter);
 
-                visible++;
-
-            } else {
-
-                //FADE OUT
-                item.style.transition = "all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1)";
-                item.style.opacity = "0";
-                item.style.transform = "translateY(20px)";
-
-                setTimeout(() => {
-                    item.style.display = "none";
-                }, 800);
-            }
-        });
-
-        //NO RESULT
-        if (noResult) {
-            noResult.style.transition = "none";
-            noResult.style.display = visible === 0 ? "block" : "none";
+        if (keyword !== "") {
+            matchFilter = true;
         }
-    }
 
-    //Search input
+        if (matchSearch && matchFilter) {
+
+            item.style.position = "relative";
+            item.style.visibility = "visible";
+            item.style.opacity = "1";
+            item.style.transform = "scale(1)";
+            visible++;
+
+        } else {
+
+            item.style.transition = "opacity 0.25s ease, transform 0.25s ease";
+            item.style.opacity = "0";
+            item.style.transform = "scale(0.95)";
+            item.style.visibility = "hidden";
+            item.style.position = "absolute";
+        }
+    });
+
+    if (noResult) {
+        noResult.style.display = visible === 0 ? "block" : "none";
+    }
+}
+
+    // SEARCH realtime
     if (searchInput) {
-        searchInput.addEventListener("input", filterData);
+        searchInput.addEventListener("input", function () {
+
+            // reset filter ke Semua
+            currentFilter = "all";
+            buttons.forEach(b => b.classList.remove("active"));
+            if (buttons.length > 0) {
+                buttons[0].classList.add("active");
+            }
+
+            filterData();
+        });
     }
 
-    //Filter button
+    // FILTER BUTTON
     buttons.forEach(btn => {
         btn.addEventListener("click", function (e) {
+
             e.preventDefault();
 
-            let value = this.value || "all";
-            currentFilter = value.toLowerCase();
+            currentFilter = (this.value || "all").toLowerCase();
 
             buttons.forEach(b => b.classList.remove("active"));
             this.classList.add("active");
