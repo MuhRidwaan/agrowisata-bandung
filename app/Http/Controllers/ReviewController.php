@@ -32,17 +32,25 @@ class ReviewController extends Controller
         'name'     => 'required|string|max:255',
         'rating'   => 'required|integer|min:1|max:5',
         'comment'  => 'required|string|max:1000',
+        'photo_file' => 'nullable|image|max:2048',
     ]);
 
     $paket = PaketTour::findOrFail($request->paket_id);
+    
+    $photoPath = null;
+
+    if ($request->hasFile('photo_file')) {
+        $photoPath = $request->file('photo_file')->store('reviews', 'public');
+    }
 
     Review::create([
         'paket_id'  => $request->paket_id,
         'vendor_id' => $paket->vendor_id ?? null,
-        'user_id'   => auth()->id(), // tetap boleh null
+        'user_id'   => auth()->id(), 
         'name'      => $request->name,
         'rating'    => $request->rating,
         'comment'   => $request->comment,
+        'photo'     => $photoPath,
         'status'    => 'pending',
     ]);
 

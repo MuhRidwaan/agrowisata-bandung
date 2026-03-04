@@ -115,8 +115,8 @@
                 @if($paket->pricingRules && $paket->pricingRules->count() > 0)
                 <div class="card card-agro">
                     <div class="card-body p-4">
-                        <h3 class="font-display fs-5 fw-semibold mb-3">
-                            Penawaran Spesial (Diskon)
+                        <h3 class="font-display fs-5 fw-semibold mb-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-tag-fill text-accent"></i>Penawaran Spesial (Diskon)
                         </h3>
 
                         <div class="row g-3">
@@ -149,116 +149,187 @@
                 </div>
                 @endif
 
-                <!-- REVIEWS -->
-                <div class="card card-agro">
-                    <div class="card-body p-4">
-                        <h3 class="font-display fs-5 fw-semibold mb-4">
-                            Ulasan Pengunjung ({{ $paket->reviews->where('status','approved')->count() }})
-                        </h3>
+               <!-- REVIEWS -->
+<div class="card card-agro">
+    <div class="card-body p-4">
+        <h3 class="font-display fs-5 fw-semibold mb-4">
+            Ulasan Pengunjung ({{ $paket->reviews->where('status','approved')->count() }})
+        </h3>
 
-                        <div class="d-flex flex-column gap-4">
-                            @forelse($paket->reviews->where('status','approved') as $review)
-                                <div class="p-4 rounded-4 bg-light">
+        <div class="d-flex flex-column gap-4">
+            @forelse($paket->reviews->where('status','approved') as $review)
+                <div class="p-4 rounded-4 bg-light">
 
-                                    <div class="d-flex justify-content-between">
-                                        <div class="d-flex gap-3">
-                                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold"
-                                                 style="width:45px; height:45px; background:#e9f5ee; color:#2f6d4f;">
-                                                {{ strtoupper(substr($review->name ?? 'U',0,1)) }}
-                                            </div>
+                    <div class="d-flex justify-content-between">
+                        <div class="d-flex gap-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                                 style="width:45px; height:45px; background:#e9f5ee; color:#2f6d4f;">
+                                {{ strtoupper(substr($review->name ?? 'U',0,1)) }}
+                            </div>
 
-                                            <div>
-                                                <div class="fw-semibold">
-                                                    {{ $review->name ?? 'User' }}
-                                                </div>
-
-                                                <div class="text-muted small">
-                                                    {{ \Carbon\Carbon::parse($review->created_at)->translatedFormat('d F Y') }}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="d-flex gap-1">
-                                            @for($i=1;$i<=5;$i++)
-                                                <i class="bi bi-star-fill {{ $i <= $review->rating ? 'text-warning' : 'text-muted' }}"></i>
-                                            @endfor
-                                        </div>
-                                    </div>
-
-                                    <p class="text-muted mt-3 mb-0">
-                                        {{ $review->comment }}
-                                    </p>
-
-                                    @if(!empty($review->admin_reply))
-                                    <div class="mt-3 ms-5">
-                                        <div class="p-3 rounded-4 shadow-sm"
-                                             style="background:#f5faf7; border-left:4px solid #2f6d4f;">
-                                            <div class="fw-semibold small text-success mb-1">
-                                                <i class="bi bi-patch-check-fill"></i>
-                                                Admin AgroTourism Bandung
-                                            </div>
-                                            <p class="small mb-0 text-muted">
-                                                {{ $review->admin_reply }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    @endif
-
+                            <div>
+                                <div class="fw-semibold">
+                                    {{ $review->name ?? 'User' }}
                                 </div>
-                            @empty
-                                <p class="text-muted">Belum ada ulasan</p>
-                            @endforelse
+
+                                <div class="text-muted small">
+                                    {{ \Carbon\Carbon::parse($review->created_at)->translatedFormat('d F Y') }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-1">
+                            @for($i=1;$i<=5;$i++)
+                                <i class="bi bi-star-fill {{ $i <= $review->rating ? 'text-warning' : 'text-muted' }}"></i>
+                            @endfor
                         </div>
                     </div>
-                </div>
 
-                <!-- FORM ULASAN -->
-                <div class="card card-agro">
-                    <div class="card-body p-4">
-                        <h3 class="font-display fs-5 fw-semibold mb-4">
-                            Tulis Ulasan
-                        </h3>
+                    <p class="text-muted mt-3 mb-0">
+                        {{ $review->comment }}
+                    </p>
 
-                        <form action="{{ route('reviews.store') }}" method="POST">
-                            @csrf
-                            <input type="hidden" name="paket_id" value="{{ $paket->id }}">
-                            <input type="hidden" name="rating" id="ratingInput">
+                    {{-- FOTO REVIEW --}}
+                    @if(!empty($review->photo))
+                        <div class="mt-3 review-photo">
+                            <img src="{{ asset('storage/'.$review->photo) }}" 
+                                 alt="Review Photo"
+                                 class="rounded-3 shadow-sm review-img"
+                                 style="max-width:100px;"
+                                 onclick="openReviewImage(this.src)">
+                        </div>
+                    @endif
 
-                            <div class="mb-4">
-                                <label class="form-label fw-semibold text-dark">
-                                    Nama Lengkap
-                                </label>
-                                <input type="text" name="name" class="form-control review-field" placeholder="Masukkan nama lengkap" required>
+                    @if(!empty($review->admin_reply))
+                    <div class="mt-3 ms-5">
+                        <div class="p-3 rounded-4 shadow-sm"
+                             style="background:#f5faf7; border-left:4px solid #2f6d4f;">
+                            <div class="fw-semibold small text-success mb-1">
+                                <i class="bi bi-patch-check-fill"></i>
+                                Admin AgroTourism Bandung
                             </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold d-block mb-2">Rating</label>
-                                <div id="starRating" class="d-flex gap-2 fs-4">
-                                    <i class="bi bi-star star-rating text-gray-300 hover:text-yellow-500 transition duration-200 cursor-pointer" data-value="1"></i>
-                                    <i class="bi bi-star star-rating text-gray-300 hover:text-yellow-500 transition duration-200 cursor-pointer" data-value="2"></i>
-                                    <i class="bi bi-star star-rating text-gray-300 hover:text-yellow-500 transition duration-200 cursor-pointer" data-value="3"></i>
-                                    <i class="bi bi-star star-rating text-gray-300 hover:text-yellow-500 transition duration-200 cursor-pointer" data-value="4"></i>
-                                    <i class="bi bi-star star-rating text-gray-300 hover:text-yellow-500 transition duration-200 cursor-pointer" data-value="5"></i>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold mb-2">Komentar</label>
-                                <textarea name="comment" rows="4" class="form-control review-field" placeholder="Bagikan pengalaman Anda..." required></textarea>
-                            </div>
-
-                            <button type="submit" class="btn btn-agro-primary">
-                                Kirim Ulasan
-                            </button>
-                        </form>
-
+                            <p class="small mb-0 text-muted">
+                                {{ $review->admin_reply }}
+                            </p>
+                        </div>
                     </div>
+                    @endif
+
                 </div>
-
-            </div>
+            @empty
+                <p class="text-muted">Belum ada ulasan</p>
+            @endforelse
         </div>
+    </div>
+</div>
 
-        <!-- ================= RIGHT ================= -->
+<!-- LIGHTBOX FOTO REVIEW -->
+<div id="reviewLightbox" class="review-lightbox" onclick="closeReviewImage()">
+    
+    <!-- tombol close -->
+    <button class="review-close" onclick="closeReviewImage()">✕</button>
+
+    <!-- tombol prev -->
+    <button class="review-nav prev" onclick="prevReviewImage()">❮</button>
+
+     <!-- Gambar -->
+    <img id="reviewLightboxImg">
+
+    <!-- tombol next -->
+    <button class="review-nav next" onclick="nextReviewImage()">❯</button>
+</div>
+
+
+<!-- FORM ULASAN -->
+<div class="card card-agro">
+    <div class="card-body p-4">
+        <h3 class="font-display fs-5 fw-semibold mb-4">
+            Tulis Ulasan
+        </h3>
+
+        <form action="{{ route('reviews.store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" name="paket_id" value="{{ $paket->id }}">
+            <input type="hidden" name="rating" id="ratingInput">
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold text-dark">
+                    Nama Lengkap <span class="text-danger">*</span>
+                </label>
+                <input type="text" id="reviewName" name="name" class="form-control review-field" placeholder="Masukkan nama lengkap" required>
+            </div>
+
+            <!-- INJECT FOTO (DITAMBAHKAN TANPA MENGUBAH KODE LAMA) -->
+<div class="mb-3">
+    <div class="d-flex gap-3">
+
+        <!-- FOTO KAMERA -->
+        <label id="cameraBtn"
+            class="d-flex flex-column align-items-center justify-content-center border rounded p-3 cursor-pointer transition-all duration-200 hover:!bg-green-50 hover:!border-green-500 hover:shadow-lg hover:-translate-y-1 active:scale-95"
+            style="width:120px;border-style:dashed;">
+
+            <i class="bi bi-camera fs-4 mb-1"></i>
+            <span class="small">Foto</span>
+
+            <input 
+                type="file"
+                name="photo_camera"
+                accept="image/*"
+                capture="environment"
+                class="d-none"
+                onchange="previewImage(event); activateUpload('camera')">
+        </label>
+
+        <!-- FOTO DARI FOLDER -->
+        <label id="folderBtn"
+            class="d-flex flex-column align-items-center justify-content-center border rounded p-3 cursor-pointer transition-all duration-200 hover:!bg-green-50 hover:!border-green-500 hover:shadow-lg hover:-translate-y-1 active:scale-95"
+            style="width:120px;border-style:dashed;">
+
+            <i class="bi bi-folder fs-4 mb-1"></i>
+            <span class="small">Folder</span>
+
+            <input 
+                type="file"
+                name="photo_file"
+                accept="image/*"
+                multiple
+                class="d-none"
+                onchange="previewImage(event); activateUpload('folder')">
+        </label>
+
+    </div>
+
+    <!-- TEMPAT FOTO MUNCUL -->
+    <div id="previewContainer" class="d-flex gap-2 flex-wrap mt-3"></div>
+</div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold d-block mb-2">Rating <span class="text-danger">*</span></label>
+                <div id="starRating" class="d-flex gap-2 fs-4">
+                    <i class="bi bi-star star-rating text-gray-300 hover:text-yellow-500 transition duration-200 cursor-pointer" data-value="1"></i>
+                    <i class="bi bi-star star-rating text-gray-300 hover:text-yellow-500 transition duration-200 cursor-pointer" data-value="2"></i>
+                    <i class="bi bi-star star-rating text-gray-300 hover:text-yellow-500 transition duration-200 cursor-pointer" data-value="3"></i>
+                    <i class="bi bi-star star-rating text-gray-300 hover:text-yellow-500 transition duration-200 cursor-pointer" data-value="4"></i>
+                    <i class="bi bi-star star-rating text-gray-300 hover:text-yellow-500 transition duration-200 cursor-pointer" data-value="5"></i>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold mb-2">Komentar <span class="text-danger">*</span></label>
+                <textarea id="reviewComment" name="comment" rows="6" class="form-control" style="resize: none;" placeholder="Bagikan pengalaman Anda..." required></textarea>
+            </div>
+
+            <button type="submit" id="submitReview" class="btn btn-agro-primary" disabled>
+                Kirim Ulasan
+            </button>
+        </form>
+
+    </div>
+</div>
+</div>   
+</div>
+        
+<!-- ================= RIGHT ================= -->
 <div class="col-lg-4">
     <div class="position-sticky" style="top: 80px;">
         <div class="card card-agro">
@@ -291,6 +362,9 @@
 </div>
 @endsection
 
+
+<!-- ======================== JS ======================== -->
+@push('scripts')
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -321,6 +395,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         window.setImage = function(index) {
+
             if (!images[index]) return;
 
             currentIndex = index;
@@ -350,6 +425,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const stars = document.querySelectorAll(".star-rating");
     const ratingInput = document.getElementById("ratingInput");
+    const submitBtn = document.getElementById("submitReview");
+    const nameInput = document.getElementById("reviewName");
+    const commentInput = document.getElementById("reviewComment");
+
     let selectedRating = 0;
 
     if (stars.length > 0 && ratingInput) {
@@ -365,26 +444,264 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             star.addEventListener("click", function () {
-                selectedRating = this.dataset.value;
-                ratingInput.value = selectedRating;
+
+                const clickedValue = this.dataset.value;
+
+                // jika klik bintang yang sama → cancel
+                if(selectedRating == clickedValue){
+                    selectedRating = 0;
+                    ratingInput.value = "";
+                }else{
+                    selectedRating = clickedValue;
+                    ratingInput.value = clickedValue;
+             }
+
                 highlightStars(selectedRating);
+                checkForm();
+
             });
 
         });
 
         function highlightStars(value) {
+
             stars.forEach(star => {
+
                 if (star.dataset.value <= value) {
+
                     star.classList.remove("bi-star");
                     star.classList.add("bi-star-fill", "text-warning");
+
                 } else {
+
                     star.classList.remove("bi-star-fill", "text-warning");
                     star.classList.add("bi-star");
+
                 }
+
             });
+
         }
 
     }
 
+
+    /* ================= VALIDASI FORM ================= */
+
+    function checkForm(){
+
+        const nameFilled = nameInput?.value.trim() !== "";
+        const commentFilled = commentInput?.value.trim() !== "";
+        const ratingFilled = ratingInput?.value !== "";
+
+        if(nameFilled && commentFilled && ratingFilled){
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = "1";
+        }else{
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = "0.6";
+        }
+
+    }
+
+    nameInput?.addEventListener("input", checkForm);
+    commentInput?.addEventListener("input", checkForm);
+
+
+    /* ================= UPLOAD INDICATOR ================= */
+
+    const cameraInput = document.querySelector("input[name='photo_camera']");
+    const folderInput = document.querySelector("input[name='photo_file']");
+
+    const cameraBtn = document.getElementById("cameraBtn");
+    const folderBtn = document.getElementById("folderBtn");
+
+    function resetUpload(){
+        cameraBtn.style.borderColor = "#dee2e6";
+        cameraBtn.style.background = "";
+        folderBtn.style.borderColor = "#dee2e6";
+        folderBtn.style.background = "";
+    }
+
+    if(cameraInput){
+        cameraInput.addEventListener("change", function(){
+            resetUpload();
+            cameraBtn.style.borderColor = "#22c55e";
+            cameraBtn.style.background = "#ecfdf5";
+        });
+    }
+
+    if(folderInput){
+        folderInput.addEventListener("change", function(){
+            resetUpload();
+            folderBtn.style.borderColor = "#22c55e";
+            folderBtn.style.background = "#ecfdf5";
+        });
+    }
+
 });
+
+
+/* ================= PREVIEW FOTO ULASAN ================= */
+
+function previewImage(event){
+
+    const container = document.getElementById("previewContainer");
+    const files = event.target.files;
+
+    if(!files.length) return;
+
+    for(let i = 0; i < files.length; i++){
+
+        const file = files[i];
+        const url = URL.createObjectURL(file);
+
+        const wrapper = document.createElement("div");
+        wrapper.style.position = "relative";
+        wrapper.style.display = "inline-block";
+
+        const img = document.createElement("img");
+        img.src = url;
+
+        img.style.width = "100px";
+        img.style.height = "100px";
+        img.style.objectFit = "cover";
+        img.style.borderRadius = "10px";
+        img.style.border = "1px solid #ddd";
+
+        const removeBtn = document.createElement("button");
+        removeBtn.innerHTML = "✕";
+
+        removeBtn.style.position = "absolute";
+        removeBtn.style.top = "-8px";
+        removeBtn.style.right = "-8px";
+        removeBtn.style.background = "#ef4444";
+        removeBtn.style.color = "white";
+        removeBtn.style.border = "none";
+        removeBtn.style.width = "22px";
+        removeBtn.style.height = "22px";
+        removeBtn.style.borderRadius = "50%";
+        removeBtn.style.cursor = "pointer";
+        removeBtn.style.fontSize = "12px";
+
+        removeBtn.onclick = function(){
+            wrapper.remove();
+        };
+
+        wrapper.appendChild(img);
+        wrapper.appendChild(removeBtn);
+
+        container.appendChild(wrapper);
+
+    }
+
+}
+
+/* ================= REVIEW IMAGE LIGHTBOX ================= */
+
+function openReviewImage(src){
+
+    const lightbox = document.getElementById("reviewLightbox");
+    const img = document.getElementById("reviewLightboxImg");
+
+    img.src = src;
+    lightbox.style.display = "flex";
+
+}
+
+function closeReviewImage(){
+
+    document.getElementById("reviewLightbox").style.display = "none";
+
+}
 </script>
+@endpush
+
+
+
+<!-- ======================== Styling CSS ======================== -->
+<style>
+#cameraBtn, #folderBtn{
+    transition: all 0.25s ease;
+}
+
+#cameraBtn:hover, #folderBtn:hover{
+    transform: translateY(-6px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    background:#ecfdf5;
+    border-color:#22c55e !important;
+}
+
+#cameraBtn:active, #folderBtn:active{
+    transform: scale(0.95);
+}
+/* REVIEW IMAGE */
+
+.review-photo img{
+    cursor:pointer;
+    transition: transform 0.25s ease;
+}
+
+.review-photo img:hover{
+    transform:scale(1.08);
+}
+
+
+/* LIGHTBOX */
+
+.review-lightbox{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.9);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+}
+
+.review-lightbox img{
+    max-width:90%;
+    max-height:90%;
+    border-radius:12px;
+}
+
+/* tombol close */
+.review-close{
+    position:absolute;
+    top:20px;
+    right:25px;
+    font-size:28px;
+    background:rgba(0,0,0,0.5);
+    color:white;
+    border:none;
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    cursor:pointer;
+}
+
+/* tombol navigasi */
+.review-nav{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    background:rgba(0,0,0,0.5);
+    color:white;
+    border:none;
+    font-size:35px;
+    padding:10px 18px;
+    cursor:pointer;
+    border-radius:8px;
+}
+
+.review-nav.prev{
+    left:30px;
+}
+
+.review-nav.next{
+    right:30px;
+}
+</style>

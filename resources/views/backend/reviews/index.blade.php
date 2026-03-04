@@ -1,6 +1,7 @@
 @extends('backend.main_dashboard')
 
 @section('content')
+
 <section class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
@@ -21,7 +22,6 @@
         </div>
     </div>
 </section>
-
 
 <section class="content">
     <div class="container-fluid">
@@ -44,6 +44,7 @@
                             <th>Vendor</th>
                             <th>Rating</th>
                             <th>Review</th>
+                            <th>Photo</th>
                             <th>Status</th>
                             <th>Reply</th>
                             <th width="25%">Actions</th>
@@ -53,132 +54,194 @@
                     <tbody>
 
                         @forelse ($reviews as $review)
-                            <tr>
-                                <td>
-                                    {{ ($reviews->currentPage() - 1) * $reviews->perPage() + $loop->iteration }}
-                                </td>
+                        <tr>
 
-                                <!-- NAME -->
-                                <td>
-                                    {{ $review->name ?? $review->user->name ?? '-' }}
-                                    @if(!$review->user_id)
-                                        <span class="badge badge-secondary">Guest</span>
-                                    @endif
-                                </td>
+                            <!-- NO -->
+                            <td>
+                                {{ ($reviews->currentPage() - 1) * $reviews->perPage() + $loop->iteration }}
+                            </td>
 
-                                <td>{{ $review->vendor->name ?? '-' }}</td>
+                            <!-- NAME -->
+                            <td>
+                                {{ $review->name ?? $review->user->name ?? '-' }}
 
-                                <!-- RATING -->
-                                <td>⭐ {{ $review->rating }}</td>
+                                @if(!$review->user_id)
+                                    <span class="badge badge-secondary">Guest</span>
+                                @endif
+                            </td>
 
-                                <td>{{ \Illuminate\Support\Str::limit($review->comment, 50) }}</td>
+                            <!-- VENDOR -->
+                            <td>
+                                {{ $review->vendor->name ?? '-' }}
+                            </td>
 
-                                <!-- STATUS -->
-                                <td>
-                                    <span class="badge badge-{{ $review->status_badge }}">
-                                        {{ ucfirst($review->status) }}
-                                    </span>
-                                </td>
+                            <!-- RATING -->
+                            <td>
+                                ⭐ {{ $review->rating }}
+                            </td>
 
-                                <!-- REPLY -->
-                                <td>
-                                    {{ $review->admin_reply ?? '-' }}
-                                </td>
+                            <!-- REVIEW -->
+                            <td>
+                                {{ \Illuminate\Support\Str::limit($review->comment, 50) }}
+                            </td>
 
-                                <!-- ACTION -->
-                                <td>
+                            <!-- PHOTO -->
+                            <td>
+                                @if($review->photo)
+                                    <img 
+                                        src="{{ asset('storage/'.$review->photo) }}"
+                                        style="width:60px;height:60px;object-fit:cover;border-radius:6px;"
+                                    >
+                                @else
+                                    -
+                                @endif
+                            </td>
 
-                                    {{-- ================= PENDING ONLY ================= --}}
-                                    @if($review->status == 'pending')
+                            <!-- STATUS -->
+                            <td>
+                                <span class="badge badge-{{ $review->status_badge }}">
+                                    {{ ucfirst($review->status) }}
+                                </span>
+                            </td>
 
-                                        <!-- APPROVE -->
-                                        <form action="{{ route('review.approve', $review->id) }}" method="POST"
-                                            style="display:inline-block; margin-right:5px;">
-                                            @csrf
-                                            <button class="btn btn-success btn-sm" title="Approve">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        </form>
+                            <!-- REPLY -->
+                            <td>
+                                {{ $review->admin_reply ?? '-' }}
+                            </td>
 
-                                        <!-- REJECT -->
-                                        <form action="{{ route('review.reject', $review->id) }}" method="POST"
-                                            style="display:inline-block; margin-right:5px;">
-                                            @csrf
-                                            <button class="btn btn-danger btn-sm" title="Reject">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </form>
+                            <!-- ACTION -->
+                            <td>
 
-                                    @endif
+                                {{-- ================= PENDING ONLY ================= --}}
+                                @if($review->status == 'pending')
 
-
-                                    {{-- ================= REPLY ================= --}}
-                                    <button class="btn btn-primary btn-sm"
-                                        data-toggle="modal"
-                                        data-target="#replyModal{{ $review->id }}"
-                                        title="Reply"
-                                        style="margin-right:5px;">
-                                        <i class="fas fa-reply"></i>
-                                    </button>
-
-
-                                    {{-- ================= DELETE ================= --}}
-                                    <form action="{{ route('review.destroy', $review->id) }}" method="POST"
-                                        style="display:inline-block;"
-                                        onsubmit="return confirm('Yakin mau hapus review ini?')">
+                                    <!-- APPROVE -->
+                                    <form 
+                                        action="{{ route('review.approve', $review->id) }}" 
+                                        method="POST"
+                                        style="display:inline-block; margin-right:5px;"
+                                    >
                                         @csrf
-                                        @method('DELETE')
 
-                                        <button class="btn btn-dark btn-sm" title="Delete">
-                                            <i class="fas fa-trash"></i>
+                                        <button class="btn btn-success btn-sm" title="Approve">
+                                            <i class="fas fa-check"></i>
                                         </button>
                                     </form>
 
-                                </td>
-                            </tr>
-
-                            <!-- MODAL REPLY -->
-                            <div class="modal fade" id="replyModal{{ $review->id }}" tabindex="-1">
-                                <div class="modal-dialog">
-                                    <form action="{{ route('review.reply', $review->id) }}" method="POST">
+                                    <!-- REJECT -->
+                                    <form 
+                                        action="{{ route('review.reject', $review->id) }}" 
+                                        method="POST"
+                                        style="display:inline-block; margin-right:5px;"
+                                    >
                                         @csrf
 
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Reply to Review</h5>
-                                                <button type="button" class="close"
-                                                    data-dismiss="modal">&times;</button>
-                                            </div>
+                                        <button class="btn btn-danger btn-sm" title="Reject">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
 
-                                            <div class="modal-body">
-                                                <p><strong>Review:</strong> {{ $review->comment }}</p>
+                                @endif
 
-                                                <div class="form-group">
-                                                    <label>Admin Reply</label>
-                                                    <textarea name="admin_reply" class="form-control" required></textarea>
-                                                </div>
-                                            </div>
 
-                                            <div class="modal-footer">
-                                                <button class="btn btn-primary">Send</button>
-                                            </div>
+                                {{-- ================= REPLY ================= --}}
+                                <button 
+                                    class="btn btn-primary btn-sm"
+                                    data-toggle="modal"
+                                    data-target="#replyModal{{ $review->id }}"
+                                    title="Reply"
+                                    style="margin-right:5px;"
+                                >
+                                    <i class="fas fa-reply"></i>
+                                </button>
+
+
+                                {{-- ================= DELETE ================= --}}
+                                <form 
+                                    action="{{ route('review.destroy', $review->id) }}" 
+                                    method="POST"
+                                    style="display:inline-block;"
+                                    onsubmit="return confirm('Yakin mau hapus review ini?')"
+                                >
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button class="btn btn-dark btn-sm" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+
+                            </td>
+
+                        </tr>
+
+                        <!-- MODAL REPLY -->
+                        <div class="modal fade" id="replyModal{{ $review->id }}" tabindex="-1">
+                            <div class="modal-dialog">
+
+                                <form action="{{ route('review.reply', $review->id) }}" method="POST">
+                                    @csrf
+
+                                    <div class="modal-content">
+
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">
+                                                Reply to Review
+                                            </h5>
+
+                                            <button 
+                                                type="button" 
+                                                class="close"
+                                                data-dismiss="modal"
+                                            >
+                                                &times;
+                                            </button>
                                         </div>
 
-                                    </form>
-                                </div>
+                                        <div class="modal-body">
+
+                                            <p>
+                                                <strong>Review:</strong> 
+                                                {{ $review->comment }}
+                                            </p>
+
+                                            <div class="form-group">
+                                                <label>Admin Reply</label>
+
+                                                <textarea 
+                                                    name="admin_reply" 
+                                                    class="form-control" 
+                                                    required
+                                                ></textarea>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button class="btn btn-primary">
+                                                Send
+                                            </button>
+                                        </div>
+
+                                    </div>
+
+                                </form>
+
                             </div>
+                        </div>
 
                         @empty
-                            <tr>
-                                <td colspan="8" class="text-center">
-                                    No review data available
-                                </td>
-                            </tr>
+                        <tr>
+                            <td colspan="9" class="text-center">
+                                No review data available
+                            </td>
+                        </tr>
                         @endforelse
 
                     </tbody>
 
                 </table>
+
 
                 <!-- PAGINATION -->
                 <div class="mt-3 d-flex justify-content-end">
@@ -192,17 +255,20 @@
     </div>
 </section>
 
+
 {{-- ALERT SUCCESS --}}
 @if (session('success'))
+
 <script>
-    Swal.fire({
-        icon: 'success',
-        title: 'Success',
-        text: '{{ session('success') }}',
-        timer: 2000,
-        showConfirmButton: false
-    });
+Swal.fire({
+    icon: 'success',
+    title: 'Success',
+    text: '{{ session('success') }}',
+    timer: 2000,
+    showConfirmButton: false
+});
 </script>
+
 @endif
 
 @endsection

@@ -78,7 +78,7 @@
                     class="region-pill">
                     <i class="bi bi-geo-alt"></i> {{ $area->name }}
                     <span class="count-badge">
-                        {{ $area->vendors->count() ?? 0 }}
+                        {{ $pakets->filter(fn($p) => $p->vendor->area_id == $area->id)->count() }}
                     </span>
                 </button>
                 @endforeach
@@ -101,10 +101,10 @@
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
 
                     <!-- IMAGE -->
-                    <div class="position-relative">
+                    <div class="position-relative img-container">
                         <img 
                             src="{{ $paket->photos->first() ? asset('storage/' . $paket->photos->first()->path_foto) : 'https://via.placeholder.com/400x250' }}"
-                            class="w-100"
+                            class="w-100 img-zoom"
                             style="height:230px; object-fit:cover;"
                         >
 
@@ -208,9 +208,24 @@
     </div>
 </section>
 
+ <!-- About Section -->
+    <section id="tentang" class="py-5 bg-secondary bg-opacity-25">
+        <div class="container py-5">
+            <div class="text-center mx-auto" style="max-width: 700px;">
+                <i class="bi bi-leaf text-primary-agro fs-1 mb-3 d-block"></i>
+                <h2 class="font-display display-6 fw-bold mb-4">Tentang AgroBandung</h2>
+                <p class="text-muted lead">
+                    AgroBandung adalah platform pemesanan tiket wisata agro di kawasan Bandung dan sekitarnya.
+                    Kami menghubungkan Anda dengan kebun-kebun terbaik untuk pengalaman wisata alam yang tak terlupakan 
+                    di Bandung. Temukan berbagai paket wisata agro, baca ulasan, dan pesan tiket dengan mudah melalui website kami.
+                </p>
+            </div>
+        </div>
+    </section>
+
 @endsection
 
-<!-- ================= JS FILTER WITH SMOOTH FADE ================= -->
+<!-- ================= JS ================= -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -306,3 +321,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
+
+
+<!-- ======================== Styling CSS ======================== -->
+<style>
+.img-zoom{
+    transition: transform .4s ease;
+}
+
+.img-container{
+    overflow:hidden;
+}
+
+.img-container:hover .img-zoom{
+    transform: scale(1.1);
+}
+</style>

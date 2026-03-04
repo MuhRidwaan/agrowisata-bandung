@@ -9,3 +9,5 @@
 <!-- /.content -->
 <!-- Footer -->
 @include('frontend.layouts.footer')
+
+@stack('scripts')

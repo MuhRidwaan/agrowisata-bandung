@@ -7,19 +7,26 @@ use Illuminate\Database\Eloquent\Model;
 class Review extends Model
 {
     protected $fillable = [
+        'paket_id',
         'user_id',
-        'name',
         'vendor_id',
+        'name',
         'rating',
         'comment',
+        'photo',
         'status',
         'admin_reply'
     ];
 
-    // Default value
     protected $attributes = [
         'status' => 'pending'
     ];
+
+    // ================= CAST =================
+    protected $casts = [
+        'photo' => 'array'
+    ];
+
 
     // ================= RELATION =================
 
@@ -31,6 +38,11 @@ class Review extends Model
     public function vendor()
     {
         return $this->belongsTo(Vendor::class);
+    }
+
+    public function paket()
+    {
+        return $this->belongsTo(PaketTour::class,'paket_id');
     }
 
     // ================= HELPER =================
