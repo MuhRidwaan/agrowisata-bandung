@@ -17,10 +17,7 @@ function formatCurrency(amount) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  const dateInput = document.getElementById('visitDate');
-  if (dateInput) {
-    dateInput.addEventListener('change', updateSummary);
-  }
+  initCalendar();
   initPaymentOptions();
   updateSummary();
   updateStepper();
@@ -258,10 +255,27 @@ function updatePriceTiers() {
 
 function updateSummary() {
   var dateInput = document.getElementById('visitDate');
+  var sisaInput = document.getElementById('visitDateSisa');
   if (dateInput && dateInput.value) {
     var date = new Date(dateInput.value + 'T00:00:00');
     var el = document.getElementById('summaryDate');
-    if (el) el.textContent = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    var dd = String(date.getDate()).padStart(2, '0');
+    var mm = String(date.getMonth() + 1).padStart(2, '0');
+    var yyyy = date.getFullYear();
+    if (el) el.textContent = dd + '/' + mm + '/' + yyyy;
+
+    // Show sisa kuota
+    var kuotaRow = document.getElementById('summaryKuotaRow');
+    var kuotaEl = document.getElementById('summaryKuota');
+    if (kuotaRow && kuotaEl && sisaInput && sisaInput.value) {
+      kuotaRow.classList.remove('d-none');
+      kuotaEl.textContent = sisaInput.value + ' orang';
+    }
+  } else {
+    var el = document.getElementById('summaryDate');
+    if (el) el.textContent = '-';
+    var kuotaRow = document.getElementById('summaryKuotaRow');
+    if (kuotaRow) kuotaRow.classList.add('d-none');
   }
   
   const calc = getPriceCalculation();
@@ -470,4 +484,145 @@ function copyBookingCode() {
     icon.className = 'bi bi-check-lg text-success';
     setTimeout(function() { icon.className = 'bi bi-clipboard'; }, 2000);
   }
+}
+
+// ================= CUSTOM CALENDAR DATEPICKER =================
+var calendarCurrentMonth = new Date().getMonth();
+var calendarCurrentYear = new Date().getFullYear();
+var calendarSelectedDate = null;
+var availableDatesMap = {};
+
+function initCalendar() {
+  var dates = window.AVAILABLE_DATES || [];
+  availableDatesMap = {};
+  dates.forEach(function(d) {
+    availableDatesMap[d.date] = { kuota: d.kuota, sisa: d.sisa };
+  });
+
+  // Set initial month to first available date if exists
+  if (dates.length > 0) {
+    var first = new Date(dates[0].date + 'T00:00:00');
+    calendarCurrentMonth = first.getMonth();
+    calendarCurrentYear = first.getFullYear();
+  }
+
+  renderCalendar();
+}
+
+function toggleCalendar() {
+  var cal = document.getElementById('customCalendar');
+  if (cal.classList.contains('d-none')) {
+    cal.classList.remove('d-none');
+    renderCalendar();
+  } else {
+    cal.classList.add('d-none');
+  }
+}
+
+function calendarPrev() {
+  calendarCurrentMonth--;
+  if (calendarCurrentMonth < 0) {
+    calendarCurrentMonth = 11;
+    calendarCurrentYear--;
+  }
+  renderCalendar();
+}
+
+function calendarNext() {
+  calendarCurrentMonth++;
+  if (calendarCurrentMonth > 11) {
+    calendarCurrentMonth = 0;
+    calendarCurrentYear++;
+  }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  var monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  var label = document.getElementById('calendarMonthYear');
+  if (label) label.textContent = monthNames[calendarCurrentMonth] + ' ' + calendarCurrentYear;
+
+  var body = document.getElementById('calendarBody');
+  if (!body) return;
+  body.innerHTML = '';
+
+  var firstDay = new Date(calendarCurrentYear, calendarCurrentMonth, 1).getDay(); // 0=Sun
+  var daysInMonth = new Date(calendarCurrentYear, calendarCurrentMonth + 1, 0).getDate();
+  var today = new Date();
+  today.setHours(0,0,0,0);
+
+  // Empty cells for first row offset
+  for (var i = 0; i < firstDay; i++) {
+    var empty = document.createElement('div');
+    empty.className = 'calendar-day empty';
+    body.appendChild(empty);
+  }
+
+  for (var d = 1; d <= daysInMonth; d++) {
+    var dateStr = calendarCurrentYear + '-' + String(calendarCurrentMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    var cellDate = new Date(calendarCurrentYear, calendarCurrentMonth, d);
+    var cell = document.createElement('div');
+    cell.className = 'calendar-day';
+    
+    var info = availableDatesMap[dateStr];
+    var isPast = cellDate < today;
+
+    if (info && !isPast) {
+      if (info.sisa > 0) {
+        // Available - clickable
+        cell.classList.add('available');
+        cell.innerHTML = '<span class="day-number">' + d + '</span><span class="day-quota">' + info.sisa + '</span>';
+        cell.dataset.date = dateStr;
+        cell.dataset.sisa = info.sisa;
+        cell.addEventListener('click', function() {
+          selectCalendarDate(this.dataset.date, this.dataset.sisa);
+        });
+
+        // Mark as selected if matches
+        if (calendarSelectedDate === dateStr) {
+          cell.classList.add('selected');
+        }
+      } else {
+        // Full - disabled
+        cell.classList.add('full');
+        cell.innerHTML = '<span class="day-number">' + d + '</span><span class="day-quota">0</span>';
+      }
+    } else {
+      // Not available or past
+      cell.classList.add('disabled');
+      cell.innerHTML = '<span class="day-number">' + d + '</span>';
+    }
+
+    body.appendChild(cell);
+  }
+}
+
+function selectCalendarDate(dateStr, sisa) {
+  calendarSelectedDate = dateStr;
+
+  // Update hidden input
+  var dateInput = document.getElementById('visitDate');
+  var sisaInput = document.getElementById('visitDateSisa');
+  if (dateInput) dateInput.value = dateStr;
+  if (sisaInput) sisaInput.value = sisa;
+
+  // Update display
+  var parts = dateStr.split('-');
+  var displayText = parts[2] + '/' + parts[1] + '/' + parts[0];
+  var displayEl = document.getElementById('calendarInputDisplay');
+  if (displayEl) {
+    displayEl.textContent = displayText;
+    displayEl.classList.remove('text-muted');
+    displayEl.classList.add('text-dark', 'fw-medium');
+  }
+
+  // Re-render to show selected state
+  renderCalendar();
+
+  // Close calendar
+  var cal = document.getElementById('customCalendar');
+  if (cal) cal.classList.add('d-none');
+
+  // Update summary
+  updateSummary();
 }

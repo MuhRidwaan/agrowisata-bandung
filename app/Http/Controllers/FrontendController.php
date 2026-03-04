@@ -55,14 +55,24 @@ class FrontendController extends Controller
     // ================= BOOKING =================
     public function booking($id)
     {
-        $paket = PaketTour::with(['pricingRules', 'vendor.area', 'photos', 'tanggalAvailables'])->findOrFail($id);
+        $paket = PaketTour::with(['pricingRules', 'vendor.area', 'vendor.whatsappsetting', 'photos', 'tanggalAvailables'])->findOrFail($id);
 
         // Ambil tanggal available yang aktif dan belum lewat
         $availableDates = $paket->tanggalAvailables()
             ->where('status', 'aktif')
             ->where('tanggal', '>=', now()->toDateString())
             ->orderBy('tanggal')
-            ->get();
+            ->get()
+            ->map(function ($tgl) use ($paket) {
+                // Hitung kuota terpakai dari bookings yang tidak dibatalkan
+                $used = Booking::where('paket_tour_id', $paket->id)
+                    ->where('visit_date', $tgl->tanggal)
+                    ->where('status', '!=', 'cancelled')
+                    ->sum('jumlah_peserta');
+                $tgl->quota_used = (int) $used;
+                $tgl->sisa = max(0, $tgl->kuota - $used);
+                return $tgl;
+            });
 
         return view('frontend.booking', compact('paket', 'availableDates'));
     }

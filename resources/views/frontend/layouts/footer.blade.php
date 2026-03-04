@@ -52,14 +52,14 @@
         location: '{{ $paket->vendor->area->name ?? "Bandung" }}',
         basePrice: {{ $paket->harga_paket ?? 0 }},
         pricingRules: @json($paket->pricingRules ?? []),
-        waNumber: '{{ $paket->vendor->whatsappsetting->phone_number ?? "6281234567890" }}',
+        waNumber: '{{ preg_replace("/[^0-9]/", "", $paket->vendor->whatsappsetting->phone_number ?? "6281234567890") }}',
         waContact: '{{ $paket->vendor->name ?? "Admin" }}',
         storeUrl: '{{ route("booking.store") }}',
         csrfToken: '{{ csrf_token() }}',
         invoiceUrl: '{{ url("/pembayaran/invoice") }}'
     };
 </script>
-<script src="{{ asset('frontend/js/booking.js') }}"></script>
+<script src="{{ asset('frontend/js/booking.js') }}?v={{ time() }}"></script>
 @endif
 <script>
     document.addEventListener('DOMContentLoaded', function() {

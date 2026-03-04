@@ -1,6 +1,103 @@
 @extends('frontend.main')
 
 @section('content')
+    {{-- Calendar Datepicker Styles --}}
+    <style>
+        .custom-calendar-wrapper { position: relative; z-index: 50; }
+        .custom-calendar { border-radius: 10px; overflow: hidden; max-width: 500px; }
+        .custom-calendar .card-body { padding: 0.75rem !important; }
+        .calendar-grid { user-select: none; }
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #6c757d;
+            margin-bottom: 3px;
+        }
+        .calendar-body {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+        .calendar-day {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 7px;
+            padding: 3px 2px;
+            min-height: 42px;
+            font-size: 0.8rem;
+            transition: all 0.15s;
+        }
+        .calendar-day.empty { min-height: 0; }
+        .calendar-day.disabled {
+            color: #ccc;
+            cursor: default;
+        }
+        .calendar-day.available {
+            cursor: pointer;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+        .calendar-day.available:hover {
+            background: #dcfce7;
+            border-color: #86efac;
+            transform: scale(1.05);
+        }
+        .calendar-day.available.selected {
+            background: #16a34a;
+            color: #fff;
+            border-color: #16a34a;
+        }
+        .calendar-day.available.selected .day-quota {
+            background: rgba(255,255,255,0.3);
+            color: #fff;
+        }
+        .calendar-day.full {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            cursor: not-allowed;
+        }
+        .day-number {
+            font-weight: 600;
+            line-height: 1;
+        }
+        .day-quota {
+            font-size: 0.6rem;
+            font-weight: 700;
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 4px;
+            padding: 0 4px;
+            margin-top: 2px;
+            line-height: 1.4;
+        }
+        .calendar-day.full .day-quota {
+            background: #fecaca;
+            color: #991b1b;
+        }
+        .cal-legend {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+        .cal-legend-available { background: #f0fdf4; border: 1px solid #bbf7d0; }
+        .cal-legend-full { background: #fef2f2; border: 1px solid #fecaca; }
+        .cal-legend-disabled { background: #f3f4f6; border: 1px solid #e5e7eb; }
+
+        #calendarToggle:focus, #calendarToggle:hover {
+            border-color: #16a34a;
+            box-shadow: 0 0 0 0.2rem rgba(22,163,74,0.15);
+        }
+    </style>
+
     <header class="bg-white border-bottom position-sticky top-0" style="z-index: 1000;">
         <div class="container">
             <div class="d-flex align-items-center gap-3 py-3">
@@ -85,18 +182,63 @@
                                     <i class="bi bi-calendar-event text-primary-agro"></i> Tanggal Kunjungan
                                 </h3>
                                 <input type="hidden" id="paketTourId" value="{{ $paket->id }}">
-                                <select class="form-control form-control-lg" id="visitDate" required>
-                                    <option value="">-- Pilih Tanggal --</option>
-                                    @foreach($availableDates as $tgl)
-                                        <option value="{{ $tgl->tanggal }}" data-kuota="{{ $tgl->kuota }}">
-                                            {{ \Carbon\Carbon::parse($tgl->tanggal)->translatedFormat('l, d F Y') }} (Kuota: {{ $tgl->kuota }})
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <input type="hidden" id="visitDate" value="">
+                                <input type="hidden" id="visitDateSisa" value="">
+
+                                {{-- Calendar input display --}}
+                                <div class="position-relative">
+                                    <div class="form-control form-control-lg d-flex align-items-center justify-content-between"
+                                         id="calendarToggle"
+                                         style="cursor: pointer; background: #fff;"
+                                         onclick="toggleCalendar()">
+                                        <span id="calendarInputDisplay" class="text-muted">-- Pilih Tanggal --</span>
+                                        <i class="bi bi-calendar3 text-primary-agro"></i>
+                                    </div>
+                                </div>
+
+                                {{-- Custom Calendar --}}
+                                <div id="customCalendar" class="custom-calendar-wrapper d-none mt-2">
+                                    <div class="custom-calendar card shadow-sm border-0">
+                                        <div class="card-body p-3">
+                                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                                <button type="button" class="btn btn-sm btn-light rounded-circle" onclick="calendarPrev()" id="calPrevBtn">
+                                                    <i class="bi bi-chevron-left"></i>
+                                                </button>
+                                                <span class="fw-semibold" id="calendarMonthYear"></span>
+                                                <button type="button" class="btn btn-sm btn-light rounded-circle" onclick="calendarNext()" id="calNextBtn">
+                                                    <i class="bi bi-chevron-right"></i>
+                                                </button>
+                                            </div>
+                                            <div class="calendar-grid">
+                                                <div class="calendar-header">
+                                                    <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+                                                </div>
+                                                <div class="calendar-body" id="calendarBody"></div>
+                                            </div>
+                                            <div class="mt-2 pt-2 border-top d-flex gap-3 small">
+                                                <span class="d-flex align-items-center gap-1"><span class="cal-legend cal-legend-available"></span> Tersedia</span>
+                                                <span class="d-flex align-items-center gap-1"><span class="cal-legend cal-legend-full"></span> Penuh</span>
+                                                <span class="d-flex align-items-center gap-1"><span class="cal-legend cal-legend-disabled"></span> Tidak tersedia</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <p class="text-muted small mt-2 mb-0">
                                     <i class="bi bi-info-circle"></i> Pilih tanggal yang tersedia untuk kunjungan Anda
                                 </p>
                             </div>
+
+                            {{-- Pass available dates data to JS --}}
+                            <script>
+                                window.AVAILABLE_DATES = {!! json_encode($availableDates->map(function($d) {
+                                    return [
+                                        'date' => $d->tanggal,
+                                        'kuota' => $d->kuota,
+                                        'sisa' => $d->sisa,
+                                    ];
+                                })->values()) !!};
+                            </script>
 
                             <!-- Pricing Rules -->
                             @if($paket->pricingRules->count() > 0)
@@ -323,33 +465,53 @@
                 <div class="position-sticky" style="top: 80px;">
                     <div class="card card-agro">
                         <div class="card-body p-4">
-                            <h3 class="font-display fs-5 fw-semibold mb-3">Ringkasan Pesanan</h3>
-                            <div class="d-flex gap-3 mb-3 pb-3 border-bottom">
+                            <h3 class="font-display fs-6 fw-semibold mb-3 d-flex align-items-center gap-2">
+                                <i class="bi bi-receipt text-primary-agro"></i> Ringkasan Pesanan
+                            </h3>
+
+                            {{-- Destination info --}}
+                            <div class="d-flex gap-3 mb-3 pb-3 border-bottom align-items-center">
                                 @php
                                     $mainPhoto = $paket->photos->first() ? asset('storage/' . $paket->photos->first()->path_foto) : 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=100&q=80';
                                 @endphp
                                 <img src="{{ $mainPhoto }}"
-                                    alt="{{ $paket->nama_paket }}" class="rounded-3"
-                                    style="width: 50px; height: 50px; object-fit: cover;" loading="lazy">
-                                <div>
-                                    <p class="fw-medium small mb-0">{{ $paket->nama_paket }}</p>
-                                    <p class="text-muted small mb-0"><i class="bi bi-geo-alt"></i> {{ $paket->vendor->area->name ?? 'Bandung' }}</p>
+                                    alt="{{ $paket->nama_paket }}" class="flex-shrink-0"
+                                    style="width: 56px; height: 56px; object-fit: cover; border-radius: 50%;" loading="lazy">
+                                <div class="min-w-0">
+                                    <p class="fw-semibold small mb-1" style="word-wrap: break-word; overflow-wrap: break-word;">{{ $paket->nama_paket }}</p>
+                                    <p class="text-muted small mb-0" style="word-wrap: break-word; overflow-wrap: break-word;">
+                                        <i class="bi bi-geo-alt-fill text-primary-agro"></i> {{ $paket->vendor->area->name ?? 'Bandung' }}
+                                    </p>
                                 </div>
                             </div>
+
+                            {{-- Date & Kuota --}}
                             <div class="mb-3 pb-3 border-bottom">
-                                <div class="d-flex justify-content-between small">
-                                    <span class="text-muted">Tanggal</span>
-                                    <span class="fw-medium" id="summaryDate">-</span>
+                                <div class="d-flex justify-content-between align-items-center small mb-1">
+                                    <span class="text-muted d-flex align-items-center gap-1">
+                                        <i class="bi bi-calendar-event"></i> Tanggal
+                                    </span>
+                                    <span class="fw-semibold" id="summaryDate">-</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center small d-none" id="summaryKuotaRow">
+                                    <span class="text-muted d-flex align-items-center gap-1">
+                                        <i class="bi bi-people"></i> Sisa Kuota
+                                    </span>
+                                    <span class="badge bg-success bg-opacity-10 text-success fw-semibold" id="summaryKuota">-</span>
                                 </div>
                             </div>
+
+                            {{-- Price breakdown --}}
                             <div class="mb-3 pb-3 border-bottom">
-                                <div class="d-flex justify-content-between small mb-1">
+                                <div class="d-flex justify-content-between align-items-center small">
                                     <span class="text-muted" id="summaryPriceLabel">Rp{{ number_format($paket->harga_paket, 0, ',', '.') }} &times; 1</span>
-                                    <span id="summarySubtotal">Rp{{ number_format($paket->harga_paket, 0, ',', '.') }}</span>
+                                    <span class="fw-medium" id="summarySubtotal">Rp{{ number_format($paket->harga_paket, 0, ',', '.') }}</span>
                                 </div>
                             </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="fw-medium">Total</span>
+
+                            {{-- Total --}}
+                            <div class="d-flex justify-content-between align-items-center pt-1">
+                                <span class="fw-semibold">Total</span>
                                 <span class="font-display fs-4 fw-bold text-primary-agro" id="totalPrice">Rp{{ number_format($paket->harga_paket, 0, ',', '.') }}</span>
                             </div>
                         </div>
