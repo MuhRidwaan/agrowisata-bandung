@@ -87,11 +87,21 @@
 
                             <!-- PHOTO -->
                             <td>
-                                @if($review->photo)
+                                @if($review->photos->count())
+                                    <div class="d-flex gap-1 flex-wrap">
+                                    @foreach($review->photos as $photo)
+                                    <img 
+                                        src="{{ asset('storage/'.$photo->photo) }}"
+                                        style="width:60px;height:60px;object-fit:cover;border-radius:6px;margin:2px;">
+
+                                    @endforeach
+                                    </div>
+                                    {{-- FOTO LAMA --}}
+                                    @elseif($review->photo)
+
                                     <img 
                                         src="{{ asset('storage/'.$review->photo) }}"
-                                        style="width:60px;height:60px;object-fit:cover;border-radius:6px;"
-                                    >
+                                        style="width:60px;height:60px;object-fit:cover;border-radius:6px;">
                                 @else
                                     -
                                 @endif

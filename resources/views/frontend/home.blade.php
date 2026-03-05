@@ -322,8 +322,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-
-<!-- ======================== Styling CSS ======================== -->
+<!-- ================= CSS ================== -->
 <style>
 .img-zoom{
     transition: transform .4s ease;

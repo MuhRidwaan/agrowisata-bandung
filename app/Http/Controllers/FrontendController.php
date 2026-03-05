@@ -41,9 +41,9 @@ class FrontendController extends Controller
     // ================= DETAIL =================
     public function detail($id)
     {
-        $paket = PaketTour::with(['vendor', 'reviews'])->findOrFail($id);
+        $paket = PaketTour::with(['vendor', 'reviews.photos'])->findOrFail($id);
 
-        $reviews = Review::with('user')
+        $reviews = Review::with(['user', 'photos'])
             ->where('vendor_id', $paket->vendor_id)
             ->where('status', 'approved')
             ->latest()

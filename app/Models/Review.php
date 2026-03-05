@@ -22,12 +22,6 @@ class Review extends Model
         'status' => 'pending'
     ];
 
-    // ================= CAST =================
-    protected $casts = [
-        'photo' => 'array'
-    ];
-
-
     // ================= RELATION =================
 
     public function user()
@@ -43,6 +37,11 @@ class Review extends Model
     public function paket()
     {
         return $this->belongsTo(PaketTour::class,'paket_id');
+    }
+
+    public function photos()
+    {
+        return $this->hasMany(\App\Models\ReviewPhoto::class);
     }
 
     // ================= HELPER =================

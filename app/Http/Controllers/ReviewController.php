@@ -5,13 +5,14 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Review;
 use App\Models\PaketTour;
+use App\Models\ReviewPhoto;
 
 class ReviewController extends Controller
 {
     // ================= LIST =================
     public function index()
     {
-        $query = Review::with(['user', 'vendor']);
+        $query = Review::with(['user', 'vendor', 'photos']);
 
         // Jika user adalah Vendor, hanya tampilkan review untuk vendor mereka
         if (auth()->user()->hasRole('Vendor')) {
@@ -32,27 +33,36 @@ class ReviewController extends Controller
         'name'     => 'required|string|max:255',
         'rating'   => 'required|integer|min:1|max:5',
         'comment'  => 'required|string|max:1000',
-        'photo_file' => 'nullable|image|max:2048',
+        'photos.*' => 'nullable|image|max:2048',
     ]);
 
     $paket = PaketTour::findOrFail($request->paket_id);
-    
-    $photoPath = null;
 
-    if ($request->hasFile('photo_file')) {
-        $photoPath = $request->file('photo_file')->store('reviews', 'public');
-    }
-
-    Review::create([
+    // simpan review dulu
+    $review = Review::create([
         'paket_id'  => $request->paket_id,
         'vendor_id' => $paket->vendor_id ?? null,
-        'user_id'   => auth()->id(), 
+        'user_id'   => auth()->id(),
         'name'      => $request->name,
         'rating'    => $request->rating,
         'comment'   => $request->comment,
-        'photo'     => $photoPath,
         'status'    => 'pending',
     ]);
+
+    // upload multiple foto
+    if ($request->hasFile('photos')) {
+
+        foreach ($request->file('photos') as $photo) {
+
+            $path = $photo->store('reviews', 'public');
+
+            ReviewPhoto::create([
+                'review_id' => $review->id,
+                'photo' => $path
+            ]);
+        }
+
+    }
 
     return back()->with('success', 'Ulasan berhasil dikirim');
 }

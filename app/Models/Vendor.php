@@ -29,4 +29,9 @@ class Vendor extends Model
     {
         return $this->hasMany(PaketTour::class);
     }
+
+    public function whatsappsetting()
+{
+    return $this->hasOne(WhatsappSetting::class, 'vendor_id');
+}
 }

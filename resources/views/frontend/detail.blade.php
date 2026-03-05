@@ -156,8 +156,8 @@
             Ulasan Pengunjung ({{ $paket->reviews->where('status','approved')->count() }})
         </h3>
 
-        <div class="d-flex flex-column gap-4">
-            @forelse($paket->reviews->where('status','approved') as $review)
+        <div class="d-flex flex-column gap-4 review-scroll">
+            @forelse($paket->reviews->where('status','approved')->sortByDesc('created_at') as $review)
                 <div class="p-4 rounded-4 bg-light">
 
                     <div class="d-flex justify-content-between">
@@ -190,14 +190,20 @@
                     </p>
 
                     {{-- FOTO REVIEW --}}
-                    @if(!empty($review->photo))
-                        <div class="mt-3 review-photo">
-                            <img src="{{ asset('storage/'.$review->photo) }}" 
-                                 alt="Review Photo"
-                                 class="rounded-3 shadow-sm review-img"
-                                 style="max-width:100px;"
-                                 onclick="openReviewImage(this.src)">
-                        </div>
+                    @if($review->photos->count())
+                    <div class="mt-3 d-flex gap-2 flex-wrap">
+
+                    @foreach($review->photos as $photo)
+
+                    <img 
+                        src="{{ asset('storage/'.$photo->photo) }}"
+                        class="rounded-3 shadow-sm review-img"
+                        style="width:100px;height:100px;object-fit:cover;cursor:pointer;"
+                        onclick="openReviewImage(this.src)">
+
+                    @endforeach
+
+                    </div>
                     @endif
 
                     @if(!empty($review->admin_reply))
@@ -227,16 +233,17 @@
 <div id="reviewLightbox" class="review-lightbox" onclick="closeReviewImage()">
     
     <!-- tombol close -->
-    <button class="review-close" onclick="closeReviewImage()">✕</button>
+    <button class="review-close" onclick="event.stopPropagation(); closeReviewImage()">✕</button>
 
     <!-- tombol prev -->
-    <button class="review-nav prev" onclick="prevReviewImage()">❮</button>
+    <button class="review-nav prev" onclick="event.stopPropagation(); prevReviewImage()">❮</button>
 
      <!-- Gambar -->
-    <img id="reviewLightboxImg">
+    <img id="reviewLightboxImg" onclick="event.stopPropagation()">
 
     <!-- tombol next -->
-    <button class="review-nav next" onclick="nextReviewImage()">❯</button>
+    <button class="review-nav next" onclick="event.stopPropagation(); nextReviewImage()">❯</button>
+
 </div>
 
 
@@ -273,11 +280,11 @@
 
             <input 
                 type="file"
-                name="photo_camera"
+                name="photos[]"
                 accept="image/*"
                 capture="environment"
                 class="d-none"
-                onchange="previewImage(event); activateUpload('camera')">
+                onchange="previewImage(event,4); activateUpload('camera')">
         </label>
 
         <!-- FOTO DARI FOLDER -->
@@ -290,11 +297,11 @@
 
             <input 
                 type="file"
-                name="photo_file"
+                name="photos[]"
                 accept="image/*"
                 multiple
                 class="d-none"
-                onchange="previewImage(event); activateUpload('folder')">
+                onchange="previewImage(event,4); activateUpload('folder')">
         </label>
 
     </div>
@@ -302,6 +309,7 @@
     <!-- TEMPAT FOTO MUNCUL -->
     <div id="previewContainer" class="d-flex gap-2 flex-wrap mt-3"></div>
 </div>
+            <div id="uploadAlert"></div>
 
             <div class="mb-3">
                 <label class="form-label fw-semibold d-block mb-2">Rating <span class="text-danger">*</span></label>
@@ -447,14 +455,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 const clickedValue = this.dataset.value;
 
-                // jika klik bintang yang sama → cancel
                 if(selectedRating == clickedValue){
                     selectedRating = 0;
                     ratingInput.value = "";
                 }else{
                     selectedRating = clickedValue;
                     ratingInput.value = clickedValue;
-             }
+                }
 
                 highlightStars(selectedRating);
                 checkForm();
@@ -597,21 +604,183 @@ function previewImage(event){
 
 }
 
+
 /* ================= REVIEW IMAGE LIGHTBOX ================= */
+
+let reviewImages = [];
+let reviewIndex = 0;
 
 function openReviewImage(src){
 
     const lightbox = document.getElementById("reviewLightbox");
     const img = document.getElementById("reviewLightboxImg");
 
+    reviewImages = [];
+    document.querySelectorAll(".review-img").forEach(i=>{
+        reviewImages.push(i.src);
+    });
+
+    reviewIndex = reviewImages.indexOf(src);
+
     img.src = src;
     lightbox.style.display = "flex";
+
+}
+
+function nextReviewImage(e){
+
+    if(e) e.stopPropagation();
+
+    reviewIndex++;
+
+    if(reviewIndex >= reviewImages.length){
+        reviewIndex = 0;
+    }
+
+    document.getElementById("reviewLightboxImg").src = reviewImages[reviewIndex];
+
+}
+
+function prevReviewImage(e){
+
+    if(e) e.stopPropagation();
+
+    reviewIndex--;
+
+    if(reviewIndex < 0){
+        reviewIndex = reviewImages.length - 1;
+    }
+
+    document.getElementById("reviewLightboxImg").src = reviewImages[reviewIndex];
 
 }
 
 function closeReviewImage(){
 
     document.getElementById("reviewLightbox").style.display = "none";
+
+}
+
+
+/* ================= PREVIEW FOTO UPLOAD ================= */
+
+let selectedFiles = [];
+
+function previewImage(event, max = 5) {
+
+    const container = document.getElementById("previewContainer");
+    const alertBox = document.getElementById("uploadAlert");
+    const files = event.target.files;
+
+    alertBox.innerHTML = "";
+
+    if(selectedFiles.length + files.length > max){
+
+        alertBox.innerHTML = `
+            <div class="alert alert-warning py-2 px-3 mb-3">
+                Maksimal upload <b>${max} foto</b>.
+            </div>
+        `;
+
+        event.target.value = "";
+        return;
+    }
+
+    Array.from(files).forEach(file => {
+        selectedFiles.push(file);
+    });
+
+    renderPreview(container);
+
+    const input = document.querySelector("input[name='photos[]']");
+    updateInputFiles(input);
+
+    event.target.value = "";
+}
+
+
+/* ================= RENDER PREVIEW ================= */
+
+function renderPreview(container){
+
+    container.innerHTML = "";
+
+    selectedFiles.forEach((file,index)=>{
+
+        const reader = new FileReader();
+
+        reader.onload = function(e){
+
+            const wrapper = document.createElement("div");
+            wrapper.style.position = "relative";
+            wrapper.style.width = "80px";
+            wrapper.style.height = "80px";
+            wrapper.style.display = "inline-block";
+
+            const img = document.createElement("img");
+
+            img.src = e.target.result;
+            img.style.width = "100%";
+            img.style.height = "100%";
+            img.style.objectFit = "cover";
+            img.classList.add("rounded","shadow-sm");
+
+            const removeBtn = document.createElement("button");
+            removeBtn.innerHTML = "✕";
+
+            removeBtn.style.position = "absolute";
+            removeBtn.style.top = "4px";
+            removeBtn.style.right = "4px";
+            removeBtn.style.background = "#ef4444";
+            removeBtn.style.color = "white";
+            removeBtn.style.border = "none";
+            removeBtn.style.width = "18px";
+            removeBtn.style.height = "18px";
+            removeBtn.style.borderRadius = "50%";
+            removeBtn.style.cursor = "pointer";
+            removeBtn.style.fontSize = "11px";
+            removeBtn.style.display = "flex";
+            removeBtn.style.alignItems = "center";
+            removeBtn.style.justifyContent = "center";
+            removeBtn.style.zIndex = "10";
+            removeBtn.style.boxShadow = "0 2px 4px rgba(0,0,0,0.25)";
+
+            removeBtn.onclick = function(){
+
+                selectedFiles.splice(index,1);
+
+                renderPreview(container);
+
+                const input = document.querySelector("input[name='photos[]']");
+                updateInputFiles(input);
+
+            };
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(removeBtn);
+
+            container.appendChild(wrapper);
+
+        }
+
+        reader.readAsDataURL(file);
+
+    });
+
+}
+
+
+/* ================= UPDATE INPUT FILE ================= */
+
+function updateInputFiles(input){
+
+    const dataTransfer = new DataTransfer();
+
+    selectedFiles.forEach(file=>{
+        dataTransfer.items.add(file);
+    });
+
+    input.files = dataTransfer.files;
 
 }
 </script>
@@ -621,6 +790,14 @@ function closeReviewImage(){
 
 <!-- ======================== Styling CSS ======================== -->
 <style>
+.review-img{
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.review-img:hover{
+    transform: translateY(-6px) scale(1.05);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+}
 #cameraBtn, #folderBtn{
     transition: all 0.25s ease;
 }
@@ -703,5 +880,20 @@ function closeReviewImage(){
 
 .review-nav.next{
     right:30px;
+}
+
+.review-scroll{
+    max-height:600px;
+    overflow-y:auto;
+    padding-right:5px;
+}
+
+.review-scroll::-webkit-scrollbar{
+    width:6px;
+}
+
+.review-scroll::-webkit-scrollbar-thumb{
+    background:#ccc;
+    border-radius:10px;
 }
 </style>
