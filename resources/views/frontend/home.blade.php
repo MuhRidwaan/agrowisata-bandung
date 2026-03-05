@@ -5,8 +5,8 @@
 <!-- ================= HERO ================= -->
 <section class="hero-section">
     <picture>
-        <img src="https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1920&q=80"
-            class="hero-bg">
+       <img src="{{ asset('storage/reviews/SawahBandung.jpg') }}"
+             class="hero-bg">
     </picture>
     <div class="hero-overlay"></div>
     <div class="container hero-content">
@@ -20,8 +20,8 @@
             <span class="text-accent">Alam Bandung</span>
         </h1>
         <p class="lead text-white-50 mb-5 mx-auto animate-fade-in animate-delay-2" style="max-width: 600px;">
-            Temukan wisata agro terbaik di Bandung dari kebun teh, strawberry,
-            hingga kopi arabika.
+            Rasakan keindahan agrowisata yang memadukan panorama alam yang hijau, udara segar pegunungan,
+            dan kesegaran hasil bumi langsung dari alamnya.
         </p>
         <a href="#destinasi" class="btn btn-agro-accent animate-fade-in animate-delay-3">Lihat Destinasi</a>
     </div>

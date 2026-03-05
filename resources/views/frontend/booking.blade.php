@@ -523,7 +523,7 @@
         <!-- Navigation Buttons -->
         <div class="mt-4 mb-5" id="bookingNav">
             <div class="row g-3">
-                <div class="col-6 d-none" id="btnBackCol">
+                <div class="col-6" id="btnBackCol">
                     <button class="btn btn-outline-secondary w-100 py-3 fw-semibold" onclick="prevStep()">
                         Kembali
                     </button>

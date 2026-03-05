@@ -7,6 +7,9 @@
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
                 <i class="bi bi-leaf text-primary-agro"></i>
+                <img src="{{ asset('frontend/img/logo.png') }}" 
+                     alt="AgroBandung Logo"
+                     style="height:42px; width:auto;">
                 <span class="font-display fw-bold fs-5">AgroBandung</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -15,10 +18,14 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="#destinasi">Destinasi</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#tentang">Tentang</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#kontak">Kontak</a></li>
+                    <li class="nav-item"><a class="nav-link" href="home.blade.php">Destinasi</a></li>
+                    <li class="nav-item"><a class="nav-link" href="home.blade.php">Tentang</a></li>
+                    <li class="nav-item"><a class="nav-link" href="home.blade.php">Kontak</a></li>
                 </ul>
             </div>
         </div>
     </nav>
+
+ 
+
+

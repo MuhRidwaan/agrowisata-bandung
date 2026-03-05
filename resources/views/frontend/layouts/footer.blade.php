@@ -1,9 +1,10 @@
 <!-- Footer -->
 <footer id="kontak" class="footer-agro py-5">
     <div class="container">
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="row g-4 ">
+            <div class="col-md-5">
+                <div class="d-flex align-items-center gap-0 mb-2">
+                    <img src="{{ asset('frontend/img/logo.png') }}" alt="AgroBandung Logo"style="height:90px; width:auto;">
                     <i class="bi bi-leaf text-accent"></i>
                     <span class="font-display fs-5 fw-bold text-white">AgroBandung</span>
                 </div>
@@ -11,16 +12,16 @@
                     Platform pemesanan tiket wisata agro terbaik di Bandung.
                 </p>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <h5 class="font-display fw-semibold mb-3">Kontak</h5>
                 <div class="d-flex flex-column gap-2">
                     <div class="d-flex align-items-center gap-2 text-white-50 small">
                         <i class="bi bi-telephone"></i>
-                        <span>+62 812 3456 7890</span>
+                        <span>+62 856 2455 4616</span>
                     </div>
                     <div class="d-flex align-items-center gap-2 text-white-50 small">
                         <i class="bi bi-envelope"></i>
-                        <span>info@agrobandung.id</span>
+                        <span> agrotourisminbandung@gmail.com</span>
                     </div>
                     <div class="d-flex align-items-center gap-2 text-white-50 small">
                         <i class="bi bi-geo-alt"></i>
@@ -28,7 +29,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3 ms-md-auto">
                 <h5 class="font-display fw-semibold mb-3">Jam Operasional</h5>
                 <div class="text-white-50 small">
                     <p class="mb-1">Senin - Jumat: 08:00 - 18:00</p>
