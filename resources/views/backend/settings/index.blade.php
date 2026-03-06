@@ -61,8 +61,8 @@
                                                 </div>
                                             @elseif($setting->type == 'file')
                                                 @if($setting->value)
-                                                    <div class="mb-2">
-                                                        <img src="{{ asset('storage/' . $setting->value) }}" alt="Preview" style="max-height: 50px;">
+                                                    <div class="mb-3">
+                                                        <img src="{{ asset('storage/' . $setting->value) }}" alt="Preview" class="img-thumbnail" style="max-height: 100px; display: block;">
                                                     </div>
                                                 @endif
                                                 <div class="custom-file">

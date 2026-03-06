@@ -5,12 +5,12 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-agro fixed-top py-3" role="navigation" aria-label="Navigasi utama">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ route('home') }}">
                 <i class="bi bi-leaf text-primary-agro"></i>
-                <img src="{{ asset('frontend/img/logo.png') }}" 
+                <img src="{{ get_setting('app_logo') ? asset('storage/' . get_setting('app_logo')) : asset('frontend/img/logo.png') }}" 
                      alt="AgroBandung Logo"
                      style="height:42px; width:auto;">
-                <span class="font-display fw-bold fs-5">AgroBandung</span>
+                <span class="font-display fw-bold fs-5">{{ get_setting('app_name', 'AgroBandung') }}</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigasi">

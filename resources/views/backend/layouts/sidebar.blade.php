@@ -1,9 +1,9 @@
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
 
     <a href="{{ route('dashboard') }}" class="brand-link">
-        <img src="{{ asset('frontend/img/logo.png') }}" alt="Logo" class="brand-image img-circle elevation-3"
-            style="opacity:.8">
-        <span class="brand-text font-weight-light">Jabar Agro</span>
+        <img src="{{ get_setting('app_logo') ? asset('storage/' . get_setting('app_logo')) : asset('frontend/img/logo.png') }}" alt="Logo" class="brand-image img-circle elevation-3"
+            style="opacity:.8; max-height: 33px;">
+        <span class="brand-text font-weight-light">{{ get_setting('app_name', 'Jabar Agro') }}</span>
     </a>
 
     <div class="sidebar">
