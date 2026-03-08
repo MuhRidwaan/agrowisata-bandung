@@ -12,7 +12,7 @@
     <div class="container hero-content">
         <div class="d-flex align-items-center justify-content-center gap-2 mb-4 animate-fade-in">
             <i class="bi bi-leaf text-accent fs-4"></i>
-            <span class="text-white-50 tracking-widest text-uppercase small">Agro Tourism Bandung</span>
+            <span class="text-white-50 tracking-widest text-uppercase small">{{ get_setting('app_name', 'Agro Tourism Bandung') }}</span>
             <i class="bi bi-leaf text-accent fs-4"></i>
         </div>
         <h1 class="display-3 fw-bold text-white mb-4 animate-fade-in animate-delay-1">

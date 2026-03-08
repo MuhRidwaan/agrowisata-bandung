@@ -9,8 +9,8 @@
                 <i class="bi bi-leaf text-primary-agro"></i>
                 <img src="{{ get_setting('app_logo') ? asset('storage/' . get_setting('app_logo')) : asset('frontend/img/logo.png') }}" 
                      alt="AgroBandung Logo"
-                     style="height:42px; width:auto;">
-                <span class="font-display fw-bold fs-5">{{ get_setting('app_name', 'AgroBandung') }}</span>
+                     style="height:42px; width:auto; transform: scale(1.8); transform-origin:left center;">
+                <span class="font-display fw-bold fs-5" style="margin-left:23px;">{{ get_setting('app_name', 'AgroBandung') }}</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigasi">
