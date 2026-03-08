@@ -1,8 +1,8 @@
 <!-- Navigasi -->
-@if(!isset($hideHeader))
+@section('header')
     @include('frontend.layouts.header')
     @include('frontend.layouts.nav')
-@endif
+@show
 <!-- Content -->
 @yield('content')
 
