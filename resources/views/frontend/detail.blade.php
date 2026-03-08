@@ -213,7 +213,7 @@
                                             style="background:#f5faf7; border-left:4px solid #2f6d4f;">
                                             <div class="fw-semibold small text-success mb-1">
                                                 <i class="bi bi-patch-check-fill"></i>
-                                                Admin AgroTourism Bandung
+                                                {{ get_setting('admin_name', 'Admin AgroTourism Bandung') }}
                                             </div>
                                             <p class="small mb-0 text-muted">
                                                 {{ $review->admin_reply }}

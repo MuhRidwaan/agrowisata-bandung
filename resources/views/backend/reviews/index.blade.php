@@ -42,12 +42,12 @@
                             <th width="5%">No</th>
                             <th>User</th>
                             <th>Vendor</th>
-                            <th>Rating</th>
+                            <th width="130">Rating</th>
                             <th>Review</th>
-                            <th>Photo</th>
+                            <th width="160">Photo</th>
                             <th>Status</th>
                             <th>Reply</th>
-                            <th width="25%">Actions</th>
+                            <th width="100">Actions</th>
                         </tr>
                     </thead>
 
@@ -73,7 +73,13 @@
                             </td>
 
                             <td>
-                                ⭐ {{ $review->rating }}
+                                @for ($i = 1; $i <= 5; $i++)
+                                    @if ($i <= $review->rating)
+                                        <i class="fas fa-star text-warning"></i>
+                                    @else
+                                        <i class="fas fa-star text-secondary"></i>
+                                    @endif
+                                @endfor
                             </td>
 
                             <td>
