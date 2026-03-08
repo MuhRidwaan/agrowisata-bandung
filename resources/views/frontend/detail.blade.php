@@ -2,6 +2,7 @@
 
 @section('header')
     @include('frontend.layouts.header')
+    @stack('styles')
 <body>
 @endsection
 

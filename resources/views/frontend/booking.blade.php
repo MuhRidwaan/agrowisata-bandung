@@ -1,107 +1,16 @@
 @extends('frontend.main')
 
+@push('styles')
+    <link href="{{ asset('frontend/css/booking.css') }}" rel="stylesheet">
+@endpush
+
 @section('header')
     @include('frontend.layouts.header')
+    @stack('styles')
 <body>
 @endsection
 
 @section('content')
-    {{-- Calendar Datepicker Styles --}}
-    <style>
-        .custom-calendar-wrapper { position: relative; z-index: 50; }
-        .custom-calendar { border-radius: 10px; overflow: hidden; max-width: 500px; }
-        .custom-calendar .card-body { padding: 0.75rem !important; }
-        .calendar-grid { user-select: none; }
-        .calendar-header {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            text-align: center;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #6c757d;
-            margin-bottom: 3px;
-        }
-        .calendar-body {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 3px;
-        }
-        .calendar-day {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 7px;
-            padding: 3px 2px;
-            min-height: 42px;
-            font-size: 0.8rem;
-            transition: all 0.15s;
-        }
-        .calendar-day.empty { min-height: 0; }
-        .calendar-day.disabled {
-            color: #ccc;
-            cursor: default;
-        }
-        .calendar-day.available {
-            cursor: pointer;
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #166534;
-        }
-        .calendar-day.available:hover {
-            background: #dcfce7;
-            border-color: #86efac;
-            transform: scale(1.05);
-        }
-        .calendar-day.available.selected {
-            background: #16a34a;
-            color: #fff;
-            border-color: #16a34a;
-        }
-        .calendar-day.available.selected .day-quota {
-            background: rgba(255,255,255,0.3);
-            color: #fff;
-        }
-        .calendar-day.full {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #991b1b;
-            cursor: not-allowed;
-        }
-        .day-number {
-            font-weight: 600;
-            line-height: 1;
-        }
-        .day-quota {
-            font-size: 0.6rem;
-            font-weight: 700;
-            background: #dcfce7;
-            color: #166534;
-            border-radius: 4px;
-            padding: 0 4px;
-            margin-top: 2px;
-            line-height: 1.4;
-        }
-        .calendar-day.full .day-quota {
-            background: #fecaca;
-            color: #991b1b;
-        }
-        .cal-legend {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 3px;
-        }
-        .cal-legend-available { background: #f0fdf4; border: 1px solid #bbf7d0; }
-        .cal-legend-full { background: #fef2f2; border: 1px solid #fecaca; }
-        .cal-legend-disabled { background: #f3f4f6; border: 1px solid #e5e7eb; }
-
-        #calendarToggle:focus, #calendarToggle:hover {
-            border-color: #16a34a;
-            box-shadow: 0 0 0 0.2rem rgba(22,163,74,0.15);
-        }
-    </style>
 
     <header class="bg-white border-bottom position-sticky top-0" style="z-index: 1000;">
         <div class="container">
