@@ -6,7 +6,7 @@
                 <div class="d-flex align-items-center gap-0 mb-2">
                     <img src="{{ asset('frontend/img/logo.png') }}" alt="AgroBandung Logo"style="height:90px; width:auto;">
                     <i class="bi bi-leaf text-accent"></i>
-                    <span class="font-display fs-5 fw-bold text-white">AgroBandung</span>
+                    <span class="font-display fw-bold fs-5">{{ get_setting('app_name', 'AgroBandung') }}</span>
                 </div>
                 <p class="text-white-50 small">
                     Platform pemesanan tiket wisata agro terbaik di Bandung.
