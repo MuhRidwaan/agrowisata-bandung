@@ -4,7 +4,7 @@
         <div class="row g-4 ">
             <div class="col-md-5">
                 <div class="d-flex align-items-center gap-0 mb-2">
-                    <img src="{{ asset('frontend/img/logo.png') }}" alt="AgroBandung Logo"style="height:90px; width:auto;">
+                    <img src="{{ get_setting('app_logo') ? asset('storage/' . get_setting('app_logo')) : asset('frontend/img/logo.png') }}" alt="AgroBandung Logo" style="height:90px; width:auto;">
                     <i class="bi bi-leaf text-accent"></i>
                     <span class="font-display fw-bold fs-5">{{ get_setting('app_name', 'AgroBandung') }}</span>
                 </div>

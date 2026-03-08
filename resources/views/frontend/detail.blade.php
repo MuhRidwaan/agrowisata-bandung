@@ -1,5 +1,10 @@
 @extends('frontend.main')
 
+@section('header')
+    @include('frontend.layouts.header')
+<body>
+@endsection
+
 @section('content')
 <header class="bg-white border-bottom position-sticky top-0" style="z-index: 1000;">
     <div class="container">

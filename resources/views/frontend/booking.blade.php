@@ -1,5 +1,10 @@
 @extends('frontend.main')
 
+@section('header')
+    @include('frontend.layouts.header')
+<body>
+@endsection
+
 @section('content')
     {{-- Calendar Datepicker Styles --}}
     <style>
@@ -101,7 +106,7 @@
     <header class="bg-white border-bottom position-sticky top-0" style="z-index: 1000;">
         <div class="container">
             <div class="d-flex align-items-center gap-3 py-3">
-                <a href="detail-strawberry.html" class="btn btn-light rounded-circle p-2" aria-label="Kembali">
+                <a href="{{ route('detail', $paket->id) }}" class="btn btn-light rounded-circle p-2" aria-label="Kembali">
                     <i class="bi bi-arrow-left"></i>
                 </a>
                 <div class="d-flex align-items-center gap-2">

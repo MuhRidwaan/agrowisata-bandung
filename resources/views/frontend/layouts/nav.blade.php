@@ -18,9 +18,9 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="home.blade.php">Destinasi</a></li>
-                    <li class="nav-item"><a class="nav-link" href="home.blade.php">Tentang</a></li>
-                    <li class="nav-item"><a class="nav-link" href="home.blade.php">Kontak</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('home') }}#destinasi">Destinasi</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('home') }}#tentang">Tentang</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('home') }}#kontak">Kontak</a></li>
                 </ul>
             </div>
         </div>
