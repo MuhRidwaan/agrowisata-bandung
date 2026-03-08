@@ -17,29 +17,33 @@
                 <div class="d-flex flex-column gap-2">
                     <div class="d-flex align-items-center gap-2 text-white-50 small">
                         <i class="bi bi-telephone"></i>
-                        <span>+62 856 2455 4616</span>
+                        <span>{{ get_setting('contact_phone','+62 856 2455 4616') }}</span>
                     </div>
                     <div class="d-flex align-items-center gap-2 text-white-50 small">
                         <i class="bi bi-envelope"></i>
-                        <span> agrotourisminbandung@gmail.com</span>
+                        <span>{{ get_setting('contact_email','agrotourisminbandung@gmail.com') }}</span>
                     </div>
                     <div class="d-flex align-items-center gap-2 text-white-50 small">
                         <i class="bi bi-geo-alt"></i>
-                        <span>Bandung, Jawa Barat</span>
+                        <span>{{ get_setting('contact_address','Bandung, Jawa Barat') }}</span>
                     </div>
                 </div>
             </div>
             <div class="col-md-3 ms-md-auto">
                 <h5 class="font-display fw-semibold mb-3">Jam Operasional</h5>
                 <div class="text-white-50 small">
-                    <p class="mb-1">Senin - Jumat: 08:00 - 18:00</p>
-                    <p class="mb-0">Sabtu - Minggu: 07:00 - 19:00</p>
+                    <p class="mb-1">
+                        {{ get_setting('weekday_hours','Senin - Jumat: 08:00 - 18:00') }}
+                    </p>
+                    <p class="mb-0">
+                        {{ get_setting('weekend_hours','Sabtu - Minggu: 07:00 - 19:00') }}
+                    </p>
                 </div>
             </div>
         </div>
         <hr class="my-4" style="border-color: rgba(255,255,255,0.1);">
         <p class="text-center text-white-50 small mb-0">
-            © 2026 AgroBandung. All rights reserved.
+            © {{ date('Y') }} {{ get_setting('app_name','AgroBandung') }}. All rights reserved.
         </p>
     </div>
 </footer>

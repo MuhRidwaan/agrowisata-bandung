@@ -213,11 +213,11 @@
         <div class="container py-5">
             <div class="text-center mx-auto" style="max-width: 700px;">
                 <i class="bi bi-leaf text-primary-agro fs-1 mb-3 d-block"></i>
-                <h2 class="font-display display-6 fw-bold mb-4">Tentang AgroBandung</h2>
+                <h2 class="font-display display-6 fw-bold mb-4">
+                    {{ get_setting('about_title','Tentang AgroBandung') }}
+                </h2>
                 <p class="text-muted lead">
-                    AgroBandung adalah platform pemesanan tiket wisata agro di kawasan Bandung dan sekitarnya.
-                    Kami menghubungkan Anda dengan kebun-kebun terbaik untuk pengalaman wisata alam yang tak terlupakan 
-                    di Bandung. Temukan berbagai paket wisata agro, baca ulasan, dan pesan tiket dengan mudah melalui website kami.
+                    {{ get_setting('about_description','AgroBandung adalah platform pemesanan tiket wisata agro di kawasan Bandung dan sekitarnya.') }}
                 </p>
             </div>
         </div>
