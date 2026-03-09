@@ -45,7 +45,15 @@ class BookingController extends Controller
 
     public function create()
     {
-        $pakets = PaketTour::all();
+        $query = PaketTour::query()->has('photos');
+
+        // Jika user Vendor, hanya tampilkan paket milik vendor tersebut
+        if (auth()->user()->hasRole('Vendor')) {
+            $vendorId = auth()->user()->vendor->id ?? null;
+            $query->where('vendor_id', $vendorId);
+        }
+
+        $pakets = $query->orderBy('nama_paket')->get();
         return view('backend.bookings.form', compact('pakets'));
     }
 
@@ -63,6 +71,12 @@ class BookingController extends Controller
 
         // 2. Kalkulasi Total Harga menggunakan Pricing Rules
         $paket = PaketTour::findOrFail($request->paket_tour_id);
+        if (!$paket->photos()->exists()) {
+            return back()
+                ->withInput()
+                ->with('error', 'Paket tour belum memiliki foto, sehingga belum bisa dipilih untuk booking.');
+        }
+
         $pricing = $paket->calculatePrice($request->jumlah_peserta);
         $total = $pricing['total_price'];
         $prefix = get_setting('booking_prefix', 'BOOK-');
@@ -135,7 +149,15 @@ class BookingController extends Controller
 
     public function edit(Booking $booking)
     {
-        $pakets = PaketTour::all();
+        $query = PaketTour::query()->has('photos');
+
+        // Jika user Vendor, hanya tampilkan paket milik vendor tersebut
+        if (auth()->user()->hasRole('Vendor')) {
+            $vendorId = auth()->user()->vendor->id ?? null;
+            $query->where('vendor_id', $vendorId);
+        }
+
+        $pakets = $query->orderBy('nama_paket')->get();
         return view('backend.bookings.form', compact('booking', 'pakets'));
     }
 
@@ -154,6 +176,12 @@ class BookingController extends Controller
 
         // Kalkulasi ulang jika paket atau jumlah peserta diubah
         $paket = PaketTour::findOrFail($request->paket_tour_id);
+        if (!$paket->photos()->exists()) {
+            return back()
+                ->withInput()
+                ->with('error', 'Paket tour belum memiliki foto, sehingga belum bisa dipilih untuk booking.');
+        }
+
         $pricing = $paket->calculatePrice($request->jumlah_peserta);
         $total = $pricing['total_price'];
 

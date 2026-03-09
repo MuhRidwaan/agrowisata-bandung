@@ -61,11 +61,50 @@
         waContact: '{{ $paket->vendor->name ?? "Admin" }}',
         storeUrl: '{{ route("booking.store") }}',
         csrfToken: '{{ csrf_token() }}',
-        invoiceUrl: '{{ url("/pembayaran/invoice") }}'
+        invoiceUrl: '{{ url("/pembayaran/invoice") }}',
+        resumeBaseUrl: '{{ url("/pembayaran/lanjut") }}'
     };
 </script>
 <script src="{{ asset('frontend/js/booking.js') }}?v={{ time() }}"></script>
 @endif
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var raw = localStorage.getItem('last_pending_booking');
+    if (!raw) return;
+
+    var data;
+    try {
+        data = JSON.parse(raw);
+    } catch (e) {
+        localStorage.removeItem('last_pending_booking');
+        return;
+    }
+
+    if (!data || !data.booking_code || !data.resume_url) return;
+
+    var wrapper = document.createElement('div');
+    wrapper.style.position = 'fixed';
+    wrapper.style.right = '16px';
+    wrapper.style.bottom = '16px';
+    wrapper.style.zIndex = '2000';
+    wrapper.style.maxWidth = '340px';
+    wrapper.innerHTML =
+        '<div style="background:#fff;border:1px solid #dee2e6;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:12px 14px;">'
+      +   '<div style="font-size:13px;color:#6c757d;">Pembayaran belum selesai</div>'
+      +   '<div style="font-weight:700;margin:2px 0 10px;">Kode: ' + data.booking_code + '</div>'
+      +   '<a href="' + data.resume_url + '" style="display:inline-block;background:#198754;color:#fff;text-decoration:none;padding:8px 12px;border-radius:8px;font-size:13px;">Lanjutkan Pembayaran</a>'
+      +   '<button type="button" id="dismissPendingBooking" style="margin-left:8px;border:none;background:transparent;color:#6c757d;font-size:13px;">Tutup</button>'
+      + '</div>';
+    document.body.appendChild(wrapper);
+
+    var dismissBtn = document.getElementById('dismissPendingBooking');
+    if (dismissBtn) {
+        dismissBtn.addEventListener('click', function () {
+            wrapper.remove();
+        });
+    }
+});
+</script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var pills = document.querySelectorAll('.region-pill');

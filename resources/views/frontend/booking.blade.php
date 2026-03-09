@@ -200,41 +200,43 @@
                 <div class="booking-step d-none" id="bookingStep2">
                     <div class="card card-agro">
                         <div class="card-body p-4">
-                            <div class="d-flex align-items-center justify-content-between mb-4">
+                            <div class="mb-4">
                                 <h3 class="fs-5 fw-semibold mb-0 d-flex align-items-center gap-2">
                                     <i class="bi bi-people text-primary-agro"></i>
                                     Data Peserta (<span id="participantTotal">1</span>)
                                 </h3>
-                                <button type="button"
-                                    class="btn btn-sm btn-link text-primary-agro fw-semibold text-decoration-none"
-                                    onclick="addParticipant()">
-                                    + Tambah Peserta
-                                </button>
                             </div>
 
-                            <div id="participantsList">
-                                <div class="participant-card mb-3" data-participant="1">
-                                    <p class="fw-semibold mb-3">Peserta 1</p>
-                                    <div class="mb-3">
-                                        <label class="form-label small fw-medium">Nama Lengkap</label>
-                                        <input type="text" class="form-control" placeholder="Masukkan nama lengkap"
-                                            required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label small fw-medium d-flex align-items-center gap-1">
-                                            <i class="bi bi-telephone"></i> No. Telepon
-                                        </label>
-                                        <input type="tel" class="form-control" placeholder="08xxxxxxxxxx" required>
-                                    </div>
-                                    <div>
-                                        <label class="form-label small fw-medium d-flex align-items-center gap-1">
-                                            <i class="bi bi-envelope"></i> Email Pemesan
-                                        </label>
-                                        <input type="email" class="form-control" placeholder="email@example.com"
-                                            required>
-                                    </div>
-                                </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-medium">Nama Penanggung Jawab</label>
+                                <input type="text" id="customerName" class="form-control" placeholder="Masukkan nama lengkap" required>
                             </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-medium d-flex align-items-center gap-1">
+                                    <i class="bi bi-telephone"></i> No. Telepon
+                                </label>
+                                <input type="tel" id="customerPhone" class="form-control" placeholder="08xxxxxxxxxx" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-medium d-flex align-items-center gap-1">
+                                    <i class="bi bi-envelope"></i> Email Pemesan
+                                </label>
+                                <input type="email" id="customerEmail" class="form-control" placeholder="email@example.com" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-medium">Jumlah Peserta</label>
+                                <div class="input-group">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="decreaseParticipantCount()" aria-label="Kurangi peserta">-</button>
+                                    <input type="number" id="participantCountInput" class="form-control text-center" min="1" value="1" required>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="increaseParticipantCount()" aria-label="Tambah peserta">+</button>
+                                </div>
+                                <small class="text-muted">Untuk banyak peserta, cukup isi jumlahnya saja.</small>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-medium">Nama Peserta Lain (Opsional)</label>
+                                <textarea id="participantNotes" class="form-control" rows="3" placeholder="Contoh: Andi, Budi, Citra"></textarea>
+                                <small class="text-muted">Field ini hanya catatan, tidak wajib diisi.</small>
+                                </div>
 
                             <div class="bg-agro-light rounded-3 p-3 d-flex gap-2 mt-3">
                                 <i class="bi bi-shield-check text-primary-agro flex-shrink-0"></i>
@@ -315,10 +317,10 @@
                                     </button>
                                 </div>
                             </div>
-                            <button class="btn btn-agro-primary w-100" onclick="confirmPayment()"
+                            <a id="continuePaymentLink" href="#" class="btn btn-agro-primary w-100 d-none"
                                 style="max-width: 400px;">
-                                Saya Sudah Bayar
-                            </button>
+                                Lanjutkan Pembayaran
+                            </a>
                         </div>
                     </div>
 

@@ -38,6 +38,7 @@ Route::post('/booking/store', [FrontendController::class, 'storeBooking'])->name
 
 // Payment
 Route::get('/payment/{id}', [FrontendController::class, 'payment'])->name('payment');
+Route::get('/pembayaran/lanjut/{booking_code}', [FrontendController::class, 'resumePayment'])->name('payment.resume');
 
 // Success Page
 Route::get('/success', [FrontendController::class, 'success'])->name('success');
