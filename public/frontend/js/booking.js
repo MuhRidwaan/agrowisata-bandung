@@ -12,6 +12,34 @@ const config = window.BOOKING_CONFIG || {
   storeUrl: '', csrfToken: '', invoiceUrl: ''
 };
 
+function getResumeUrl(bookingCode) {
+  if (!config.resumeBaseUrl || !bookingCode) return '';
+  return config.resumeBaseUrl.replace(/\/$/, '') + '/' + encodeURIComponent(bookingCode);
+}
+
+function savePendingBooking(bookingData) {
+  if (!bookingData || !bookingData.booking_code) return;
+  localStorage.setItem('last_pending_booking', JSON.stringify({
+    booking_code: bookingData.booking_code,
+    total_price: bookingData.total_price || 0,
+    resume_url: getResumeUrl(bookingData.booking_code),
+    saved_at: new Date().toISOString()
+  }));
+}
+
+function clearPendingBookingIfMatch(bookingCode) {
+  const raw = localStorage.getItem('last_pending_booking');
+  if (!raw) return;
+  try {
+    const data = JSON.parse(raw);
+    if (!bookingCode || data.booking_code === bookingCode) {
+      localStorage.removeItem('last_pending_booking');
+    }
+  } catch (e) {
+    localStorage.removeItem('last_pending_booking');
+  }
+}
+
 function formatCurrency(amount) {
   return 'Rp' + Math.round(amount).toLocaleString('id-ID');
 }
@@ -19,10 +47,64 @@ function formatCurrency(amount) {
 document.addEventListener('DOMContentLoaded', function() {
   initCalendar();
   initPaymentOptions();
+  initParticipantCountInput();
   updateSummary();
   updateStepper();
   updateNavButtons();
 });
+
+function initParticipantCountInput() {
+  var input = document.getElementById('participantCountInput');
+  if (!input) return;
+
+  input.addEventListener('input', syncParticipantCountFromInput);
+  input.addEventListener('change', syncParticipantCountFromInput);
+  syncParticipantCountFromInput();
+}
+
+function syncParticipantCountFromInput() {
+  var input = document.getElementById('participantCountInput');
+  if (!input) return;
+
+  var val = parseInt(input.value, 10);
+  if (!val || val < 1) val = 1;
+  var remaining = getRemainingQuota();
+  if (remaining !== null && remaining > 0 && val > remaining) {
+    val = remaining;
+    showToast('Jumlah peserta melebihi sisa kuota. Disesuaikan ke ' + remaining + ' orang.');
+  }
+  participantCount = val;
+  input.value = val;
+
+  var totalEl = document.getElementById('participantTotal');
+  if (totalEl) totalEl.textContent = participantCount;
+
+  updateSummary();
+  updatePriceTiers();
+}
+
+function increaseParticipantCount() {
+  var input = document.getElementById('participantCountInput');
+  if (!input) return;
+  var val = parseInt(input.value, 10) || 1;
+  input.value = val + 1;
+  syncParticipantCountFromInput();
+}
+
+function decreaseParticipantCount() {
+  var input = document.getElementById('participantCountInput');
+  if (!input) return;
+  var val = parseInt(input.value, 10) || 1;
+  input.value = Math.max(1, val - 1);
+  syncParticipantCountFromInput();
+}
+
+function getRemainingQuota() {
+  var sisaInput = document.getElementById('visitDateSisa');
+  if (!sisaInput || !sisaInput.value) return null;
+  var remaining = parseInt(sisaInput.value, 10);
+  return Number.isNaN(remaining) ? null : remaining;
+}
 
 function initPaymentOptions() {
   document.querySelectorAll('.payment-method-card input[type="radio"]').forEach(function(r) {
@@ -71,19 +153,28 @@ function validateStep(step) {
     return true;
   }
   if (step === 2) {
-    var cards = document.querySelectorAll('.participant-card');
-    for (var i = 0; i < cards.length; i++) {
-      var name = cards[i].querySelector('input[type="text"]');
-      if (!name || !name.value.trim()) {
-        showToast('Silakan isi nama lengkap Peserta ' + (i + 1) + '!');
-        if (name) name.focus();
-        return false;
-      }
-    }
-    var phone = document.querySelector('.participant-card input[type="tel"]');
-    var email = document.querySelector('.participant-card input[type="email"]');
+    var name = document.getElementById('customerName');
+    var phone = document.getElementById('customerPhone');
+    var email = document.getElementById('customerEmail');
+    var paxInput = document.getElementById('participantCountInput');
+
+    if (!name || !name.value.trim()) { showToast('Silakan isi nama penanggung jawab!'); if (name) name.focus(); return false; }
     if (!phone || !phone.value.trim()) { showToast('Silakan isi nomor telepon!'); if (phone) phone.focus(); return false; }
     if (!email || !email.value.trim()) { showToast('Silakan isi email!'); if (email) email.focus(); return false; }
+    if (!paxInput || !parseInt(paxInput.value, 10) || parseInt(paxInput.value, 10) < 1) {
+      showToast('Jumlah peserta minimal 1 orang!');
+      if (paxInput) paxInput.focus();
+      return false;
+    }
+
+    var remaining = getRemainingQuota();
+    if (remaining !== null && parseInt(paxInput.value, 10) > remaining) {
+      showToast('Jumlah peserta melebihi sisa kuota (' + remaining + ' orang).');
+      paxInput.focus();
+      return false;
+    }
+
+    syncParticipantCountFromInput();
     return true;
   }
   if (step === 3) {
@@ -179,36 +270,6 @@ function updateNavButtons() {
     if (sidebar) sidebar.classList.add('d-none');
     if (mainCol) mainCol.className = 'col-lg-12';
   }
-}
-
-function addParticipant() {
-  participantCount++;
-  var list = document.getElementById('participantsList');
-  var card = document.createElement('div');
-  card.className = 'participant-card mb-3';
-  card.dataset.participant = participantCount;
-  card.innerHTML = '<div class="d-flex align-items-center justify-content-between mb-3">'
-    + '<p class="fw-semibold mb-0">Peserta ' + participantCount + '</p>'
-    + '<button type="button" class="btn btn-sm btn-outline-danger" onclick="removeParticipant(this)"><i class="bi bi-trash"></i></button></div>'
-    + '<div class="mb-3"><label class="form-label small fw-medium">Nama Lengkap</label>'
-    + '<input type="text" class="form-control" placeholder="Masukkan nama lengkap" required></div>';
-  list.appendChild(card);
-  document.getElementById('participantTotal').textContent = participantCount;
-  updateSummary();
-  updatePriceTiers();
-}
-
-function removeParticipant(btn) {
-  if (participantCount <= 1) return;
-  btn.closest('.participant-card').remove();
-  participantCount--;
-  document.querySelectorAll('.participant-card').forEach(function(card, i) {
-    card.dataset.participant = i + 1;
-    card.querySelector('.fw-semibold').textContent = 'Peserta ' + (i + 1);
-  });
-  document.getElementById('participantTotal').textContent = participantCount;
-  updateSummary();
-  updatePriceTiers();
 }
 
 function getPriceCalculation() {
@@ -315,9 +376,10 @@ function submitBooking() {
   btnNext.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
 
   // Gather form data
-  var nameInput = document.querySelector('.participant-card input[type="text"]');
-  var phoneInput = document.querySelector('.participant-card input[type="tel"]');
-  var emailInput = document.querySelector('.participant-card input[type="email"]');
+  var nameInput = document.getElementById('customerName');
+  var phoneInput = document.getElementById('customerPhone');
+  var emailInput = document.getElementById('customerEmail');
+  syncParticipantCountFromInput();
   var dateInput = document.getElementById('visitDate');
   var paketId = document.getElementById('paketTourId').value;
 
@@ -348,6 +410,7 @@ function submitBooking() {
   .then(function(data) {
     if (data.success && data.snap_token) {
       bookingCode = data.booking_code;
+      savePendingBooking(data);
 
       // Open Midtrans Snap popup
       window.snap.pay(data.snap_token, {
@@ -395,17 +458,23 @@ function handlePaymentResult(status, bookingData, midtransResult) {
   updateNavButtons();
 
   if (status === 'success') {
-    // Show success directly
-    document.getElementById('paymentWaiting').classList.add('d-none');
-    document.getElementById('paymentSuccess').classList.remove('d-none');
-    showSuccessDetails(bookingData);
+    clearPendingBookingIfMatch(bookingData.booking_code);
+    window.location.href = config.invoiceUrl + '/' + bookingData.booking_code;
   } else {
+    savePendingBooking(bookingData);
+
     // Show waiting payment (pending or closed popup)
     document.getElementById('paymentWaiting').classList.remove('d-none');
     document.getElementById('paymentSuccess').classList.add('d-none');
     document.getElementById('bookingCode').textContent = bookingData.booking_code;
     document.getElementById('paymentMethodName').textContent = 'Midtrans';
     document.getElementById('waitingTotal').textContent = formatCurrency(bookingData.total_price);
+
+    var continueLink = document.getElementById('continuePaymentLink');
+    if (continueLink) {
+      continueLink.href = getResumeUrl(bookingData.booking_code);
+      continueLink.classList.remove('d-none');
+    }
   }
 }
 
@@ -419,7 +488,7 @@ function showSuccessDetails(bookingData) {
     document.getElementById('successDate').textContent = d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   }
 
-  var nameInput = document.querySelector('.participant-card input[type="text"]');
+  var nameInput = document.getElementById('customerName');
   document.getElementById('successParticipantLabel').textContent = 'Peserta (' + participantCount + ' orang)';
   document.getElementById('successParticipantName').textContent = nameInput ? nameInput.value : '-';
   document.getElementById('successTotal').textContent = formatCurrency(bookingData.total_price);
@@ -457,14 +526,6 @@ function showSuccessDetails(bookingData) {
       }
     }
   }
-}
-
-function confirmPayment() {
-  // User clicked "Saya Sudah Bayar" - show success
-  document.getElementById('paymentWaiting').classList.add('d-none');
-  document.getElementById('paymentSuccess').classList.remove('d-none');
-
-  showSuccessDetails({ booking_code: bookingCode, total_price: getPriceCalculation().totalPrice });
 }
 
 function copyBookingCode() {
@@ -625,4 +686,5 @@ function selectCalendarDate(dateStr, sisa) {
 
   // Update summary
   updateSummary();
+  syncParticipantCountFromInput();
 }

@@ -89,8 +89,34 @@ class FrontendController extends Controller
             'visit_date'     => 'required|date|after_or_equal:today',
         ]);
 
-        // Kalkulasi harga menggunakan logic existing PaketTour::calculatePrice()
+        // Validasi kuota terhadap tanggal yang dipilih
         $paket = PaketTour::findOrFail($request->paket_tour_id);
+        $tanggalAvailable = $paket->tanggalAvailables()
+            ->where('status', 'aktif')
+            ->whereDate('tanggal', $request->visit_date)
+            ->first();
+
+        if (!$tanggalAvailable) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tanggal kunjungan tidak tersedia untuk paket ini.',
+            ], 422);
+        }
+
+        $used = Booking::where('paket_tour_id', $paket->id)
+            ->whereDate('visit_date', $request->visit_date)
+            ->where('status', '!=', 'cancelled')
+            ->sum('jumlah_peserta');
+
+        $remaining = max(0, (int) $tanggalAvailable->kuota - (int) $used);
+        if ((int) $request->jumlah_peserta > $remaining) {
+            return response()->json([
+                'success' => false,
+                'message' => "Kuota tidak mencukupi. Sisa kuota untuk tanggal ini: {$remaining} orang.",
+            ], 422);
+        }
+
+        // Kalkulasi harga menggunakan logic existing PaketTour::calculatePrice()
         $pricing = $paket->calculatePrice($request->jumlah_peserta);
         $total = $pricing['total_price'];
 
@@ -172,6 +198,30 @@ class FrontendController extends Controller
         $booking = Booking::findOrFail($id);
 
         return view('frontend.payment', compact('booking'));
+    }
+
+    // ================= RESUME PAYMENT =================
+    public function resumePayment($booking_code)
+    {
+        $booking = Booking::with(['payment', 'paketTour.vendor.area'])
+            ->where('booking_code', $booking_code)
+            ->firstOrFail();
+
+        $payment = $booking->payment;
+
+        // Jika sudah lunas, langsung arahkan ke invoice
+        if ($booking->status === 'paid' || ($payment && $payment->status === 'success')) {
+            return redirect()->route('frontend.invoice', $booking->booking_code)
+                ->with('success', 'Pembayaran sudah berhasil. Berikut invoice Anda.');
+        }
+
+        // Jika belum ada payment/snap token, tampilkan error
+        if (!$payment || empty($payment->snap_token)) {
+            return redirect()->route('home')
+                ->with('error', 'Data pembayaran tidak ditemukan. Silakan lakukan booking ulang.');
+        }
+
+        return view('frontend.resume_payment', compact('booking', 'payment'));
     }
 
     // ================= SUCCESS =================

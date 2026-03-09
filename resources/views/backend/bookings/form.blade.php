@@ -36,12 +36,21 @@
                             @endif
 
                             <div class="card-body">
+                                @php
+                                    $noPaketAvailable = $pakets->isEmpty();
+                                @endphp
+
+                                @if($noPaketAvailable)
+                                    <div class="alert alert-warning">
+                                        Belum ada paket tour yang bisa dipilih. Tambahkan minimal 1 foto pada paket terlebih dahulu agar muncul di form booking.
+                                    </div>
+                                @endif
 
                                 <h5 class="text-primary border-bottom pb-2 mb-3">Package Options</h5>
 
                                 <div class="form-group">
                                     <label>Tour Package</label>
-                                    <select name="paket_tour_id" class="form-control" required>
+                                    <select name="paket_tour_id" class="form-control" required {{ $noPaketAvailable ? 'disabled' : '' }}>
                                         <option value="">-- Select Tour Package --</option>
                                         @foreach ($pakets as $paket)
                                             <option value="{{ $paket->id }}"
@@ -109,7 +118,7 @@
                             </div>
 
                             <div class="card-footer">
-                                <button type="submit" class="btn btn-primary">
+                                <button type="submit" class="btn btn-primary" {{ $noPaketAvailable ? 'disabled' : '' }}>
                                     <i class="fas fa-save"></i>
                                     {{ isset($booking) ? 'Update Data' : 'Save & Proceed to Payment' }}
                                 </button>
