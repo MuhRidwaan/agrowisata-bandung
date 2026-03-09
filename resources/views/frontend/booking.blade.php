@@ -439,12 +439,12 @@
         <!-- Navigation Buttons -->
         <div class="mt-4 mb-5" id="bookingNav">
             <div class="row g-3">
-                <div class="col-6" id="btnBackCol">
+                <div class="col-12 col-md-6" id="btnBackCol">
                     <button class="btn btn-outline-secondary w-100 py-3 fw-semibold" onclick="prevStep()">
                         Kembali
                     </button>
                 </div>
-                <div class="col-6" id="btnNextCol">
+                <div class="col-12 col-md-6" id="btnNextCol">
                     <button class="btn btn-agro-primary w-100 py-3 fw-semibold" id="btnNext" onclick="nextStep()">
                         Lanjutkan
                     </button>
@@ -453,3 +453,35 @@
         </div>
     </div>
 @endsection
+
+
+
+<style>
+#btnNext{
+    width:100% !important;
+    display:block;
+}
+
+@media (max-width:768px){
+
+    #btnNextCol{
+        flex:0 0 100% !important;
+        max-width:100% !important;
+        width:100% !important;
+    }
+
+    #btnNext{
+        width:100% !important;
+        display:block !important;
+    }
+
+}
+
+#bookingNav .btn-agro-primary{
+    border-radius:12px !important;
+}
+
+#bookingNav .btn-outline-secondary{
+    border-radius:12px !important;
+}
+</style>
