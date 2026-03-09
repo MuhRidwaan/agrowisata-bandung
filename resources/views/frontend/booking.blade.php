@@ -442,7 +442,7 @@
                         Kembali
                     </button>
                 </div>
-                <div class="col-12" id="btnNextCol">
+                <div class="col-6" id="btnNextCol">
                     <button class="btn btn-agro-primary w-100 py-3 fw-semibold" id="btnNext" onclick="nextStep()">
                         Lanjutkan
                     </button>
