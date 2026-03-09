@@ -35,7 +35,7 @@ body{
 
 @media (max-width:768px){
     body{
-        padding-top:190px;
+        padding-top:80px;
     }
 }
 .logo-navbar{
