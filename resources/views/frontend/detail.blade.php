@@ -199,7 +199,7 @@
                                     <div class="mt-3 d-flex gap-2 flex-wrap">
                                         @foreach($review->photos as $photo)
                                         <img 
-                                            src="{{ asset('storage/'.$photo->photo) }}"
+                                            src="{{ $photo->photo_url }}"
                                             class="rounded-3 shadow-sm review-img"
                                             style="width:100px;height:100px;object-fit:cover;cursor:pointer;"
                                             onclick="openReviewImage(this.src)">
@@ -524,8 +524,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /* ================= UPLOAD INDICATOR ================= */
 
-    const cameraInput = document.querySelector("input[name='photo_camera']");
-    const folderInput = document.querySelector("input[name='photo_file']");
+    const cameraInput = document.querySelector("#cameraBtn input[type='file']");
+    const folderInput = document.querySelector("#folderBtn input[type='file']");
 
     const cameraBtn = document.getElementById("cameraBtn");
     const folderBtn = document.getElementById("folderBtn");

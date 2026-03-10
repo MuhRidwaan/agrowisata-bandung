@@ -47,9 +47,7 @@ Route::get('/success', [FrontendController::class, 'success'])->name('success');
 Route::post('/midtrans/callback', [PaymentController::class, 'callback'])->name('midtrans.callback');
 
 // Ulasan
-Route::middleware('auth')->group(function () {
-    Route::post('/reviews/store', [ReviewController::class, 'store'])->name('reviews.store');
-});
+Route::post('/reviews/store', [ReviewController::class, 'store'])->name('reviews.store');
 
 
 /*

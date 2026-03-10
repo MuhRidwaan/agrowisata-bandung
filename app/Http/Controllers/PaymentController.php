@@ -12,6 +12,99 @@ use App\Mail\InvoiceMail;
 
 class PaymentController extends Controller
 {
+    private function configureMidtrans(): void
+    {
+        \Midtrans\Config::$serverKey = config('midtrans.server_key');
+        \Midtrans\Config::$isProduction = config('midtrans.is_production');
+        \Midtrans\Config::$isSanitized = config('midtrans.is_sanitized');
+        \Midtrans\Config::$is3ds = config('midtrans.is_3ds');
+    }
+
+    private function syncPaymentStatus(Payment $payment): Payment
+    {
+        if (!$payment->booking) {
+            return $payment;
+        }
+
+        try {
+            $this->configureMidtrans();
+            $status = \Midtrans\Transaction::status($payment->booking->booking_code);
+        } catch (\Throwable $e) {
+            \Log::warning('Midtrans status sync failed: ' . $e->getMessage(), [
+                'booking_code' => $payment->booking->booking_code,
+                'payment_id' => $payment->id,
+            ]);
+
+            return $payment->fresh(['booking.paketTour', 'booking.user']);
+        }
+
+        $transactionStatus = $status->transaction_status ?? null;
+        $paymentType = $status->payment_type ?? null;
+        $transactionId = $status->transaction_id ?? null;
+        $fraudStatus = $status->fraud_status ?? null;
+
+        if ($transactionStatus === 'settlement' || ($transactionStatus === 'capture' && $fraudStatus !== 'challenge')) {
+            if ($payment->status !== 'success' || $payment->booking->status !== 'paid') {
+                $payment->update([
+                    'status' => 'success',
+                    'paid_at' => $payment->paid_at ?? now(),
+                    'payment_method' => $paymentType,
+                    'transaction_id' => $transactionId,
+                ]);
+
+                $payment->booking->update([
+                    'status' => 'paid',
+                ]);
+
+                TransactionLog::create([
+                    'booking_id' => $payment->booking_id,
+                    'action' => 'payment_status_synced_success',
+                    'new_status' => 'paid',
+                    'amount' => $payment->booking->total_price,
+                    'payment_method' => $paymentType,
+                    'description' => 'Status pembayaran disinkronkan dari Midtrans.',
+                    'payload' => json_decode(json_encode($status), true),
+                ]);
+            }
+        } elseif (in_array($transactionStatus, ['expire', 'cancel', 'deny'], true)) {
+            if ($payment->status !== 'failed' || $payment->booking->status !== 'cancelled') {
+                $payment->update([
+                    'status' => 'failed',
+                    'payment_method' => $paymentType,
+                    'transaction_id' => $transactionId,
+                ]);
+
+                $payment->booking->update([
+                    'status' => 'cancelled',
+                ]);
+
+                TransactionLog::create([
+                    'booking_id' => $payment->booking_id,
+                    'action' => 'payment_status_synced_failed',
+                    'new_status' => 'cancelled',
+                    'amount' => $payment->booking->total_price,
+                    'payment_method' => $paymentType,
+                    'description' => 'Status pembayaran gagal disinkronkan dari Midtrans: ' . $transactionStatus,
+                    'payload' => json_decode(json_encode($status), true),
+                ]);
+            }
+        } else {
+            $payment->update([
+                'status' => 'pending',
+                'payment_method' => $paymentType ?? $payment->payment_method,
+                'transaction_id' => $transactionId ?? $payment->transaction_id,
+            ]);
+
+            if ($payment->booking->status !== 'pending') {
+                $payment->booking->update([
+                    'status' => 'pending',
+                ]);
+            }
+        }
+
+        return $payment->fresh(['booking.paketTour', 'booking.user']);
+    }
+
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -236,11 +329,13 @@ class PaymentController extends Controller
     // FUNGSI BARU: Untuk halaman invoice public (customer)
     public function publicInvoice($booking_code)
     {
-        
         $payment = Payment::with(['booking.paketTour', 'booking.user'])
             ->whereHas('booking', function($q) use ($booking_code) {
                 $q->where('booking_code', $booking_code);
-            })->firstOrFail();        
+            })->firstOrFail();
+
+        $payment = $this->syncPaymentStatus($payment);
+
         return view('frontend.invoice', compact('payment'));
     }
 }

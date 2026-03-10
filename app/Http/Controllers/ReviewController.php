@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Review;
 use App\Models\PaketTour;
 use App\Models\ReviewPhoto;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class ReviewController extends Controller
 {
@@ -33,6 +35,7 @@ class ReviewController extends Controller
         'name'     => 'required|string|max:255',
         'rating'   => 'required|integer|min:1|max:5',
         'comment'  => 'required|string|max:1000',
+        'photos'   => 'nullable|array|max:4',
         'photos.*' => 'nullable|image|max:2048',
     ]);
 
@@ -42,29 +45,33 @@ class ReviewController extends Controller
     $review = Review::create([
         'paket_id'  => $request->paket_id,
         'vendor_id' => $paket->vendor_id ?? null,
-        'user_id'   => auth()->id(),
+        'user_id'   => auth()->id() ?: null,
         'name'      => $request->name,
         'rating'    => $request->rating,
         'comment'   => $request->comment,
-        'status'    => 'pending',
+        'status'    => 'approved',
     ]);
 
-    // upload multiple foto
+    // Simpan ke folder public agar tidak bergantung pada storage:link di shared hosting.
     if ($request->hasFile('photos')) {
+        $uploadPath = public_path('uploads/reviews');
+        if (!File::exists($uploadPath)) {
+            File::makeDirectory($uploadPath, 0755, true);
+        }
 
         foreach ($request->file('photos') as $photo) {
-
-            $path = $photo->store('reviews', 'public');
+            $filename = Str::uuid()->toString() . '.' . $photo->getClientOriginalExtension();
+            $photo->move($uploadPath, $filename);
+            $path = 'uploads/reviews/' . $filename;
 
             ReviewPhoto::create([
                 'review_id' => $review->id,
-                'photo' => $path
+                'photo' => $path,
             ]);
         }
-
     }
 
-    return back()->with('success', 'Ulasan berhasil dikirim');
+    return back()->with('success', 'Ulasan berhasil dikirim dan langsung ditampilkan.');
 }
 
     // ================= APPROVE =================
