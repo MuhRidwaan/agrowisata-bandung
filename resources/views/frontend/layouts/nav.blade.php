@@ -10,7 +10,7 @@
                 <img src="{{ get_setting('app_logo') ? asset('storage/' . get_setting('app_logo')) : asset('frontend/img/logo.png') }}" 
                      alt="AgroBandung Logo"
                      class="logo-navbar">
-                <span class="font-display fw-bold fs-5" style="margin-left:23px;">{{ get_setting('app_name', 'AgroBandung') }}</span>
+                <span class="font-display fw-bold fs-5" style="margin-left:12px;">{{ get_setting('app_name', 'AgroBandung') }}</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigasi">
@@ -41,7 +41,7 @@ body{
 .logo-navbar{
 height:42px;
 width:auto;
-transform:scale(1.6);
+transform:scale(1.3);
 transform-origin:left center;
 }
 
