@@ -146,6 +146,7 @@ Route::middleware(['auth'])->group(function () {
         // GLOBAL SETTINGS
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+        Route::get('/settings/delete-logo/{id}', [SettingController::class, 'deleteLogo'])->name('settings.deleteLogo');
     });
 });
 

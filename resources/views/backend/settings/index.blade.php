@@ -63,6 +63,11 @@
                                                 @if($setting->value)
                                                     <div class="mb-3">
                                                         <img src="{{ asset('storage/' . $setting->value) }}" alt="Preview" class="img-thumbnail" style="max-height: 100px; display: block;">
+                                                        <a href="{{ route('settings.deleteLogo', $setting->id) }}"
+                                                           class="btn btn-danger btn-sm"
+                                                           onclick="return confirm('Yakin ingin menghapus logo ini?')">
+                                                           <i class="fas fa-trash"></i> Delete Logo
+                                                        </a>
                                                     </div>
                                                 @endif
                                                 <div class="custom-file">
