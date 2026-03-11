@@ -29,12 +29,28 @@
                             </div>
                         </div>
 
-                        <div class="d-grid gap-2">
-                            <button type="button" id="resumePayBtn" class="btn btn-success btn-lg">
-                                Lanjutkan Bayar Sekarang
-                            </button>
-                            <a href="{{ route('home') }}" class="btn btn-outline-secondary">Kembali ke Beranda</a>
+                        <!-- Tombol -->
+                        <div class="mt-4 mb-5">
+                            <div class="row g-3">
+
+                                <div class="col-12">
+                                    <button type="button" id="resumePayBtn"
+                                        class="btn btn-agro-primary w-100 py-3 fw-semibold rounded-3">
+                                        Lanjutkan Bayar Sekarang
+                                    </button>
+                                </div>
+
+                                <div class="col-12">
+                                    <a href="{{ route('home') }}"
+                                        class="btn btn-outline-secondary w-100 py-3 fw-semibold rounded-3">
+                                        Kembali ke Beranda
+                                    </a>
+                                </div>
+
+                            </div>
                         </div>
+                        <!-- End Tombol -->
+
                     </div>
                 </div>
             </div>

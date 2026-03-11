@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Invoice Pembayaran - Agrowisata Tour</title>
+    <title>Invoice Pembayaran - Agrotourism Bandung</title>
 </head>
 
 <body
