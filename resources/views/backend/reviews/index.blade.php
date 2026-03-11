@@ -146,12 +146,110 @@
 
 
 
+<<<<<<< HEAD
                                         {{-- APPROVED --}}
                                         @if ($review->status == 'approved')
                                             <button class="btn btn-primary btn-sm" data-toggle="modal"
                                                 data-target="#replyModal{{ $review->id }}" title="Reply"
                                                 style="margin-right:5px;">
                                                 <i class="fas fa-reply"></i>
+=======
+                                {{-- APPROVED --}}
+                                @if($review->status == 'approved')
+
+                                    {{-- Jika belum ada reply --}}
+                                    @if(!$review->admin_reply)
+
+                                        <button
+                                            class="btn btn-primary btn-sm"
+                                            data-toggle="modal"
+                                            data-target="#replyModal{{ $review->id }}"
+                                            title="Reply"
+                                            style="margin-right:5px;"
+                                        >
+                                            <i class="fas fa-reply"></i>
+                                        </button>
+                                    @else
+                                        {{-- Jika sudah reply tampilkan edit --}}
+                                        <button
+                                            class="btn btn-warning btn-sm"
+                                            data-toggle="modal"
+                                            data-target="#replyModal{{ $review->id }}"
+                                            title="Edit Reply"
+                                            style="margin-right:5px;"
+                                        >
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    
+                                    @endif
+                                    
+                                    <form
+                                        action="{{ route('review.destroy', $review->id) }}"
+                                        method="POST"
+                                        style="display:inline-block;"
+                                        onsubmit="return confirm('Yakin mau hapus review ini?')"
+                                    >
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button class="btn btn-dark btn-sm" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+
+                                    </form>
+
+                                @endif
+
+
+
+                                {{-- REJECTED --}}
+                                @if($review->status == 'rejected')
+
+                                    <form
+                                        action="{{ route('review.destroy', $review->id) }}"
+                                        method="POST"
+                                        style="display:inline-block;"
+                                        onsubmit="return confirm('Yakin mau hapus review ini?')"
+                                    >
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button class="btn btn-dark btn-sm" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+
+                                    </form>
+
+                                @endif
+
+                            </td>
+
+                        </tr>
+
+
+
+                        <!-- MODAL REPLY -->
+                        <div class="modal fade" id="replyModal{{ $review->id }}" tabindex="-1">
+                            <div class="modal-dialog">
+
+                                <form action="{{ route('review.reply', $review->id) }}" method="POST">
+                                    @csrf
+
+                                    <div class="modal-content">
+
+                                        <div class="modal-header">
+
+                                            <h5 class="modal-title">
+                                                {{ $review->admin_reply ? 'Edit Reply' : 'Reply to Review' }}
+                                            </h5>
+
+                                            <button
+                                                type="button"
+                                                class="close"
+                                                data-dismiss="modal"
+                                            >
+                                                &times;
+>>>>>>> d59f29d9e218383d94b75d667aeb175dc46963b4
                                             </button>
 
 
@@ -195,6 +293,7 @@
                                 <div class="modal fade" id="replyModal{{ $review->id }}" tabindex="-1">
                                     <div class="modal-dialog">
 
+<<<<<<< HEAD
                                         <form action="{{ route('review.reply', $review->id) }}" method="POST">
                                             @csrf
 
@@ -243,6 +342,26 @@
                                             </div>
 
                                         </form>
+=======
+                                                <textarea
+                                                    name="admin_reply"
+                                                    class="form-control"
+                                                    required
+                                                >{{ $review->admin_reply }}</textarea>
+
+                                            </div>
+
+                                        </div>
+
+
+                                            <div class="modal-footer">
+
+                                                <button class="btn {{ $review->admin_reply ? 'btn-warning' : 'btn-primary' }}">
+                                                    {{ $review->admin_reply ? 'Save Changes' : 'Send Reply' }}
+                                                </button>
+
+                                            </div>
+>>>>>>> d59f29d9e218383d94b75d667aeb175dc46963b4
 
                                     </div>
                                 </div>

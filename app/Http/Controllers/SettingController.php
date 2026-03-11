@@ -40,4 +40,18 @@ class SettingController extends Controller
 
         return back()->with('success', 'Global Settings updated successfully!');
     }
+
+    public function deleteLogo($id)
+    {
+        $setting = Setting::findOrFail($id);
+            // Hapus file dari storage
+            if ($setting->value && Storage::disk('public')->exists($setting->value)) {
+            Storage::disk('public')->delete($setting->value);
+        }
+            // Kosongkan value di database
+            $setting->value = null;
+            $setting->save();
+
+        return back()->with('success', 'Logo berhasil dihapus!');
+    }
 }
