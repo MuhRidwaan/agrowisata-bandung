@@ -163,17 +163,32 @@
                                 {{-- APPROVED --}}
                                 @if($review->status == 'approved')
 
-                                    <button
-                                        class="btn btn-primary btn-sm"
-                                        data-toggle="modal"
-                                        data-target="#replyModal{{ $review->id }}"
-                                        title="Reply"
-                                        style="margin-right:5px;"
-                                    >
-                                        <i class="fas fa-reply"></i>
-                                    </button>
+                                    {{-- Jika belum ada reply --}}
+                                    @if(!$review->admin_reply)
 
-
+                                        <button
+                                            class="btn btn-primary btn-sm"
+                                            data-toggle="modal"
+                                            data-target="#replyModal{{ $review->id }}"
+                                            title="Reply"
+                                            style="margin-right:5px;"
+                                        >
+                                            <i class="fas fa-reply"></i>
+                                        </button>
+                                    @else
+                                        {{-- Jika sudah reply tampilkan edit --}}
+                                        <button
+                                            class="btn btn-warning btn-sm"
+                                            data-toggle="modal"
+                                            data-target="#replyModal{{ $review->id }}"
+                                            title="Edit Reply"
+                                            style="margin-right:5px;"
+                                        >
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    
+                                    @endif
+                                    
                                     <form
                                         action="{{ route('review.destroy', $review->id) }}"
                                         method="POST"
@@ -231,7 +246,7 @@
                                         <div class="modal-header">
 
                                             <h5 class="modal-title">
-                                                Reply to Review
+                                                {{ $review->admin_reply ? 'Edit Reply' : 'Reply to Review' }}
                                             </h5>
 
                                             <button
@@ -261,20 +276,20 @@
                                                     name="admin_reply"
                                                     class="form-control"
                                                     required
-                                                ></textarea>
+                                                >{{ $review->admin_reply }}</textarea>
 
                                             </div>
 
                                         </div>
 
 
-                                        <div class="modal-footer">
+                                            <div class="modal-footer">
 
-                                            <button class="btn btn-primary">
-                                                Send
-                                            </button>
+                                                <button class="btn {{ $review->admin_reply ? 'btn-warning' : 'btn-primary' }}">
+                                                    {{ $review->admin_reply ? 'Save Changes' : 'Send Reply' }}
+                                                </button>
 
-                                        </div>
+                                            </div>
 
                                     </div>
 
