@@ -18,4 +18,9 @@ class PaketTourPhoto extends Model
     {
         return $this->belongsTo(PaketTour::class);
     }
+
+    public function getPhotoUrlAttribute(): ?string
+    {
+        return storage_asset_url($this->path_foto);
+    }
 }

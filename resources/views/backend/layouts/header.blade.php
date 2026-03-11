@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Admin Dashboard | {{ get_setting('app_name', 'Jabar Agrotourism') }}</title>
-    <link rel="icon" href="{{ get_setting('app_logo') ? asset('storage/' . get_setting('app_logo')) : asset('frontend/img/logo.png') }}" type="image/png">
+    <link rel="icon" href="{{ setting_asset_url('app_logo') }}" type="image/png">
 
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet"

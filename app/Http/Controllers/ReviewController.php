@@ -14,7 +14,7 @@ class ReviewController extends Controller
     // ================= LIST =================
     public function index()
     {
-        $query = Review::with(['user', 'vendor', 'photos']);
+        $query = Review::with(['user', 'vendor', 'paket', 'photos']);
 
         // Jika user adalah Vendor, hanya tampilkan review untuk vendor mereka
         if (auth()->user()->hasRole('Vendor')) {
@@ -29,50 +29,49 @@ class ReviewController extends Controller
 
     // ================= STORE (USER SUBMIT) =================
     public function store(Request $request)
-{
-    $request->validate([
-        'paket_id' => 'required|exists:paket_tours,id',
-        'name'     => 'required|string|max:255',
-        'rating'   => 'required|integer|min:1|max:5',
-        'comment'  => 'required|string|max:1000',
-        'photos'   => 'nullable|array|max:4',
-        'photos.*' => 'nullable|image|max:2048',
-    ]);
+    {
+        $request->validate([
+            'paket_id' => 'required|exists:paket_tours,id',
+            'name' => 'required|string|max:255',
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'required|string|max:1000',
+            'photos' => 'nullable|array|max:4',
+            'photos.*' => 'nullable|image|max:2048',
+        ]);
 
-    $paket = PaketTour::findOrFail($request->paket_id);
+        $paket = PaketTour::findOrFail($request->paket_id);
 
-    // simpan review dulu
-    $review = Review::create([
-        'paket_id'  => $request->paket_id,
-        'vendor_id' => $paket->vendor_id ?? null,
-        'user_id'   => auth()->id() ?: null,
-        'name'      => $request->name,
-        'rating'    => $request->rating,
-        'comment'   => $request->comment,
-        'status'    => 'approved',
-    ]);
+        $review = Review::create([
+            'paket_id' => $request->paket_id,
+            'vendor_id' => $paket->vendor_id ?? null,
+            'user_id' => auth()->id() ?: null,
+            'name' => $request->name,
+            'rating' => $request->rating,
+            'comment' => $request->comment,
+            'status' => 'pending',
+        ]);
 
-    // Simpan ke folder public agar tidak bergantung pada storage:link di shared hosting.
-    if ($request->hasFile('photos')) {
-        $uploadPath = public_path('uploads/reviews');
-        if (!File::exists($uploadPath)) {
-            File::makeDirectory($uploadPath, 0755, true);
+        // Simpan ke folder public agar tidak bergantung pada storage:link di shared hosting.
+        if ($request->hasFile('photos')) {
+            $uploadPath = public_path('uploads/reviews');
+            if (!File::exists($uploadPath)) {
+                File::makeDirectory($uploadPath, 0755, true);
+            }
+
+            foreach ($request->file('photos') as $photo) {
+                $filename = Str::uuid()->toString() . '.' . $photo->getClientOriginalExtension();
+                $photo->move($uploadPath, $filename);
+                $path = 'uploads/reviews/' . $filename;
+
+                ReviewPhoto::create([
+                    'review_id' => $review->id,
+                    'photo' => $path,
+                ]);
+            }
         }
 
-        foreach ($request->file('photos') as $photo) {
-            $filename = Str::uuid()->toString() . '.' . $photo->getClientOriginalExtension();
-            $photo->move($uploadPath, $filename);
-            $path = 'uploads/reviews/' . $filename;
-
-            ReviewPhoto::create([
-                'review_id' => $review->id,
-                'photo' => $path,
-            ]);
-        }
+        return back()->with('success', 'Ulasan berhasil dikirim dan menunggu persetujuan admin.');
     }
-
-    return back()->with('success', 'Ulasan berhasil dikirim dan langsung ditampilkan.');
-}
 
     // ================= APPROVE =================
     public function approve($id)

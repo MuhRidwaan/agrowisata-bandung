@@ -5,7 +5,6 @@
     <section class="content-header">
         <div class="container-fluid">
             <div class="row mb-2">
-
                 <div class="col-sm-6">
                     <h1>Review & Rating Data</h1>
                 </div>
@@ -18,28 +17,23 @@
                         <li class="breadcrumb-item active">Reviews</li>
                     </ol>
                 </div>
-
             </div>
         </div>
     </section>
 
-
     <section class="content">
         <div class="container-fluid">
-
             <div class="card">
-
                 <div class="card-header">
                     <h3 class="card-title">Review List</h3>
                 </div>
 
                 <div class="card-body">
-
                     <table class="table table-bordered table-hover">
-
                         <thead>
                             <tr>
                                 <th width="5%">No</th>
+                                <th>Paket</th>
                                 <th>User</th>
                                 <th>Vendor</th>
                                 <th width="130">Rating</th>
@@ -52,12 +46,14 @@
                         </thead>
 
                         <tbody>
-
                             @forelse ($reviews as $review)
                                 <tr>
-
                                     <td>
                                         {{ ($reviews->currentPage() - 1) * $reviews->perPage() + $loop->iteration }}
+                                    </td>
+
+                                    <td>
+                                        {{ $review->paket->nama_paket ?? '-' }}
                                     </td>
 
                                     <td>
@@ -85,22 +81,17 @@
                                     <td>
                                         {{ \Illuminate\Support\Str::limit($review->comment, 50) }}
                                     </td>
-                                    {{-- <?php
-                                    print_r('<pre>');
-                                    print_r($review);
-                                    ?> --}}
+
                                     <td>
                                         @if ($review->photos->count())
                                             <div class="d-flex gap-1 flex-wrap">
-
                                                 @foreach ($review->photos as $photo)
                                                     <img src="{{ $photo->photo_url }}" class="review-thumb"
                                                         onclick="openAdminImage(this)"
                                                         style="width:60px;height:60px;object-fit:cover;border-radius:6px;margin:2px;">
                                                 @endforeach
-
                                             </div>
-                                        @elseif($review->photo)
+                                        @elseif ($review->photo)
                                             <img src="{{ $review->photo_url }}"
                                                 style="width:60px;height:60px;object-fit:cover;border-radius:6px;">
                                         @else
@@ -119,295 +110,128 @@
                                     </td>
 
                                     <td>
-
-                                        {{-- PENDING --}}
                                         @if ($review->status == 'pending')
                                             <form action="{{ route('review.approve', $review->id) }}" method="POST"
                                                 style="display:inline-block; margin-right:5px;">
                                                 @csrf
-
                                                 <button class="btn btn-success btn-sm" title="Approve">
                                                     <i class="fas fa-check"></i>
                                                 </button>
-
                                             </form>
-
 
                                             <form action="{{ route('review.reject', $review->id) }}" method="POST"
                                                 style="display:inline-block;">
                                                 @csrf
-
                                                 <button class="btn btn-danger btn-sm" title="Reject">
                                                     <i class="fas fa-times"></i>
                                                 </button>
-
                                             </form>
                                         @endif
 
-
-
-<<<<<<< HEAD
-                                        {{-- APPROVED --}}
                                         @if ($review->status == 'approved')
-                                            <button class="btn btn-primary btn-sm" data-toggle="modal"
-                                                data-target="#replyModal{{ $review->id }}" title="Reply"
-                                                style="margin-right:5px;">
-                                                <i class="fas fa-reply"></i>
-=======
-                                {{-- APPROVED --}}
-                                @if($review->status == 'approved')
-
-                                    {{-- Jika belum ada reply --}}
-                                    @if(!$review->admin_reply)
-
-                                        <button
-                                            class="btn btn-primary btn-sm"
-                                            data-toggle="modal"
-                                            data-target="#replyModal{{ $review->id }}"
-                                            title="Reply"
-                                            style="margin-right:5px;"
-                                        >
-                                            <i class="fas fa-reply"></i>
-                                        </button>
-                                    @else
-                                        {{-- Jika sudah reply tampilkan edit --}}
-                                        <button
-                                            class="btn btn-warning btn-sm"
-                                            data-toggle="modal"
-                                            data-target="#replyModal{{ $review->id }}"
-                                            title="Edit Reply"
-                                            style="margin-right:5px;"
-                                        >
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    
-                                    @endif
-                                    
-                                    <form
-                                        action="{{ route('review.destroy', $review->id) }}"
-                                        method="POST"
-                                        style="display:inline-block;"
-                                        onsubmit="return confirm('Yakin mau hapus review ini?')"
-                                    >
-                                        @csrf
-                                        @method('DELETE')
-
-                                        <button class="btn btn-dark btn-sm" title="Delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-
-                                    </form>
-
-                                @endif
-
-
-
-                                {{-- REJECTED --}}
-                                @if($review->status == 'rejected')
-
-                                    <form
-                                        action="{{ route('review.destroy', $review->id) }}"
-                                        method="POST"
-                                        style="display:inline-block;"
-                                        onsubmit="return confirm('Yakin mau hapus review ini?')"
-                                    >
-                                        @csrf
-                                        @method('DELETE')
-
-                                        <button class="btn btn-dark btn-sm" title="Delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-
-                                    </form>
-
-                                @endif
-
-                            </td>
-
-                        </tr>
-
-
-
-                        <!-- MODAL REPLY -->
-                        <div class="modal fade" id="replyModal{{ $review->id }}" tabindex="-1">
-                            <div class="modal-dialog">
-
-                                <form action="{{ route('review.reply', $review->id) }}" method="POST">
-                                    @csrf
-
-                                    <div class="modal-content">
-
-                                        <div class="modal-header">
-
-                                            <h5 class="modal-title">
-                                                {{ $review->admin_reply ? 'Edit Reply' : 'Reply to Review' }}
-                                            </h5>
-
-                                            <button
-                                                type="button"
-                                                class="close"
-                                                data-dismiss="modal"
-                                            >
-                                                &times;
->>>>>>> d59f29d9e218383d94b75d667aeb175dc46963b4
-                                            </button>
-
+                                            @if (!$review->admin_reply)
+                                                <button class="btn btn-primary btn-sm" data-toggle="modal"
+                                                    data-target="#replyModal{{ $review->id }}" title="Reply"
+                                                    style="margin-right:5px;">
+                                                    <i class="fas fa-reply"></i>
+                                                </button>
+                                            @else
+                                                <button class="btn btn-warning btn-sm" data-toggle="modal"
+                                                    data-target="#replyModal{{ $review->id }}" title="Edit Reply"
+                                                    style="margin-right:5px;">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                            @endif
 
                                             <form action="{{ route('review.destroy', $review->id) }}" method="POST"
                                                 style="display:inline-block;"
                                                 onsubmit="return confirm('Yakin mau hapus review ini?')">
                                                 @csrf
                                                 @method('DELETE')
-
                                                 <button class="btn btn-dark btn-sm" title="Delete">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
-
                                             </form>
                                         @endif
 
-
-
-                                        {{-- REJECTED --}}
                                         @if ($review->status == 'rejected')
                                             <form action="{{ route('review.destroy', $review->id) }}" method="POST"
                                                 style="display:inline-block;"
                                                 onsubmit="return confirm('Yakin mau hapus review ini?')">
                                                 @csrf
                                                 @method('DELETE')
-
                                                 <button class="btn btn-dark btn-sm" title="Delete">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
-
                                             </form>
                                         @endif
-
                                     </td>
-
                                 </tr>
 
+                                @if ($review->status == 'approved')
+                                    <div class="modal fade" id="replyModal{{ $review->id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <form action="{{ route('review.reply', $review->id) }}" method="POST">
+                                                @csrf
 
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">
+                                                            {{ $review->admin_reply ? 'Edit Reply' : 'Reply to Review' }}
+                                                        </h5>
 
-                                <!-- MODAL REPLY -->
-                                <div class="modal fade" id="replyModal{{ $review->id }}" tabindex="-1">
-                                    <div class="modal-dialog">
-
-<<<<<<< HEAD
-                                        <form action="{{ route('review.reply', $review->id) }}" method="POST">
-                                            @csrf
-
-                                            <div class="modal-content">
-
-                                                <div class="modal-header">
-
-                                                    <h5 class="modal-title">
-                                                        Reply to Review
-                                                    </h5>
-
-                                                    <button type="button" class="close" data-dismiss="modal">
-                                                        &times;
-                                                    </button>
-
-                                                </div>
-
-
-                                                <div class="modal-body">
-
-                                                    <p>
-                                                        <strong>Review:</strong>
-                                                        {{ $review->comment }}
-                                                    </p>
-
-
-                                                    <div class="form-group">
-
-                                                        <label>Admin Reply</label>
-
-                                                        <textarea name="admin_reply" class="form-control" required></textarea>
-
+                                                        <button type="button" class="close" data-dismiss="modal">
+                                                            &times;
+                                                        </button>
                                                     </div>
 
+                                                    <div class="modal-body">
+                                                        <p>
+                                                            <strong>Review:</strong>
+                                                            {{ $review->comment }}
+                                                        </p>
+
+                                                        <div class="form-group">
+                                                            <label>Admin Reply</label>
+                                                            <textarea name="admin_reply" class="form-control" required>{{ $review->admin_reply }}</textarea>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="modal-footer">
+                                                        <button
+                                                            class="btn {{ $review->admin_reply ? 'btn-warning' : 'btn-primary' }}">
+                                                            {{ $review->admin_reply ? 'Save Changes' : 'Send Reply' }}
+                                                        </button>
+                                                    </div>
                                                 </div>
-
-
-                                                <div class="modal-footer">
-
-                                                    <button class="btn btn-primary">
-                                                        Send
-                                                    </button>
-
-                                                </div>
-
-                                            </div>
-
-                                        </form>
-=======
-                                                <textarea
-                                                    name="admin_reply"
-                                                    class="form-control"
-                                                    required
-                                                >{{ $review->admin_reply }}</textarea>
-
-                                            </div>
-
+                                            </form>
                                         </div>
-
-
-                                            <div class="modal-footer">
-
-                                                <button class="btn {{ $review->admin_reply ? 'btn-warning' : 'btn-primary' }}">
-                                                    {{ $review->admin_reply ? 'Save Changes' : 'Send Reply' }}
-                                                </button>
-
-                                            </div>
->>>>>>> d59f29d9e218383d94b75d667aeb175dc46963b4
-
                                     </div>
-                                </div>
-
-
+                                @endif
                             @empty
                                 <tr>
-                                    <td colspan="9" class="text-center">
+                                    <td colspan="10" class="text-center">
                                         No review data available
                                     </td>
                                 </tr>
                             @endforelse
-
                         </tbody>
-
                     </table>
-
 
                     <div class="mt-3 d-flex justify-content-end">
                         {{ $reviews->links() }}
                     </div>
-
                 </div>
-
             </div>
-
         </div>
 
-
-        <!-- LIGHTBOX VIEW IMAGE -->
         <div id="adminLightbox" class="admin-lightbox" onclick="closeAdminImage()">
-
-            <span class="admin-close" onclick="event.stopPropagation(); closeAdminImage()">✕</span>
-
-            <span class="admin-nav admin-prev" onclick="event.stopPropagation(); prevAdminImage()">❮</span>
-
+            <span class="admin-close" onclick="event.stopPropagation(); closeAdminImage()">&times;</span>
+            <span class="admin-nav admin-prev" onclick="event.stopPropagation(); prevAdminImage()">&lsaquo;</span>
             <img id="adminLightboxImg" onclick="event.stopPropagation()">
-
-            <span class="admin-nav admin-next" onclick="event.stopPropagation(); nextAdminImage()">❯</span>
-
+            <span class="admin-nav admin-next" onclick="event.stopPropagation(); nextAdminImage()">&rsaquo;</span>
         </div>
-
-
     </section>
-
-
 
     @if (session('success'))
         <script>
@@ -490,7 +314,6 @@
         let adminIndex = 0;
 
         function openAdminImage(img) {
-
             const lightbox = document.getElementById("adminLightbox");
             const lightboxImg = document.getElementById("adminLightboxImg");
 
@@ -504,11 +327,9 @@
 
             lightboxImg.src = img.src;
             lightbox.style.display = "flex";
-
         }
 
         function nextAdminImage() {
-
             adminIndex++;
 
             if (adminIndex >= adminImages.length) {
@@ -516,11 +337,9 @@
             }
 
             document.getElementById("adminLightboxImg").src = adminImages[adminIndex];
-
         }
 
         function prevAdminImage() {
-
             adminIndex--;
 
             if (adminIndex < 0) {
@@ -528,13 +347,10 @@
             }
 
             document.getElementById("adminLightboxImg").src = adminImages[adminIndex];
-
         }
 
         function closeAdminImage() {
-
             document.getElementById("adminLightbox").style.display = "none";
-
         }
     </script>
 @endpush

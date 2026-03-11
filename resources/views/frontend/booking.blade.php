@@ -73,7 +73,7 @@
                             <!-- Destination Info -->
                             <div class="d-flex gap-3 mb-4 pb-4 border-bottom">
                                 @php
-                                    $mainPhoto = $paket->photos->first() ? asset('storage/' . $paket->photos->first()->path_foto) : 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=200&q=80';
+                                    $mainPhoto = $paket->photos->first()?->photo_url ?? 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=200&q=80';
                                 @endphp
                                 <img src="{{ $mainPhoto }}"
                                     alt="{{ $paket->nama_paket }}" class="rounded-3"
@@ -388,7 +388,7 @@
                             {{-- Destination info --}}
                             <div class="d-flex gap-3 mb-3 pb-3 border-bottom align-items-center">
                                 @php
-                                    $mainPhoto = $paket->photos->first() ? asset('storage/' . $paket->photos->first()->path_foto) : 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=100&q=80';
+                                    $mainPhoto = $paket->photos->first()?->photo_url ?? 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=100&q=80';
                                 @endphp
                                 <img src="{{ $mainPhoto }}"
                                     alt="{{ $paket->nama_paket }}" class="flex-shrink-0"

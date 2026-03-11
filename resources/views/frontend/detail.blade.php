@@ -27,9 +27,7 @@
     <div class="mb-4">
         <div class="gallery-main bg-secondary position-relative" id="mainGallery">
             <img id="mainImage"
-                src="{{ $paket->photos->first() 
-                    ? asset('storage/'.$paket->photos->first()->path_foto) 
-                    : 'https://via.placeholder.com/1200x600' }}"
+                src="{{ $paket->photos->first()?->photo_url ?? 'https://via.placeholder.com/1200x600' }}"
                 alt="{{ $paket->nama_paket }}"
                 style="width:100%; height:100%; object-fit:cover; display:block;"
                 loading="eager">
@@ -56,7 +54,7 @@
             @foreach($paket->photos as $index => $photo)
                 <button class="gallery-thumb {{ $index == 0 ? 'active' : '' }}"
                     onclick="setImage({{ $index }})">
-                    <img src="{{ asset('storage/'.$photo->path_foto) }}">
+                    <img src="{{ $photo->photo_url }}">
                 </button>
             @endforeach
         </div>
@@ -387,7 +385,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const images = [
         @foreach($paket->photos as $photo)
-            "{{ asset('storage/'.$photo->path_foto) }}",
+            "{{ $photo->photo_url }}",
         @endforeach
     ];
 

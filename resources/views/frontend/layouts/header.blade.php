@@ -25,7 +25,7 @@
         content="Temukan wisata agro terbaik di Bandung — dari kebun teh, strawberry, hingga kopi arabika.">
 
     <title>{{ get_setting('app_name', 'AgroBandung') }} - Wisata Agro Terbaik di Bandung</title>
-    <link rel="icon" href="{{ get_setting('app_logo') ? asset('storage/' . get_setting('app_logo')) : asset('frontend/img/logo.png') }}" type="image/png">
+    <link rel="icon" href="{{ setting_asset_url('app_logo') }}" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">

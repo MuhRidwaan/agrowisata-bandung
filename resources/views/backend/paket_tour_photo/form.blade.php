@@ -139,7 +139,7 @@ function previewImages(event) {
                                         <div style="display:flex; flex-wrap:wrap; gap:10px;">
                                             @foreach($allPhotos as $p)
                                                 <div style="text-align:center;">
-                                                    <img src="{{ asset('storage/' . $p->path_foto) }}" alt="Photo" style="max-width:120px; border-radius:8px; display:block; margin-bottom:4px;">
+                                                    <img src="{{ $p->photo_url }}" alt="Photo" style="max-width:120px; border-radius:8px; display:block; margin-bottom:4px;">
                                                     <label style="font-size:13px;">
                                                         <input type="checkbox" name="delete_photos[]" value="{{ $p->id }}"> Delete
                                                     </label>

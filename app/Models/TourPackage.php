@@ -30,7 +30,7 @@ class TourPackage extends Model
     
     public function reviews()
     {
-        return $this->hasMany(Review::class, 'vendor_id', 'vendor_id');
+        return $this->hasMany(Review::class, 'paket_id');
     }
 
 }

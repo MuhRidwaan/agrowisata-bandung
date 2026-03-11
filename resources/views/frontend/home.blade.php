@@ -5,7 +5,7 @@
 <!-- ================= HERO ================= -->
 <section class="hero-section">
     <picture>
-       <img src="{{ asset('storage/reviews/SawahBandung.jpg') }}"
+       <img src="{{ storage_asset_url('reviews/SawahBandung.jpg', asset('frontend/img/logo.png')) }}"
              class="hero-bg">
     </picture>
     <div class="hero-overlay"></div>
@@ -103,7 +103,7 @@
                     <!-- IMAGE -->
                     <div class="position-relative img-container">
                         <img 
-                            src="{{ $paket->photos->first() ? asset('storage/' . $paket->photos->first()->path_foto) : 'https://via.placeholder.com/400x250' }}"
+                            src="{{ $paket->photos->first()?->photo_url ?? 'https://via.placeholder.com/400x250' }}"
                             class="w-100 img-zoom"
                             style="height:230px; object-fit:cover;"
                         >

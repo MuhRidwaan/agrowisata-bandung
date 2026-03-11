@@ -4,7 +4,7 @@
         <div class="row g-4 ">
             <div class="col-md-5">
                 <div class="d-flex align-items-center gap-0 mb-2">
-                    <img src="{{ get_setting('app_logo') ? asset('storage/' . get_setting('app_logo')) : asset('frontend/img/logo.png') }}" alt="AgroBandung Logo" style="height:90px; width:auto;">
+                    <img src="{{ setting_asset_url('app_logo') }}" alt="AgroBandung Logo" style="height:90px; width:auto;">
                     <i class="bi bi-leaf text-accent"></i>
                     <span class="font-display fw-bold fs-5">{{ get_setting('app_name', 'AgroBandung') }}</span>
                 </div>
@@ -80,29 +80,61 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    if (!data || !data.booking_code || !data.resume_url) return;
-
-    var wrapper = document.createElement('div');
-    wrapper.style.position = 'fixed';
-    wrapper.style.right = '16px';
-    wrapper.style.bottom = '16px';
-    wrapper.style.zIndex = '2000';
-    wrapper.style.maxWidth = '340px';
-    wrapper.innerHTML =
-        '<div style="background:#fff;border:1px solid #dee2e6;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:12px 14px;">'
-      +   '<div style="font-size:13px;color:#6c757d;">Pembayaran belum selesai</div>'
-      +   '<div style="font-weight:700;margin:2px 0 10px;">Kode: ' + data.booking_code + '</div>'
-      +   '<a href="' + data.resume_url + '" style="display:inline-block;background:#198754;color:#fff;text-decoration:none;padding:8px 12px;border-radius:8px;font-size:13px;">Lanjutkan Pembayaran</a>'
-      +   '<button type="button" id="dismissPendingBooking" style="margin-left:8px;border:none;background:transparent;color:#6c757d;font-size:13px;">Tutup</button>'
-      + '</div>';
-    document.body.appendChild(wrapper);
-
-    var dismissBtn = document.getElementById('dismissPendingBooking');
-    if (dismissBtn) {
-        dismissBtn.addEventListener('click', function () {
-            wrapper.remove();
-        });
+    if (!data || !data.booking_code) {
+        localStorage.removeItem('last_pending_booking');
+        return;
     }
+
+    fetch(@json(url('/pembayaran/status')) + '/' + encodeURIComponent(data.booking_code), {
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+    .then(function (response) {
+        if (!response.ok) {
+            throw new Error('Invalid pending booking state');
+        }
+        return response.json();
+    })
+    .then(function (result) {
+        if (!result || !result.active || !result.booking_code || !result.resume_url) {
+            localStorage.removeItem('last_pending_booking');
+            return;
+        }
+
+        localStorage.setItem('last_pending_booking', JSON.stringify({
+            booking_code: result.booking_code,
+            total_price: result.total_price || 0,
+            resume_url: result.resume_url,
+            saved_at: new Date().toISOString()
+        }));
+
+        var wrapper = document.createElement('div');
+        wrapper.style.position = 'fixed';
+        wrapper.style.right = '16px';
+        wrapper.style.bottom = '16px';
+        wrapper.style.zIndex = '2000';
+        wrapper.style.maxWidth = '340px';
+        wrapper.innerHTML =
+            '<div style="background:#fff;border:1px solid #dee2e6;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:12px 14px;">'
+          +   '<div style="font-size:13px;color:#6c757d;">Pembayaran belum selesai</div>'
+          +   '<div style="font-weight:700;margin:2px 0 10px;">Kode: ' + result.booking_code + '</div>'
+          +   '<a href="' + result.resume_url + '" style="display:inline-block;background:#198754;color:#fff;text-decoration:none;padding:8px 12px;border-radius:8px;font-size:13px;">Lanjutkan Pembayaran</a>'
+          +   '<button type="button" id="dismissPendingBooking" style="margin-left:8px;border:none;background:transparent;color:#6c757d;font-size:13px;">Tutup</button>'
+          + '</div>';
+        document.body.appendChild(wrapper);
+
+        var dismissBtn = document.getElementById('dismissPendingBooking');
+        if (dismissBtn) {
+            dismissBtn.addEventListener('click', function () {
+                localStorage.removeItem('last_pending_booking');
+                wrapper.remove();
+            });
+        }
+    })
+    .catch(function () {
+        localStorage.removeItem('last_pending_booking');
+    });
 });
 </script>
 <script>

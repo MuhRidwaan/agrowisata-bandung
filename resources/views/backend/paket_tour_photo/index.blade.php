@@ -73,7 +73,7 @@
                                             @if($paket->photos->count())
                                                 <div class="d-flex flex-wrap align-items-start justify-content-center" style="gap: 12px;">
                                                     @foreach($paket->photos as $photo)
-                                                        <img src="{{ asset('storage/' . $photo->path_foto) }}" alt="Photo" class="preview-image" data-image="{{ asset('storage/' . $photo->path_foto) }}" style="max-width:90px; border-radius:8px; margin-bottom:4px; cursor:pointer; transition:0.3s;">
+                                                        <img src="{{ $photo->photo_url }}" alt="Photo" class="preview-image" data-image="{{ $photo->photo_url }}" style="max-width:90px; border-radius:8px; margin-bottom:4px; cursor:pointer; transition:0.3s;">
                                                     @endforeach
                                                 </div>
                                             @else

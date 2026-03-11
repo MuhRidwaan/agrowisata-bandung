@@ -19,6 +19,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingController;
+use Illuminate\Support\Facades\File;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,6 +40,7 @@ Route::post('/booking/store', [FrontendController::class, 'storeBooking'])->name
 // Payment
 Route::get('/payment/{id}', [FrontendController::class, 'payment'])->name('payment');
 Route::get('/pembayaran/lanjut/{booking_code}', [FrontendController::class, 'resumePayment'])->name('payment.resume');
+Route::get('/pembayaran/status/{booking_code}', [FrontendController::class, 'pendingBookingStatus'])->name('payment.status');
 
 // Success Page
 Route::get('/success', [FrontendController::class, 'success'])->name('success');
@@ -48,6 +50,15 @@ Route::post('/midtrans/callback', [PaymentController::class, 'callback'])->name(
 
 // Ulasan
 Route::post('/reviews/store', [ReviewController::class, 'store'])->name('reviews.store');
+
+// Public storage fallback for environments without storage:link
+Route::get('/media/storage/{path}', function ($path) {
+    $fullPath = storage_path('app/public/' . $path);
+
+    abort_unless(File::exists($fullPath), 404);
+
+    return response()->file($fullPath);
+})->where('path', '.*')->name('public.storage');
 
 
 /*

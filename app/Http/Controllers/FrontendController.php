@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request; 
 use App\Models\PaketTour;
-use App\Models\Review;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\Area;
@@ -16,7 +15,11 @@ class FrontendController extends Controller
     // ================= HOME =================
     public function home(Request $request)
     {
-        $query = PaketTour::with(['vendor.area','reviews','photos'])
+        $query = PaketTour::with([
+                'vendor.area',
+                'photos',
+                'reviews' => fn ($q) => $q->where('status', 'approved')->with('photos'),
+            ])
             ->whereHas('photos')
             ->latest();
 
@@ -41,15 +44,14 @@ class FrontendController extends Controller
     // ================= DETAIL =================
     public function detail($id)
     {
-        $paket = PaketTour::with(['vendor', 'reviews.photos'])->findOrFail($id);
+        $paket = PaketTour::with([
+            'vendor.area',
+            'photos',
+            'pricingRules',
+            'reviews' => fn ($q) => $q->where('status', 'approved')->with(['photos', 'user'])->latest(),
+        ])->findOrFail($id);
 
-        $reviews = Review::with(['user', 'photos'])
-            ->where('vendor_id', $paket->vendor_id)
-            ->where('status', 'approved')
-            ->latest()
-            ->get();
-
-        return view('frontend.detail', compact('paket', 'reviews'));
+        return view('frontend.detail', compact('paket'));
     }
 
     // ================= BOOKING =================
@@ -222,6 +224,49 @@ class FrontendController extends Controller
         }
 
         return view('frontend.resume_payment', compact('booking', 'payment'));
+    }
+
+    // ================= PENDING BOOKING STATUS =================
+    public function pendingBookingStatus($booking_code)
+    {
+        $booking = Booking::with('payment')
+            ->where('booking_code', $booking_code)
+            ->first();
+
+        if (!$booking || !$booking->payment) {
+            return response()->json([
+                'active' => false,
+                'reason' => 'missing',
+            ]);
+        }
+
+        if (in_array($booking->status, ['paid', 'cancelled'], true)) {
+            return response()->json([
+                'active' => false,
+                'reason' => $booking->status,
+            ]);
+        }
+
+        if (in_array($booking->payment->status, ['success', 'failed'], true)) {
+            return response()->json([
+                'active' => false,
+                'reason' => $booking->payment->status,
+            ]);
+        }
+
+        if (empty($booking->payment->snap_token)) {
+            return response()->json([
+                'active' => false,
+                'reason' => 'missing_snap_token',
+            ]);
+        }
+
+        return response()->json([
+            'active' => true,
+            'booking_code' => $booking->booking_code,
+            'resume_url' => route('payment.resume', $booking->booking_code),
+            'total_price' => $booking->total_price,
+        ]);
     }
 
     // ================= SUCCESS =================
