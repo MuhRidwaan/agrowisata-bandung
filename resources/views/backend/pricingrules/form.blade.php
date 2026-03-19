@@ -143,7 +143,12 @@ function removeRuleRow(btn) {
                                             <small class="text-danger">{{ $message }}</small>
                                         @enderror
                                     </td>
-                                    <td><input type="number" name="rules[{{ $i }}][max_pax]" class="form-control" min="1" value="{{ $row['max_pax'] ?? '' }}" required></td>
+                                    <td>
+                                        <input type="number" name="rules[{{ $i }}][max_pax]" class="form-control" min="1" value="{{ $row['max_pax'] ?? '' }}" required>
+                                        @error('rules.'.$i.'.max_pax')
+                                            <small class="text-danger">{{ $message }}</small>
+                                        @enderror
+                                    </td>
                                     <td>
                                         <select name="rules[{{ $i }}][discount_type]" class="form-control" required>
                                             <option value="">-- Select Type --</option>

@@ -58,11 +58,18 @@ class PricingRuleController extends Controller
             ],
             'rules' => 'required|array|min:1',
             'rules.*.min_pax' => 'required|integer|min:1',
-            'rules.*.max_pax' => 'required|integer|gte:rules.*.min_pax',
+            'rules.*.max_pax' => 'required|integer|min:1',
             'rules.*.discount_type' => 'required|in:percent,nominal',
             'rules.*.discount_value' => 'required|integer|min:0',
             'rules.*.description' => 'nullable|string|max:255',
         ]);
+
+        // Validasi max_pax harus > min_pax (strictly lebih besar, tidak boleh sama)
+        foreach ($validated['rules'] as $i => $rule) {
+            if ($rule['max_pax'] <= $rule['min_pax']) {
+                return back()->withErrors(['rules.'.$i.'.max_pax' => 'Max Pax harus lebih besar dari Min Pax, tidak boleh sama.'])->withInput();
+            }
+        }
 
         // Validasi max 100 untuk tipe percent
         foreach ($validated['rules'] as $i => $rule) {
@@ -158,11 +165,18 @@ class PricingRuleController extends Controller
             'paket_tour_id' => 'required|exists:paket_tours,id',
             'rules' => 'required|array|min:1',
             'rules.*.min_pax' => 'required|integer|min:1',
-            'rules.*.max_pax' => 'required|integer|gte:rules.*.min_pax',
+            'rules.*.max_pax' => 'required|integer|min:1',
             'rules.*.discount_type' => 'required|in:percent,nominal',
             'rules.*.discount_value' => 'required|integer|min:0',
             'rules.*.description' => 'nullable|string|max:255',
         ]);
+
+        // Validasi max_pax harus > min_pax (strictly lebih besar)
+        foreach ($validated['rules'] as $i => $rule) {
+            if ($rule['max_pax'] <= $rule['min_pax']) {
+                return back()->withErrors(['rules.'.$i.'.max_pax' => 'Max Pax harus lebih besar dari Min Pax, tidak boleh sama.'])->withInput();
+            }
+        }
 
         // Validasi max 100 untuk tipe percent
         foreach ($validated['rules'] as $i => $rule) {
