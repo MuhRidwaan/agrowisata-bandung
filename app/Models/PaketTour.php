@@ -14,6 +14,8 @@ class PaketTour extends Model
         'jam_awal',
         'jam_akhir',
         'harga_paket',
+        'is_bundling_available',
+        'harga_bundling',
         'kuota',
         'aktivitas',
         'vendor_id',
@@ -26,6 +28,7 @@ class PaketTour extends Model
         'jam_awal'  => 'datetime:H:i:s',
         'jam_akhir' => 'datetime:H:i:s',
         'aktivitas' => 'array',
+        'is_bundling_available' => 'boolean',
     ];
 
     /**

@@ -63,6 +63,8 @@ class PaketTourController extends Controller
             'jam_awal'    => 'required|date_format:H:i',
             'jam_akhir'   => 'required|date_format:H:i|after:jam_awal',
             'harga_paket' => 'required|numeric|min:0',
+            'is_bundling_available' => 'nullable|boolean',
+            'harga_bundling' => 'nullable|numeric|min:0',
             'aktivitas'   => 'required|array|min:1',
             'aktivitas.*' => 'required|string|max:255',
         ];
@@ -72,6 +74,9 @@ class PaketTourController extends Controller
         }
 
         $data = $request->validate($rules);
+        
+        // Convert checkbox value to boolean
+        $data['is_bundling_available'] = $request->has('is_bundling_available') ? true : false;
 
         if (auth()->user()->hasRole('Vendor')) {
             $data['vendor_id'] = auth()->user()->vendor->id;
@@ -98,10 +103,15 @@ class PaketTourController extends Controller
             'jam_awal'    => 'required|date_format:H:i',
             'jam_akhir'   => 'required|date_format:H:i|after:jam_awal',
             'harga_paket' => 'required|numeric|min:0',
+            'is_bundling_available' => 'nullable|boolean',
+            'harga_bundling' => 'nullable|numeric|min:0',
             'aktivitas'   => 'required|array|min:1',
             'aktivitas.*' => 'required|string|max:255',
             'vendor_id'   => 'required|exists:vendors,id',
         ]);
+        
+        // Convert checkbox value to boolean
+        $data['is_bundling_available'] = $request->has('is_bundling_available') ? true : false;
 
         $paketTour->update($data);
 

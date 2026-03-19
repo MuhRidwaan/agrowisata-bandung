@@ -87,6 +87,36 @@
                         @enderror
                     </div>
 
+                    {{-- BUNDLING PRICE CHECKBOX --}}
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox"
+                                class="custom-control-input"
+                                id="is_bundling_available"
+                                name="is_bundling_available"
+                                value="1"
+                                {{ old('is_bundling_available', $paketTour->is_bundling_available ?? false) ? 'checked' : '' }}
+                                onchange="toggleBundlingPrice()">
+                            <label class="custom-control-label" for="is_bundling_available">
+                                Enable Bundling Price
+                            </label>
+                        </div>
+                    </div>
+
+                    {{-- BUNDLING PRICE --}}
+                    <div class="form-group" id="bundling_price_group" style="display: {{ old('is_bundling_available', $paketTour->is_bundling_available ?? false) ? 'block' : 'none' }};">
+                        <label>Bundling Price</label>
+                        <input type="number"
+                            name="harga_bundling"
+                            step="0.01"
+                            min="0"
+                            class="form-control @error('harga_bundling') is-invalid @enderror"
+                            value="{{ old('harga_bundling', $paketTour->harga_bundling ?? '') }}">
+                        @error('harga_bundling')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     {{-- OPERATIONAL HOURS --}}
                     <div class="form-group">
                         <label>Operational Hours <span class="text-danger">*</span></label>
@@ -214,6 +244,17 @@
 
 @section('scripts')
 <script>
+function toggleBundlingPrice() {
+    const checkbox = document.getElementById('is_bundling_available');
+    const bundlingPriceGroup = document.getElementById('bundling_price_group');
+    
+    if (checkbox.checked) {
+        bundlingPriceGroup.style.display = 'block';
+    } else {
+        bundlingPriceGroup.style.display = 'none';
+    }
+}
+
 function addActivity() {
     const wrapper = document.getElementById('activity-wrapper');
 

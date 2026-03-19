@@ -33,6 +33,26 @@
                     <dt class="col-sm-3">Description</dt>
                     <dd class="col-sm-9">{{ $paketTour->deskripsi }}</dd>
 
+                    <dt class="col-sm-3">Price</dt>
+                    <dd class="col-sm-9">
+                        @if ($paketTour->harga_paket)
+                            Rp {{ number_format($paketTour->harga_paket, 0, ',', '.') }}
+                        @else
+                            <span class="text-muted">-</span>
+                        @endif
+                    </dd>
+
+                    <dt class="col-sm-3">Bundling Price</dt>
+                    <dd class="col-sm-9">
+                        @if ($paketTour->is_bundling_available && $paketTour->harga_bundling)
+                            <span class="badge badge-success">
+                                Rp {{ number_format($paketTour->harga_bundling, 0, ',', '.') }}
+                            </span>
+                        @else
+                            <span class="text-muted">-</span>
+                        @endif
+                    </dd>
+
                     <dt class="col-sm-3">Activities</dt>
                     <dd class="col-sm-9">
                         @if (is_array($paketTour->aktivitas))

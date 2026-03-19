@@ -17,6 +17,8 @@ return new class extends Migration {
             $table->integer('kuota')->nullable();
             $table->decimal('harga_paket', 15, 2)->nullable();
             $table->json('aktivitas')->nullable();
+            $table->boolean('is_bundling_available')->default(false);
+            $table->decimal('harga_bundling', 15, 2)->nullable();
             $table->timestamps();
             $table->foreignId('vendor_id')->nullable()->constrained()->nullOnDelete();
         });
@@ -26,4 +28,5 @@ return new class extends Migration {
     {
         Schema::dropIfExists('paket_tours');
     }
+
 };
