@@ -268,41 +268,47 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (matchSearch && matchFilter) {
 
-            item.style.position = "relative";
-            item.style.visibility = "visible";
-            item.style.opacity = "1";
-            item.style.transform = "scale(1)";
+            item.classList.remove("paket-hide");
+            item.style.display = "block";
             visible++;
 
         } else {
 
-            item.style.transition = "opacity 0.25s ease, transform 0.25s ease";
-            item.style.opacity = "0";
-            item.style.transform = "scale(0.95)";
-            item.style.visibility = "hidden";
-            item.style.position = "absolute";
+            item.classList.add("paket-hide");
+
+            setTimeout(()=>{
+                item.style.display="none";
+            },300);
+
         }
+
     });
 
     if (noResult) {
         noResult.style.display = visible === 0 ? "block" : "none";
     }
 }
-
     // SEARCH realtime
-    if (searchInput) {
-        searchInput.addEventListener("input", function () {
+    let typingTimer;
+const delay = 120;
 
-            // reset filter ke Semua
-            currentFilter = "all";
-            buttons.forEach(b => b.classList.remove("active"));
-            if (buttons.length > 0) {
-                buttons[0].classList.add("active");
-            }
+searchInput.addEventListener("input", function () {
 
-            filterData();
-        });
-    }
+    clearTimeout(typingTimer);
+
+    typingTimer = setTimeout(() => {
+
+        currentFilter = "all";
+        buttons.forEach(b => b.classList.remove("active"));
+        if (buttons.length > 0) {
+            buttons[0].classList.add("active");
+        }
+
+        filterData();
+
+    }, delay);
+
+});
 
     // FILTER BUTTON
     buttons.forEach(btn => {
@@ -320,6 +326,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
+
 </script>
 
 <!-- ================= CSS ================== -->
@@ -334,5 +342,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 .img-container:hover .img-zoom{
     transform: scale(1.1);
+}
+.paket-hide{
+    opacity:0;
+    transform:scale(.95);
+    pointer-events:none;
+}
+.paket-item{
+    transition: opacity .25s ease, transform .25s ease;
+    will-change: transform, opacity;
 }
 </style>
