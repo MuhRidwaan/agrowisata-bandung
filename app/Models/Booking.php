@@ -34,4 +34,14 @@ class Booking extends Model
     {
         return $this->hasOne(Payment::class);
     }
+
+    public function umkmProducts()
+    {
+        return $this->belongsToMany(
+            UmkmProduct::class,
+            'booking_umkm',
+            'booking_id',
+            'umkm_product_id'
+        )->withPivot('quantity', 'price')->withTimestamps();
+    }
 }

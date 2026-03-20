@@ -85,6 +85,7 @@
                         request()->routeIs('pricingtiers.*') ||
                         request()->routeIs('tanggal-available.*') ||
                         request()->routeIs('pricingrules.*');
+                        request()->routeIs('umkm-products.*');
                 @endphp
 
                 <li class="nav-item {{ $isPaketTourActive ? 'menu-open' : '' }}">
@@ -132,6 +133,15 @@
                                 <p>Available Date</p>
                             </a>
                         </li>
+
+                        <li class="nav-item">
+                            <a href="{{ route('umkm-products.index') }}"
+                                class="nav-link {{ request()->routeIs('umkm-products.*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>UMKM Products</p>
+                            </a>
+                        </li>
+                        
                     </ul>
                 </li>
 

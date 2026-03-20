@@ -19,6 +19,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\UMKMProductController;
+use App\Http\Controllers\UmkmProductPhotoController;
 use Illuminate\Support\Facades\File;
 
 /*
@@ -89,6 +91,15 @@ Route::middleware('auth')->group(function () {
     Route::post('tanggal-available/import', [TanggalAvailableController::class, 'import'])->name('tanggal-available.import');
     Route::get('tanggal-available/download-template', [TanggalAvailableController::class, 'downloadTemplate'])->name('tanggal-available.download-template');
     Route::resource('tanggal-available', TanggalAvailableController::class);
+
+    // UMKM PRODUCTS
+    Route::get('umkm-products/export', [UMKMProductController::class, 'export'])->name('umkm-products.export');
+    Route::resource('umkm-products', UMKMProductController::class, ['except' => ['show']]);
+    
+    // UMKM PRODUCT PHOTOS - Explicit routes untuk avoid conflicts
+    Route::post('umkm-product-photos', [UmkmProductPhotoController::class, 'store'])->name('umkm-product-photos.store');
+    Route::delete('umkm-product-photos/{umkm_product_photo}', [UmkmProductPhotoController::class, 'destroy'])->name('umkm-product-photos.destroy');
+    
 
     // USERS
     Route::get('/users/export', [UserController::class, 'export'])->name('users.export');
