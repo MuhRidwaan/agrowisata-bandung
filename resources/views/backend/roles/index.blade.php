@@ -50,7 +50,8 @@
 
                         <div class="card-body">
                             <div class="alert alert-info">
-                                <i class="fas fa-info-circle"></i> Roles are managed by the system to maintain multi-tenant logic consistency.
+                                <i class="fas fa-info-circle"></i> Roles are managed by the system to maintain multi-tenant
+                                logic consistency.
                             </div>
 
                             <table class="table table-bordered table-hover">
@@ -68,21 +69,21 @@
                                             <td>{{ ($roles->currentPage() - 1) * $roles->perPage() + $loop->iteration }}
                                             </td>
                                             <td><strong>{{ $role->name }}</strong></td>
-                                            {{-- <td>
+                                            <td>
                                                 <a href="{{ route('roles.edit', $role->id) }}"
                                                     class="btn btn-warning btn-sm">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
 
-                                                <form action="{{ route('roles.destroy', $role->id) }}" method="POST"
+                                                {{-- <form action="{{ route('roles.destroy', $role->id) }}" method="POST"
                                                     style="display:inline-block" class="form-delete">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="btn btn-danger btn-sm">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
-                                                </form>
-                                            </td> --}}
+                                                </form> --}}
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>

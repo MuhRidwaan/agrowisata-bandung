@@ -7,6 +7,17 @@
 
 <body
     style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f4f6f9; margin: 0; padding: 20px;">
+    @php
+        $booking = $payment->booking;
+        $paket = $booking->paketTour;
+        $vendor = $paket->vendor ?? null;
+        $whatsappSetting = $vendor?->whatsappsetting;
+        $waNumber = preg_replace('/[^0-9]/', '', $whatsappSetting?->phone_number ?? '');
+        $waTemplate = $whatsappSetting?->message_template
+            ? str_replace('{{nama}}', $vendor->name ?? 'Admin', $whatsappSetting->message_template)
+            : 'Halo, saya sudah melakukan pemesanan ' . ($paket->nama_paket ?? 'paket wisata') . ' dengan kode booking ' . $booking->booking_code . '.';
+        $waLink = $waNumber ? 'https://wa.me/' . $waNumber . '?text=' . urlencode($waTemplate) : null;
+    @endphp
 
     <div
         style="max-width: 600px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -54,8 +65,6 @@
             </thead>
             <tbody>
                 @php
-                    $booking = $payment->booking;
-                    $paket = $booking->paketTour;
                     $baseTotal = $paket->harga_paket * $booking->jumlah_peserta;
                     $discount = $baseTotal - $booking->total_price;
                 @endphp
@@ -91,6 +100,21 @@
             Harap tunjukkan email ini atau invoice cetak kepada petugas kami saat melakukan daftar ulang di lokasi
             Agrowisata.
         </div>
+
+        @if ($waLink)
+            <div
+                style="background-color: #f0fff4; border: 1px solid #c3e6cb; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 13px;">
+                <strong>Hubungi Vendor via WhatsApp</strong><br>
+                @if ($vendor?->name)
+                    Vendor: {{ $vendor->name }}<br>
+                @endif
+                Nomor WhatsApp: {{ $whatsappSetting->phone_number }}<br>
+                <a href="{{ $waLink }}"
+                    style="display: inline-block; margin-top: 10px; background-color: #25d366; color: #ffffff; padding: 10px 18px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                    Chat via WhatsApp
+                </a>
+            </div>
+        @endif
 
         <div style="text-align: center; margin-top: 30px;">
             <p style="font-size: 14px; color: #666; margin-bottom: 15px;">Ingin mencetak invoice ini untuk keperluan

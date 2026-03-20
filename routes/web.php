@@ -41,6 +41,7 @@ Route::post('/booking/store', [FrontendController::class, 'storeBooking'])->name
 Route::get('/payment/{id}', [FrontendController::class, 'payment'])->name('payment');
 Route::get('/pembayaran/lanjut/{booking_code}', [FrontendController::class, 'resumePayment'])->name('payment.resume');
 Route::get('/pembayaran/status/{booking_code}', [FrontendController::class, 'pendingBookingStatus'])->name('payment.status');
+Route::post('/pembayaran/invoice-email/{booking_code}', [PaymentController::class, 'dispatchFrontendInvoiceEmail'])->name('frontend.invoice_email');
 
 // Success Page
 Route::get('/success', [FrontendController::class, 'success'])->name('success');

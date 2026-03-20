@@ -54,6 +54,14 @@
                 </li>
 
                 <li class="nav-item">
+                    <a href="{{ route('roles.index') }}"
+                        class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-user-shield"></i>
+                        <p>Role Management</p>
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <a href="{{ route('vendors.index') }}"
                         class="nav-link {{ request()->routeIs('vendors.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-store"></i>

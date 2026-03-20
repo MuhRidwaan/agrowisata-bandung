@@ -57,11 +57,12 @@
         location: '{{ $paket->vendor->area->name ?? "Bandung" }}',
         basePrice: {{ $paket->harga_paket ?? 0 }},
         pricingRules: @json($paket->pricingRules ?? []),
-        waNumber: '{{ preg_replace("/[^0-9]/", "", $paket->vendor->whatsappsetting->phone_number ?? "6281234567890") }}',
+        waNumber: '{{ preg_replace("/[^0-9]/", "", $paket->vendor->whatsappsetting->phone_number ?? "") }}',
         waContact: '{{ $paket->vendor->name ?? "Admin" }}',
         storeUrl: '{{ route("booking.store") }}',
         csrfToken: '{{ csrf_token() }}',
         invoiceUrl: '{{ url("/pembayaran/invoice") }}',
+        invoiceEmailUrl: '{{ url("/pembayaran/invoice-email") }}',
         resumeBaseUrl: '{{ url("/pembayaran/lanjut") }}'
     };
 </script>

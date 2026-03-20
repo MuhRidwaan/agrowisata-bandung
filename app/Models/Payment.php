@@ -12,7 +12,13 @@ class Payment extends Model
         'transaction_id',
         'status',
         'paid_at',
+        'invoice_emailed_at',
         'snap_token',
+    ];
+
+    protected $casts = [
+        'paid_at' => 'datetime',
+        'invoice_emailed_at' => 'datetime',
     ];
 
     public function booking()

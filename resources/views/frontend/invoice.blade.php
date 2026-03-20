@@ -48,13 +48,31 @@
 </head>
 
 <body>
+    @php
+        $booking = $payment->booking;
+        $paket = $booking->paketTour;
+        $vendor = $paket->vendor ?? null;
+        $whatsappSetting = $vendor?->whatsappsetting;
+        $waNumber = preg_replace('/[^0-9]/', '', $whatsappSetting?->phone_number ?? '');
+        $waTemplate = $whatsappSetting?->message_template
+            ? str_replace('{{nama}}', $vendor->name ?? 'Admin', $whatsappSetting->message_template)
+            : 'Halo, saya sudah melakukan pemesanan ' . ($paket->nama_paket ?? 'paket wisata') . ' dengan kode booking ' . $booking->booking_code . '.';
+        $waLink = $waNumber ? 'https://wa.me/' . $waNumber . '?text=' . urlencode($waTemplate) : null;
+    @endphp
 
     <div class="container">
         <div class="invoice-container">
 
             <div class="d-flex justify-content-between mb-4 no-print">
-                <a href="{{ url('/') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i>
-                    Kembali ke Web</a>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ url('/') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i>
+                        Kembali ke Web</a>
+                    @if ($waLink)
+                        <a href="{{ $waLink }}" target="_blank" rel="noopener" class="btn btn-success">
+                            <i class="fab fa-whatsapp"></i> Hubungi Vendor
+                        </a>
+                    @endif
+                </div>
                 <button onclick="window.print()" class="btn btn-success"><i class="fas fa-print"></i> Cetak PDF</button>
             </div>
 
@@ -106,8 +124,6 @@
                     </thead>
                     <tbody>
                         @php
-                            $booking = $payment->booking;
-                            $paket = $booking->paketTour;
                             $baseTotal = ($paket->harga_paket ?? 0) * $booking->jumlah_peserta;
                             $discount = $baseTotal - $booking->total_price;
                         @endphp
@@ -128,6 +144,13 @@
                         Harap simpan bukti ini dan tunjukkan kepada petugas loket saat daftar ulang di lokasi
                         Agrowisata.
                     </div>
+                    @if ($waLink)
+                        <div class="mt-3 no-print">
+                            <a href="{{ $waLink }}" target="_blank" rel="noopener" class="btn btn-success w-100">
+                                <i class="fab fa-whatsapp"></i> Chat Vendor via WhatsApp
+                            </a>
+                        </div>
+                    @endif
                 </div>
                 <div class="col-sm-6">
                     <div class="d-flex justify-content-between align-items-center mb-1">

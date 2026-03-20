@@ -26,6 +26,8 @@ class PaymentController extends Controller
             return $payment;
         }
 
+        $shouldSendInvoiceEmail = false;
+
         try {
             $this->configureMidtrans();
             $status = \Midtrans\Transaction::status($payment->booking->booking_code);
@@ -65,6 +67,8 @@ class PaymentController extends Controller
                     'description' => 'Status pembayaran disinkronkan dari Midtrans.',
                     'payload' => json_decode(json_encode($status), true),
                 ]);
+
+                $shouldSendInvoiceEmail = true;
             }
         } elseif (in_array($transactionStatus, ['expire', 'cancel', 'deny'], true)) {
             if ($payment->status !== 'failed' || $payment->booking->status !== 'cancelled') {
@@ -102,7 +106,13 @@ class PaymentController extends Controller
             }
         }
 
-        return $payment->fresh(['booking.paketTour', 'booking.user']);
+        $payment = $payment->fresh(['booking.paketTour', 'booking.user']);
+
+        if ($shouldSendInvoiceEmail && $payment && $payment->status === 'success') {
+            $this->triggerInvoiceEmail($payment);
+        }
+
+        return $payment;
     }
 
     public function index(Request $request)
@@ -303,11 +313,15 @@ class PaymentController extends Controller
         }
     }
 
-    private function triggerInvoiceEmail($payment)
+    private function triggerInvoiceEmail($payment, bool $force = false)
     {
         // Cek apakah fitur email diaktifkan di Global Settings
         if (get_setting('enable_email_notification') !== 'true') {
             return false;
+        }
+
+        if (!$force && $payment->invoice_emailed_at) {
+            return true;
         }
 
         // Ambil email dari customer_email, jika kosong ambil dari email user
@@ -316,6 +330,7 @@ class PaymentController extends Controller
         if ($email) {
             try {
                 Mail::to($email)->send(new InvoiceMail($payment));
+                $payment->forceFill(['invoice_emailed_at' => now()])->saveQuietly();
                 return true;
             } catch (\Exception $e) {
                \Log::error('Mail fail: '.$e->getMessage());
@@ -329,7 +344,7 @@ class PaymentController extends Controller
     // FUNGSI BARU: Untuk halaman invoice public (customer)
     public function publicInvoice($booking_code)
     {
-        $payment = Payment::with(['booking.paketTour', 'booking.user'])
+        $payment = Payment::with(['booking.paketTour.vendor.whatsappsetting', 'booking.user'])
             ->whereHas('booking', function($q) use ($booking_code) {
                 $q->where('booking_code', $booking_code);
             })->firstOrFail();
@@ -337,5 +352,29 @@ class PaymentController extends Controller
         $payment = $this->syncPaymentStatus($payment);
 
         return view('frontend.invoice', compact('payment'));
+    }
+
+    public function dispatchFrontendInvoiceEmail($booking_code)
+    {
+        $payment = Payment::with(['booking.paketTour', 'booking.user'])
+            ->whereHas('booking', function ($q) use ($booking_code) {
+                $q->where('booking_code', $booking_code);
+            })->firstOrFail();
+
+        $payment = $this->syncPaymentStatus($payment);
+
+        if (!$payment || $payment->status !== 'success') {
+            return response()->json([
+                'sent' => false,
+                'status' => $payment->status ?? 'missing',
+            ], 202);
+        }
+
+        $sent = $this->triggerInvoiceEmail($payment);
+
+        return response()->json([
+            'sent' => $sent,
+            'status' => $payment->status,
+        ]);
     }
 }

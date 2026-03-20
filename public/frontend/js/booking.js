@@ -17,6 +17,11 @@ function getResumeUrl(bookingCode) {
   return config.resumeBaseUrl.replace(/\/$/, '') + '/' + encodeURIComponent(bookingCode);
 }
 
+function getInvoiceEmailUrl(bookingCode) {
+  if (!config.invoiceEmailUrl || !bookingCode) return '';
+  return config.invoiceEmailUrl.replace(/\/$/, '') + '/' + encodeURIComponent(bookingCode);
+}
+
 function savePendingBooking(bookingData) {
   if (!bookingData || !bookingData.booking_code) return;
   localStorage.setItem('last_pending_booking', JSON.stringify({
@@ -459,6 +464,23 @@ function handlePaymentResult(status, bookingData, midtransResult) {
 
   if (status === 'success') {
     clearPendingBookingIfMatch(bookingData.booking_code);
+    var emailDispatchUrl = getInvoiceEmailUrl(bookingData.booking_code);
+
+    if (emailDispatchUrl) {
+      fetch(emailDispatchUrl, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': config.csrfToken,
+          'Accept': 'application/json'
+        }
+      }).catch(function(error) {
+        console.error('Invoice email dispatch error:', error);
+      }).finally(function() {
+        window.location.href = config.invoiceUrl + '/' + bookingData.booking_code;
+      });
+      return;
+    }
+
     window.location.href = config.invoiceUrl + '/' + bookingData.booking_code;
   } else {
     savePendingBooking(bookingData);
