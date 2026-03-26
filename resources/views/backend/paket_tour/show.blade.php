@@ -53,6 +53,17 @@
                         @endif
                     </dd>
 
+                    <dt class="col-sm-3">Bundling People</dt>
+                    <dd class="col-sm-9">
+                        @if ($paketTour->is_bundling_available && $paketTour->bundling_people)
+                            <span class="badge badge-info">
+                                {{ number_format($paketTour->bundling_people, 0, ',', '.') }} orang
+                            </span>
+                        @else
+                            <span class="text-muted">-</span>
+                        @endif
+                    </dd>
+
                     <dt class="col-sm-3">Activities</dt>
                     <dd class="col-sm-9">
                         @if (is_array($paketTour->aktivitas))

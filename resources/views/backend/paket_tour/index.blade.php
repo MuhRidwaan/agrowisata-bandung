@@ -88,6 +88,7 @@
                             <th>Vendor</th>
                             <th class="text-right">Price</th>
                             <th class="text-right">Bundling Price</th>
+                            <th class="text-right">Bundling People</th>
                             <!-- <th>Available Dates</th> -->
                             <!-- <th>Quota</th> -->
                             <!-- <th>Activities</th> -->
@@ -125,6 +126,16 @@
                                     @if ($paket->is_bundling_available && $paket->harga_bundling)
                                         <span class="badge badge-success">
                                             Rp {{ number_format($paket->harga_bundling, 0, ',', '.') }}
+                                        </span>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+
+                                <td class="text-right">
+                                    @if ($paket->is_bundling_available && $paket->bundling_people)
+                                        <span class="badge badge-info">
+                                            {{ number_format($paket->bundling_people, 0, ',', '.') }} orang
                                         </span>
                                     @else
                                         <span class="text-muted">-</span>
@@ -189,7 +200,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center">
+                                <td colspan="10" class="text-center">
                                     No tour package data available yet.
                                 </td>
                             </tr>

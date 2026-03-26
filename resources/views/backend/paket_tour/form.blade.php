@@ -117,6 +117,21 @@
                         @enderror
                     </div>
 
+                    <div class="form-group" id="bundling_people_group" style="display: {{ old('is_bundling_available', $paketTour->is_bundling_available ?? false) ? 'block' : 'none' }};">
+                        <label>Total People for Bundling</label>
+                        <input type="number"
+                            name="bundling_people"
+                            min="1"
+                            class="form-control @error('bundling_people') is-invalid @enderror"
+                            value="{{ old('bundling_people', $paketTour->bundling_people ?? '') }}">
+                        <small class="form-text text-muted">
+                            Isi jumlah orang yang ikut dalam paket bundling, misalnya 4, 10, atau 20 orang.
+                        </small>
+                        @error('bundling_people')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     {{-- OPERATIONAL HOURS --}}
                     <div class="form-group">
                         <label>Operational Hours <span class="text-danger">*</span></label>
@@ -247,11 +262,18 @@
 function toggleBundlingPrice() {
     const checkbox = document.getElementById('is_bundling_available');
     const bundlingPriceGroup = document.getElementById('bundling_price_group');
+    const bundlingPeopleGroup = document.getElementById('bundling_people_group');
+    const bundlingPriceInput = bundlingPriceGroup.querySelector('input[name="harga_bundling"]');
+    const bundlingPeopleInput = bundlingPeopleGroup.querySelector('input[name="bundling_people"]');
     
     if (checkbox.checked) {
         bundlingPriceGroup.style.display = 'block';
+        bundlingPeopleGroup.style.display = 'block';
     } else {
         bundlingPriceGroup.style.display = 'none';
+        bundlingPeopleGroup.style.display = 'none';
+        bundlingPriceInput.value = '';
+        bundlingPeopleInput.value = '';
     }
 }
 

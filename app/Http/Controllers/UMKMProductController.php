@@ -63,7 +63,11 @@ class UMKMProductController extends Controller
      */
     public function create()
     {
-        $paketTours = PaketTour::with('vendor')->get();
+        $paketTours = PaketTour::with('vendor')
+            ->when(auth()->user()->hasRole('Vendor'), function ($query) {
+                $query->where('vendor_id', auth()->user()->vendor->id ?? null);
+            })
+            ->get();
         return view('backend.umkm_products.form', [
             'umkmProduct' => new UmkmProduct(),
             'paketTours' => $paketTours,
@@ -79,9 +83,11 @@ class UMKMProductController extends Controller
 
         // Remove paket_tour_id and path_foto from data as they need special handling
         $paketTourId = $data['paket_tour_id'];
+        $paketTour = PaketTour::findOrFail($paketTourId);
         $files = $request->file('path_foto');
         unset($data['paket_tour_id']);
         unset($data['path_foto']);
+        $data['vendor_id'] = $paketTour->vendor_id;
 
         // Create the product
         $product = UmkmProduct::create($data);
@@ -119,7 +125,11 @@ class UMKMProductController extends Controller
             }
         }
 
-        $paketTours = PaketTour::with('vendor')->get();
+        $paketTours = PaketTour::with('vendor')
+            ->when(auth()->user()->hasRole('Vendor'), function ($query) {
+                $query->where('vendor_id', auth()->user()->vendor->id ?? null);
+            })
+            ->get();
         return view('backend.umkm_products.form', compact('umkmProduct', 'paketTours'));
     }
 
@@ -139,9 +149,11 @@ class UMKMProductController extends Controller
 
         // Extract paket_tour_id and path_foto for special handling
         $paketTourId = $data['paket_tour_id'];
+        $paketTour = PaketTour::findOrFail($paketTourId);
         $files = $request->file('path_foto');
         unset($data['paket_tour_id']);
         unset($data['path_foto']);
+        $data['vendor_id'] = $paketTour->vendor_id;
 
         // Update the product
         $umkmProduct->update($data);
@@ -198,4 +210,3 @@ class UMKMProductController extends Controller
             ->with('success', 'Produk UMKM berhasil dihapus!');
     }
 }
-

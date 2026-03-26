@@ -56,7 +56,7 @@
                         {{-- Display All Validation Errors --}}
                         @if ($errors->any())
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <h4 class="alert-heading">❌ Ada kesalahan!</h4>
+                                <h4 class="alert-heading">Ada kesalahan!</h4>
                                 <ul class="mb-0">
                                     @foreach ($errors->all() as $error)
                                         <li>{{ $error }}</li>
@@ -182,7 +182,8 @@
                                     📁 Format: JPEG, PNG, JPG, GIF | Max: 5MB per file | Bisa upload multiple
                                 </small> -->
 
-                                    <!-- <div class="row" id="preview-container" style="margin-left: -10px; margin-right: -10px; margin-top: 20px; background: #f8f9fa; border-radius: 8px; padding: 20px; margin-left: -10px; margin-right: -10px;"></div> -->
+                                <div id="preview-container"
+                                     style="margin-top: 20px; background: #f8f9fa; border-radius: 8px; padding: 20px; display: none;"></div>
 
                                 @error('path_foto')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -211,6 +212,7 @@
                                                         <div style="position: relative; background: #f0f0f0; height: 220px;">
                                                             <img src="{{ asset('storage/' . $photo->path_foto) }}" 
                                                                  alt="Photo" 
+                                                                 data-image="{{ asset('storage/' . $photo->path_foto) }}"
                                                                  style="width: 100%; height: 100%; object-fit: cover; cursor: pointer; display: block;"
                                                                  class="photo-preview-thumb">
                                                             
@@ -281,7 +283,12 @@
 function previewImages(event) {
     const files = event.target.files;
     const preview = document.getElementById('preview-container');
+    if (!preview) {
+        return;
+    }
+
     preview.innerHTML = '';
+    preview.style.display = 'none';
     
     if (files) {
         let validFileCount = 0;
@@ -335,9 +342,11 @@ function previewImages(event) {
         });
         
         if (validFileCount > 0) {
+            preview.style.display = 'block';
             preview.appendChild(container);
             preview.insertAdjacentHTML('beforeend', `<div class="alert alert-info mt-3"><i class="fas fa-info-circle"></i> <strong>${validFileCount} foto</strong> siap di-upload</div>`);
         } else {
+            preview.style.display = 'block';
             preview.innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> Tidak ada file gambar yang valid</div>';
         }
     }
@@ -518,6 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.classList.contains('photo-preview-thumb')) {
             var imageUrl = e.target.getAttribute('data-image');
             document.getElementById('previewImage').src = imageUrl;
+            $('#photoPreviewModal').modal('show');
         }
     });
 </script>

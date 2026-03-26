@@ -70,6 +70,9 @@
                                 </a>
                             </div>
                         </div>
+                        <small class="text-muted d-block mt-2">
+                            Template import sekarang sudah dilengkapi sheet <strong>Referensi Paket Tour</strong> berisi ID dan nama paket yang valid agar input data tidak membingungkan.
+                        </small>
                     </div>
                     <!-- END HEADER -->
 
@@ -224,6 +227,7 @@
                         <small class="form-text text-muted">
                             Format: .xlsx, .xls, atau .csv (max 2MB).
                             <a href="{{ route('tanggal-available.download-template') }}">Download template di sini</a>.
+                            Gunakan sheet <strong>Referensi Paket Tour</strong> untuk melihat acuan <code>paket_tour_id</code> dan <code>nama_paket</code> yang valid.
                         </small>
                     </div>
                 </div>

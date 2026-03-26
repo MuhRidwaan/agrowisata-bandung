@@ -64,7 +64,8 @@ class PaketTourController extends Controller
             'jam_akhir'   => 'required|date_format:H:i|after:jam_awal',
             'harga_paket' => 'required|numeric|min:0',
             'is_bundling_available' => 'nullable|boolean',
-            'harga_bundling' => 'nullable|numeric|min:0',
+            'harga_bundling' => 'nullable|required_if:is_bundling_available,1|numeric|min:0',
+            'bundling_people' => 'nullable|required_if:is_bundling_available,1|integer|min:1',
             'aktivitas'   => 'required|array|min:1',
             'aktivitas.*' => 'required|string|max:255',
         ];
@@ -77,6 +78,8 @@ class PaketTourController extends Controller
         
         // Convert checkbox value to boolean
         $data['is_bundling_available'] = $request->has('is_bundling_available') ? true : false;
+        $data['harga_bundling'] = $data['is_bundling_available'] ? ($data['harga_bundling'] ?? null) : null;
+        $data['bundling_people'] = $data['is_bundling_available'] ? ($data['bundling_people'] ?? null) : null;
 
         if (auth()->user()->hasRole('Vendor')) {
             $data['vendor_id'] = auth()->user()->vendor->id;
@@ -104,7 +107,8 @@ class PaketTourController extends Controller
             'jam_akhir'   => 'required|date_format:H:i|after:jam_awal',
             'harga_paket' => 'required|numeric|min:0',
             'is_bundling_available' => 'nullable|boolean',
-            'harga_bundling' => 'nullable|numeric|min:0',
+            'harga_bundling' => 'nullable|required_if:is_bundling_available,1|numeric|min:0',
+            'bundling_people' => 'nullable|required_if:is_bundling_available,1|integer|min:1',
             'aktivitas'   => 'required|array|min:1',
             'aktivitas.*' => 'required|string|max:255',
             'vendor_id'   => 'required|exists:vendors,id',
@@ -112,6 +116,8 @@ class PaketTourController extends Controller
         
         // Convert checkbox value to boolean
         $data['is_bundling_available'] = $request->has('is_bundling_available') ? true : false;
+        $data['harga_bundling'] = $data['is_bundling_available'] ? ($data['harga_bundling'] ?? null) : null;
+        $data['bundling_people'] = $data['is_bundling_available'] ? ($data['bundling_people'] ?? null) : null;
 
         $paketTour->update($data);
 
