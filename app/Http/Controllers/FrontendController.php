@@ -68,7 +68,7 @@ class FrontendController extends Controller
             ->map(function ($tgl) use ($paket) {
                 // Hitung kuota terpakai dari bookings yang tidak dibatalkan
                 $used = Booking::where('paket_tour_id', $paket->id)
-                    ->where('visit_date', $tgl->tanggal)
+                    ->where('created_at', $tgl->tanggal)
                     ->where('status', '!=', 'cancelled')
                     ->sum('jumlah_peserta');
                 $tgl->quota_used = (int) $used;
@@ -106,7 +106,7 @@ class FrontendController extends Controller
         }
 
         $used = Booking::where('paket_tour_id', $paket->id)
-            ->whereDate('visit_date', $request->visit_date)
+            ->whereDate('created_at', $request->visit_date)
             ->where('status', '!=', 'cancelled')
             ->sum('jumlah_peserta');
 

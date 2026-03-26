@@ -62,4 +62,13 @@ class UmkmProduct extends Model
     {
         return $this->hasMany(UmkmProductPhoto::class);
     }
+    
+    public function getPhotoUrlAttribute()
+    {
+        $photo = $this->photos->first();
+
+        return $photo 
+            ? asset('storage/' . $photo->photo) 
+            : 'https://via.placeholder.com/60';
+    }
 }
