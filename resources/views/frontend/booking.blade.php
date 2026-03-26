@@ -153,17 +153,22 @@
                                     ];
                                 })->values()) !!};
                             </script>
-
+                        <div id="afterDateSection" style="display:none;">
                             <!-- Pricing Rules -->
                             @if($paket->pricingRules->count() > 0)
-                            <div class="mb-4">
+                            <div class="mb-4" id="sectionDiskon">
                                 <h3 class="fs-6 fw-semibold mb-3 d-flex align-items-center gap-2">
                                     <i class="bi bi-tag text-accent"></i> Penawaran Spesial (Diskon)
                                 </h3>
                                 <div class="row g-2">
                                     @foreach($paket->pricingRules as $rule)
                                     <div class="col-md-4 col-6">
-                                        <div class="price-tier-card" data-min="{{ $rule->min_pax }}" data-max="{{ $rule->max_pax }}">
+                                        <div class="price-tier-card discount-card"
+                                                data-min="{{ $rule->min_pax }}"
+                                                data-max="{{ $rule->max_pax }}"
+                                                data-type="{{ $rule->discount_type }}"
+                                                data-value="{{ $rule->discount_value }}"
+                                                onclick="selectDiscount(this)">
                                             <p class="text-muted small mb-0">{{ $rule->min_pax }}{{ $rule->max_pax ? '-' . $rule->max_pax : '+' }} orang</p>
                                             <p class="font-display fs-6 fw-bold text-primary-agro mb-0">
                                                 @if($rule->discount_type === 'percent')
@@ -180,22 +185,72 @@
                             @endif
 
                             <!-- Activities -->
-                            <div>
-                                <h3 class="fs-6 fw-semibold mb-2">Aktivitas yang tersedia:</h3>
-                                <div class="d-flex flex-wrap gap-2">
-                                    @if(is_array($paket->aktivitas))
-                                        @foreach($paket->aktivitas as $aktivitas)
-                                            <span class="badge-activity">{{ $aktivitas }}</span>
-                                        @endforeach
-                                    @else
-                                        <span class="badge-activity">-</span>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<div class="mb-4" id="sectionAktivitas">
+    <h3 class="fs-6 fw-semibold mb-2">Aktivitas yang tersedia:</h3>
+    <div class="d-flex flex-wrap gap-2">
+        @if(is_array($paket->aktivitas))
+            @foreach($paket->aktivitas as $aktivitas)
+                <span class="badge-activity">{{ $aktivitas }}</span>
+            @endforeach
+        @else
+            <span class="badge-activity">-</span>
+        @endif
+    </div>
+</div>
 
+{{-- UMKM ADD ON --}}
+@if($paket->umkmProducts && $paket->umkmProducts->count() > 0)
+<hr class="my-4">
+
+<div class="mb-2" id="sectionUmkm">
+    <h3 class="fs-6 fw-semibold mb-3 d-flex align-items-center gap-2">
+        <i class="bi bi-bag text-primary-agro"></i> Produk UMKM
+    </h3>
+
+    <div class="d-flex flex-column gap-2">
+        @foreach($paket->umkmProducts as $product)
+        <div class="d-flex align-items-center justify-content-between border rounded-3 p-3 umkm-item"
+             data-id="{{ $product->id }}"
+             data-price="{{ $product->price }}">
+
+            <!-- kiri -->
+            <div class="d-flex align-items-center gap-3">
+                <img src="{{ $product->photo_url }}"
+                     style="width:60px;height:60px;object-fit:cover;border-radius:10px;">
+
+                <div>
+                    <p class="fw-semibold small mb-0">{{ $product->name }}</p>
+                    <p class="text-muted small mb-0">
+                        Rp{{ number_format($product->price,0,',','.') }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- kanan -->
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary"
+                        onclick="decreaseUmkm({{ $product->id }})">-</button>
+
+                <span id="qty-{{ $product->id }}">0</span>
+
+                <button type="button" class="btn btn-sm btn-outline-secondary"
+                        onclick="increaseUmkm({{ $product->id }})">+</button>
+            </div>
+
+        </div>
+        @endforeach
+    </div>
+</div>
+
+<input type="hidden" id="umkmData" name="umkm_data">
+@endif
+
+</div> <!-- card-body -->
+</div> <!-- card -->
+
+</div> <!-- bookingStep1 -->
+</div>
+                                                            
                 <!-- STEP 2: Data Peserta -->
                 <div class="booking-step d-none" id="bookingStep2">
                     <div class="card card-agro">
@@ -223,11 +278,11 @@
                                 </label>
                                 <input type="email" id="customerEmail" class="form-control" placeholder="email@example.com" required>
                             </div>
-                            <div class="mb-2">
+                            <div class="mb-2" id="participantInputWrapper">
                                 <label class="form-label small fw-medium">Jumlah Peserta</label>
                                 <div class="input-group">
                                     <button type="button" class="btn btn-outline-secondary" onclick="decreaseParticipantCount()" aria-label="Kurangi peserta">-</button>
-                                    <input type="number" id="participantCountInput" class="form-control text-center" min="1" value="1" required>
+                                    <input type="number" id="participantCountInput" class="form-control text-center" min="1" value="1" oninput="validateParticipantInput()" required>
                                     <button type="button" class="btn btn-outline-secondary" onclick="increaseParticipantCount()" aria-label="Tambah peserta">+</button>
                                 </div>
                                 <small class="text-muted">Untuk banyak peserta, cukup isi jumlahnya saja.</small>
@@ -418,12 +473,19 @@
                             </div>
 
                             {{-- Price breakdown --}}
-                            <div class="mb-3 pb-3 border-bottom">
-                                <div class="d-flex justify-content-between align-items-center small">
-                                    <span class="text-muted" id="summaryPriceLabel">Rp{{ number_format($paket->harga_paket, 0, ',', '.') }} &times; 1</span>
-                                    <span class="fw-medium" id="summarySubtotal">Rp{{ number_format($paket->harga_paket, 0, ',', '.') }}</span>
+                            <div class="mb-3 pb-3 border-bottom" id="priceBreakdown">
+                                <div class="d-flex justify-content-between align-items-center small mb-1">
+                                    <span class="text-muted" id="summaryPriceLabel">
+                                        Rp{{ number_format($paket->harga_paket, 0, ',', '.') }} × 1
+                                    </span>
+                                    <span class="fw-medium" id="summarySubtotal">
+                                        Rp{{ number_format($paket->harga_paket, 0, ',', '.') }}
+                                    </span>
                                 </div>
+                                <div id="umkmSummaryList" class="mt-2"></div>
+                                <div id="discountRow"></div>
                             </div>
+
 
                             {{-- Total --}}
                             <div class="d-flex justify-content-between align-items-center pt-1">
@@ -484,4 +546,403 @@
 #bookingNav .btn-outline-secondary{
     border-radius:12px !important;
 }
+
+.discount-card {
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.discount-card:hover {
+    transform: scale(1.02);
+}
+
+.discount-card.active {
+    border: 2px solid #198754;
+    background: #f6fffa;
+}
+.price-tier-card {
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: #fff;
+}
+
+/* hover effect */
+.price-tier-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+/* active (kayak tombol folder lu) */
+.price-tier-card.active {
+    border: 2px solid #198754;
+    background: #e9f7ef;
+    box-shadow: 0 6px 18px rgba(25, 135, 84, 0.25);
+}
+
+/* teks ikut berubah */
+.price-tier-card.active p:last-child {
+    color: #198754;
+}
 </style>
+
+
+<script>
+let basePrice = {{ $paket->harga_paket }};
+let selectedDiscount = null;
+let umkm = {};
+let isPackageSelected = false; 
+let minPax = 1;
+let maxPax = null;
+let isRendering = false;
+let isUpdatingTotal = false;
+
+// ================= UMKM =================
+function increaseUmkm(id) {
+    if (!umkm[id]) umkm[id] = 0;
+    umkm[id]++;
+
+    document.getElementById('qty-' + id).innerText = umkm[id];
+    updateTotal();
+}
+
+function decreaseUmkm(id) {
+    if (!umkm[id]) return;
+
+    if (umkm[id] > 0) {
+        umkm[id]--;
+    }
+
+    document.getElementById('qty-' + id).innerText = umkm[id];
+    updateTotal();
+}
+
+// ================= DISKON =================
+function selectDiscount(el) {
+
+    // 🔥 KALAU DIKLIK LAGI → CANCEL
+    if (el.classList.contains('active')) {
+        el.classList.remove('active');
+
+        selectedDiscount = null;
+        minPax = 1;
+        maxPax = null;
+
+        updateParticipantButtons();
+        updateTotal();
+        return;
+    }
+
+    // 🔥 RESET SEMUA
+    document.querySelectorAll('.discount-card').forEach(card => {
+        card.classList.remove('active');
+    });
+
+    // 🔥 AKTIFKAN YANG DIPILIH
+    el.classList.add('active');
+
+    // 🔥 SET DISKON
+    selectedDiscount = {
+        type: el.dataset.type,
+        value: parseFloat(el.dataset.value)
+    };
+
+    // 🔥 SET RANGE
+    minPax = parseInt(el.dataset.min);
+    maxPax = el.dataset.max ? parseInt(el.dataset.max) : null;
+
+    let input = document.getElementById('participantCountInput');
+
+    // paksa ke min
+    input.value = minPax;
+
+    updateParticipantButtons();
+    updateTotal();
+}
+
+// ================= TOTAL =================
+function updateTotal() {
+
+    let input = document.getElementById('participantCountInput');
+    let pax = parseInt(input.value) || 1;
+
+    if (pax < minPax) pax = minPax;
+    if (maxPax !== null && pax > maxPax) pax = maxPax;
+    input.value = pax;
+
+    // 🔥 HAPUS SEMUA DISKON LAMA (BIAR GA DOUBLE)
+    document.querySelectorAll('#priceBreakdown .text-danger').forEach(el => {
+        el.remove();
+    });
+
+    // ===== HITUNG UMKM =====
+    let totalUmkm = 0;
+
+    document.querySelectorAll('.umkm-item').forEach(el => {
+        let id = el.dataset.id;
+        let price = parseFloat(el.dataset.price);
+        let qty = umkm[id] || 0;
+
+        if (qty > 0) {
+            totalUmkm += price * qty;
+        }
+    });
+
+    // ===== HITUNG PAKET =====
+    let paketTotal = basePrice * pax;
+
+    // ===== HITUNG DISKON =====
+    let discountAmount = 0;
+
+    if (selectedDiscount !== null) {
+        if (selectedDiscount.type === 'percent') {
+            discountAmount = paketTotal * (selectedDiscount.value / 100);
+        } else {
+            discountAmount = selectedDiscount.value * pax;
+        }
+    }
+
+    // ===== TOTAL FINAL =====
+    let finalTotal = (paketTotal - discountAmount) + totalUmkm;
+
+    // ===== UPDATE UI =====
+    document.getElementById('summaryPriceLabel').innerText =
+        'Rp' + basePrice.toLocaleString('id-ID') + ' × ' + pax;
+
+    document.getElementById('summarySubtotal').innerText =
+        'Rp' + paketTotal.toLocaleString('id-ID');
+
+    document.getElementById('totalPrice').innerText =
+        'Rp' + finalTotal.toLocaleString('id-ID');
+
+    // ===== DISKON (ONLY 1 SOURCE OF TRUTH) =====
+    let discountRow = document.getElementById('discountRow');
+    discountRow.innerHTML = '';
+
+    if (discountAmount > 0) {
+        discountRow.innerHTML = `
+            <div class="d-flex justify-content-between small text-success">
+                <span>Diskon</span>
+                <span>- Rp${discountAmount.toLocaleString('id-ID')}</span>
+            </div>
+        `;
+    }
+}
+function lockParticipantInput(lock) {
+
+    let input = document.getElementById('participantCountInput');
+    let btnPlus = input.nextElementSibling;
+    let btnMinus = input.previousElementSibling;
+
+    if (lock) {
+        input.setAttribute('readonly', true);
+        input.classList.add('bg-light');
+
+        btnPlus.disabled = true;
+        btnMinus.disabled = true;
+
+        btnPlus.classList.add('opacity-50');
+        btnMinus.classList.add('opacity-50');
+
+    } else {
+        input.removeAttribute('readonly');
+        input.classList.remove('bg-light');
+
+        btnPlus.disabled = false;
+        btnMinus.disabled = false;
+
+        btnPlus.classList.remove('opacity-50');
+        btnMinus.classList.remove('opacity-50');
+    }
+}
+function updateParticipantButtons() {
+
+    let input = document.getElementById('participantCountInput');
+    let btnPlus = input.nextElementSibling;
+    let btnMinus = input.previousElementSibling;
+
+    let value = parseInt(input.value);
+
+    // MIN LIMIT
+    if (value <= minPax) {
+        btnMinus.disabled = true;
+        btnMinus.classList.add('opacity-50');
+    } else {
+        btnMinus.disabled = false;
+        btnMinus.classList.remove('opacity-50');
+    }
+
+    // MAX LIMIT
+    if (maxPax && value >= maxPax) {
+        btnPlus.disabled = true;
+        btnPlus.classList.add('opacity-50');
+    } else {
+        btnPlus.disabled = false;
+        btnPlus.classList.remove('opacity-50');
+    }
+}
+function increaseParticipantCount() {
+    let input = document.getElementById('participantCountInput');
+    let value = parseInt(input.value);
+
+    //VALIDASI MAX FIX
+    if (maxPax !== null && value >= maxPax) {
+        input.value = maxPax; 
+        updateParticipantButtons();
+        return;
+    }
+
+    input.value = value + 1;
+
+    updateParticipantButtons();
+    updateTotal();
+}
+
+function decreaseParticipantCount() {
+    let input = document.getElementById('participantCountInput');
+    let value = parseInt(input.value);
+
+    if (value <= minPax) {
+        input.value = minPax;
+        updateParticipantButtons();
+        return;
+    }
+
+    input.value = value - 1;
+
+    updateParticipantButtons();
+    updateTotal();
+}
+function validateParticipantInput() {
+    let input = document.getElementById('participantCountInput');
+    let value = parseInt(input.value) || 1;
+
+    if (value < minPax) value = minPax;
+    if (maxPax !== null && value > maxPax) value = maxPax;
+
+    input.value = value;
+
+    updateParticipantButtons();
+    updateTotal();
+}
+
+// ================= AUTO PATCH SYSTEM =================
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    updateTotal(); // 🔥 ini wajib
+
+    const input = document.getElementById('participantCountInput');
+
+    if (!input) return;
+
+    input.addEventListener('input', function () {
+        enforceLimits();
+        updateTotal();
+    });
+
+});
+
+// ================= HARD LIMIT GLOBAL =================
+function enforceLimits() {
+
+    let input = document.getElementById('participantCountInput');
+    if (!input) return;
+
+    let value = parseInt(input.value) || minPax;
+
+    if (value < minPax) value = minPax;
+    if (maxPax !== null && value > maxPax) value = maxPax;
+
+    input.value = value;
+
+    updateParticipantButtons();
+
+}
+
+// ================= PATCH NEXT STEP =================
+(function () {
+
+    const originalNextStep = window.nextStep;
+
+    if (!originalNextStep) return;
+
+    window.nextStep = function () {
+
+        let input = document.getElementById('participantCountInput');
+        let value = parseInt(input.value);
+
+        
+        if (value < minPax || (maxPax !== null && value > maxPax)) {
+            alert('Jumlah peserta tidak sesuai paket!');
+            enforceLimits();
+            return;
+        }
+
+        originalNextStep(); // lanjut normal
+    };
+
+})();
+
+// ================= PATCH SELECT DISKON =================
+(function () {
+
+    const originalSelectDiscount = window.selectDiscount;
+
+    if (!originalSelectDiscount) return;
+
+    window.selectDiscount = function (el) {
+
+        originalSelectDiscount(el);
+
+        
+        updateParticipantButtons();
+    };
+
+})();
+
+// ================= PATCH BUTTON CLICK =================
+document.addEventListener('click', function (e) {
+
+    if (
+        e.target.closest('[onclick*="increaseParticipantCount"]') ||
+        e.target.closest('[onclick*="decreaseParticipantCount"]')
+    ) {
+        setTimeout(() => {
+            enforceLimits();
+        }, 10);
+    }
+
+});
+// ================= SHOW AFTER DATE =================
+function showAfterDateSection() {
+    document.getElementById('sectionDiskon')?.classList.remove('d-none');
+    document.getElementById('sectionAktivitas')?.classList.remove('d-none');
+    document.getElementById('sectionUmkm')?.classList.remove('d-none');
+}
+
+// ================= FIX FINAL (WORK 100%) =================
+document.addEventListener('DOMContentLoaded', function () {
+
+    const calendarBody = document.getElementById('calendarBody');
+
+    if (!calendarBody) return;
+
+    calendarBody.addEventListener('click', function(e) {
+
+        const day = e.target.closest('div');
+
+        if (!day) return;
+
+        
+        if (day.innerText.trim() === '') return;
+
+     
+        document.getElementById('afterDateSection').style.display = 'block';
+
+    });
+
+});
+</script>

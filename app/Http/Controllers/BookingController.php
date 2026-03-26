@@ -67,6 +67,7 @@ class BookingController extends Controller
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|string|max:20',
             'visit_date'     => 'required|date|after_or_equal:today',
+            'umkm_products'  => 'nullable|string',
         ]);
 
         // 2. Kalkulasi Total Harga menggunakan Pricing Rules
@@ -79,6 +80,15 @@ class BookingController extends Controller
 
         $pricing = $paket->calculatePrice($request->jumlah_peserta);
         $total = $pricing['total_price'];
+        
+        $umkmItems = json_decode($request->umkm_products, true) ?? [];
+
+        foreach ($umkmItems as $item) {
+            $product = \App\Models\UmkmProduct::find($item['id']);
+            if ($product) {
+                $total += $product->price * $item['qty'];
+            }
+        }
         $prefix = get_setting('booking_prefix', 'BOOK-');
         $bookingCode = $prefix . Str::upper(Str::random(6));
 
@@ -95,7 +105,23 @@ class BookingController extends Controller
             'customer_phone' => $request->customer_phone,
             'visit_date'     => $request->visit_date,
         ]);
+        
+        if (!empty($umkmItems)) {
+            $syncData = [];
 
+            foreach ($umkmItems as $item) {
+                $product = \App\Models\UmkmProduct::find($item['id']);
+
+                if ($product) {
+                    $syncData[$product->id] = [
+                        'quantity' => $item['qty'],
+                        'price' => $product->price,
+                    ];
+                }
+            }
+
+            $booking->umkmProducts()->sync($syncData);
+        }
         // Audit Log
         TransactionLog::create([
             'booking_id' => $booking->id,
@@ -172,6 +198,7 @@ class BookingController extends Controller
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|string|max:20',
             'visit_date'     => 'required|date',
+            'umkm_products' => 'nullable|string',
         ]);
 
         // Kalkulasi ulang jika paket atau jumlah peserta diubah
@@ -185,6 +212,15 @@ class BookingController extends Controller
         $pricing = $paket->calculatePrice($request->jumlah_peserta);
         $total = $pricing['total_price'];
 
+         $umkmItems = json_decode($request->umkm_products, true) ?? [];
+
+        foreach ($umkmItems as $item) {
+            $product = \App\Models\UmkmProduct::find($item['id']);
+            if ($product) {
+                $total += $product->price * $item['qty'];
+            }
+        }
+
         $oldStatus = $booking->status;
         $booking->update([
             'paket_tour_id'  => $request->paket_tour_id,
@@ -196,6 +232,25 @@ class BookingController extends Controller
             'customer_phone' => $request->customer_phone,
             'visit_date'     => $request->visit_date,
         ]);
+
+        if (!empty($umkmItems)) {
+            $syncData = [];
+
+            foreach ($umkmItems as $item) {
+                $product = \App\Models\UmkmProduct::find($item['id']);
+
+                if ($product) {
+                    $syncData[$product->id] = [
+                        'quantity' => $item['qty'],
+                        'price' => $product->price,
+                    ];
+                }
+            }
+
+            $booking->umkmProducts()->sync($syncData);
+        } else {
+            $booking->umkmProducts()->detach();
+        }
 
         // Audit Log if status changed
         if($oldStatus != $request->status) {

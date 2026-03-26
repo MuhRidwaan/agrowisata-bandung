@@ -117,4 +117,9 @@ class PaketTour extends Model
     {
         return $this->hasMany(Booking::class);
     }
+
+    public function umkmProducts()
+    {
+        return $this->belongsToMany(UmkmProduct::class, 'paket_tour_umkm');
+    }
 }
