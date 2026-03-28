@@ -4,12 +4,22 @@ namespace App\Http\Controllers;
 use App\Models\PaketTourPhoto;
 use App\Models\PaketTour;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PaketTourPhotoController extends Controller
 {
-        public function destroyByPaket($paket_tour_id)
+    public function destroyByPaket($paket_tour_id)
     {
-        \App\Models\PaketTourPhoto::where('paket_tour_id', $paket_tour_id)->delete();
+        $photos = PaketTourPhoto::where('paket_tour_id', $paket_tour_id)->get();
+
+        foreach ($photos as $photo) {
+            if ($photo->path_foto) {
+                Storage::disk('public')->delete($photo->path_foto);
+            }
+
+            $photo->delete();
+        }
+
         return redirect()->route('paket-tour-photos.index')->with('success', 'Semua foto pada paket berhasil dihapus!');
     }
     
@@ -131,7 +141,17 @@ class PaketTourPhotoController extends Controller
 
         // Hapus foto yang dicentang
         if (!empty($data['delete_photos'])) {
-            PaketTourPhoto::whereIn('id', $data['delete_photos'])->delete();
+            $photosToDelete = PaketTourPhoto::whereIn('id', $data['delete_photos'])
+                ->where('paket_tour_id', $paketTourPhoto->paket_tour_id)
+                ->get();
+
+            foreach ($photosToDelete as $photo) {
+                if ($photo->path_foto) {
+                    Storage::disk('public')->delete($photo->path_foto);
+                }
+
+                $photo->delete();
+            }
         }
 
         // Tambah foto baru (buat record baru, bukan replace)
@@ -159,6 +179,10 @@ class PaketTourPhotoController extends Controller
 
     public function destroy(PaketTourPhoto $paketTourPhoto)
     {
+        if ($paketTourPhoto->path_foto) {
+            Storage::disk('public')->delete($paketTourPhoto->path_foto);
+        }
+
         $paketTourPhoto->delete();
         return redirect()->route('paket-tour-photos.index')->with('success', 'Foto berhasil dihapus!');
     }

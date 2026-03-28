@@ -167,7 +167,7 @@
                                     <strong>Add Photo</strong>
                                 </label>
 
-                                <div class="input-group" style="height: 60px;">
+                                <div class="custom-file-upload">
                                     <input type="file"
                                            name="path_foto[]"
                                            id="path_foto"
@@ -175,12 +175,24 @@
                                            class="form-control @error('path_foto') is-invalid @enderror"
                                            multiple
                                            onchange="previewImages(event)"
-                                           style="padding: 15px; font-size: 14px;">
+                                           hidden>
+                                    <label for="path_foto" class="custom-file-upload__label mb-0">
+                                        <span class="custom-file-upload__button">
+                                            Choose Files
+                                        </span>
+                                        <span class="custom-file-upload__text" id="path_foto_text">
+                                            No file chosen
+                                        </span>
+                                    </label>
                                 </div>
                                 
                                 <!-- <small class="form-text text-muted d-block mt-2">
                                     📁 Format: JPEG, PNG, JPG, GIF | Max: 5MB per file | Bisa upload multiple
                                 </small> -->
+
+                                <small class="form-text text-muted d-block mt-2">
+                                    Format: JPEG, PNG, JPG, GIF. Bisa pilih lebih dari satu file.
+                                </small>
 
                                 <div id="preview-container"
                                      style="margin-top: 20px; background: #f8f9fa; border-radius: 8px; padding: 20px; display: none;"></div>
@@ -225,29 +237,17 @@
                                                         
                                                         <div style="padding: 12px;">
                                                             <div style="margin-bottom: 8px;">
-                                                                <small style="color: #666;">{{ basename($photo->path_foto) }}</small>
+                                                                <small style="color: #666; display: block; word-break: break-word;">{{ basename($photo->path_foto) }}</small>
                                                             </div>
                                                             
-                                                            <form method="POST" 
-                                                                  action="{{ route('umkm-product-photos.destroy', $photo->id) }}" 
-                                                                  style="margin: 0;" 
-                                                                  id="deleteForm_{{ $photo->id }}"
-                                                                  onsubmit="return confirm('Hapus foto ini?')">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <div style="display: flex; align-items: center; gap: 6px;">
-                                                                    <input type="checkbox" 
-                                                                           id="checkbox_{{ $photo->id }}"
-                                                                           name="delete_{{ $photo->id }}" 
-                                                                           style="cursor: pointer; width: 18px; height: 18px; accent-color: #dc3545;">
-                                                                    <button type="button" 
-                                                                            class="btn btn-danger btn-sm"
-                                                                            style="padding: 4px 8px; font-size: 12px; margin: 0;"
-                                                                            onclick="handleDeleteClick('{{ $photo->id }}')">
-                                                                        <i class="fas fa-trash-alt"></i> Delete
-                                                                    </button>
-                                                                </div>
-                                                            </form>
+                                                            <div class="photo-delete-row">
+                                                                <button type="button" 
+                                                                        class="btn btn-danger btn-sm"
+                                                                        style="padding: 4px 10px; font-size: 12px; margin: 0;"
+                                                                        onclick="handleDeleteClick('{{ route('umkm-product-photos.destroy', $photo->id) }}')">
+                                                                    <i class="fas fa-trash-alt"></i> Delete
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -279,91 +279,148 @@
     </div>
 </section>
 
+<form method="POST" id="photoDeleteForm" style="display: none;">
+    @csrf
+    @method('DELETE')
+</form>
+
 <script>
+let selectedUmkmFiles = [];
+
 function previewImages(event) {
-    const files = event.target.files;
+    const files = Array.from(event.target.files || []);
     const preview = document.getElementById('preview-container');
+    const fileText = document.getElementById('path_foto_text');
+    const input = document.getElementById('path_foto');
+
+    if (!preview) {
+        return;
+    }
+
+    files.forEach(function(file) {
+        if (file.type.match('image.*')) {
+            selectedUmkmFiles.push(file);
+        }
+    });
+
+    syncUmkmFileInput(input);
+    renderUmkmPreview();
+}
+
+function syncUmkmFileInput(input) {
+    if (!input) {
+        return;
+    }
+
+    const dataTransfer = new DataTransfer();
+    selectedUmkmFiles.forEach(function(file) {
+        dataTransfer.items.add(file);
+    });
+    input.files = dataTransfer.files;
+}
+
+function removeSelectedUmkmFile(index) {
+    const input = document.getElementById('path_foto');
+    selectedUmkmFiles.splice(index, 1);
+    syncUmkmFileInput(input);
+    renderUmkmPreview();
+}
+
+function renderUmkmPreview() {
+    const preview = document.getElementById('preview-container');
+    const fileText = document.getElementById('path_foto_text');
+
     if (!preview) {
         return;
     }
 
     preview.innerHTML = '';
     preview.style.display = 'none';
-    
-    if (files) {
-        let validFileCount = 0;
-        const container = document.createElement('div');
-        container.className = 'row';
-        container.style.marginTop = '20px';
-        container.style.marginLeft = '-12px';
-        container.style.marginRight = '-12px';
-        
-        Array.from(files).forEach(file => {
-            if (file.type.match('image.*')) {
-                validFileCount++;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const colDiv = document.createElement('div');
-                    colDiv.className = 'col-lg-3 col-md-4 col-sm-6 mb-4';
-                    colDiv.style.padding = '10px';
-                    
-                    const cardDiv = document.createElement('div');
-                    cardDiv.style.cssText = 'background: white; border: 2px solid #e0e0e0; border-radius: 8px; overflow: hidden; transition: all 0.3s ease; position: relative; height: 100%;';
-                    
-                    const imageContainer = document.createElement('div');
-                    imageContainer.style.cssText = 'position: relative; background: #f0f0f0; height: 220px;';
-                    
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; display: block;';
-                    
-                    const badge = document.createElement('span');
-                    badge.innerHTML = '<i class="far fa-image"></i> Photo';
-                    badge.style.cssText = 'position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.9); color: #333; font-size: 12px; padding: 4px 8px; border-radius: 4px;';
-                    
-                    imageContainer.appendChild(img);
-                    imageContainer.appendChild(badge);
-                    
-                    const infoDiv = document.createElement('div');
-                    infoDiv.style.cssText = 'padding: 12px;';
-                    
-                    const label = document.createElement('small');
-                    label.textContent = file.name;
-                    label.style.cssText = 'display: block; font-size: 13px; color: #666; word-break: break-all; margin-bottom: 8px;';
-                    
-                    infoDiv.appendChild(label);
-                    cardDiv.appendChild(imageContainer);
-                    cardDiv.appendChild(infoDiv);
-                    colDiv.appendChild(cardDiv);
-                    container.appendChild(colDiv);
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        
-        if (validFileCount > 0) {
-            preview.style.display = 'block';
-            preview.appendChild(container);
-            preview.insertAdjacentHTML('beforeend', `<div class="alert alert-info mt-3"><i class="fas fa-info-circle"></i> <strong>${validFileCount} foto</strong> siap di-upload</div>`);
-        } else {
-            preview.style.display = 'block';
-            preview.innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> Tidak ada file gambar yang valid</div>';
-        }
+
+    if (fileText) {
+        fileText.textContent = selectedUmkmFiles.length === 0
+            ? 'No file chosen'
+            : (selectedUmkmFiles.length === 1 ? selectedUmkmFiles[0].name : `${selectedUmkmFiles.length} files selected`);
     }
+
+    if (selectedUmkmFiles.length === 0) {
+        return;
+    }
+
+    const container = document.createElement('div');
+    container.className = 'row';
+    container.style.marginLeft = '-12px';
+    container.style.marginRight = '-12px';
+
+    selectedUmkmFiles.forEach(function(file, index) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const colDiv = document.createElement('div');
+            colDiv.className = 'col-lg-3 col-md-4 col-sm-6 mb-4';
+            colDiv.style.padding = '10px';
+
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'umkm-upload-preview-card';
+
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'umkm-upload-preview-image';
+
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'umkm-upload-preview-photo';
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.innerHTML = '&times;';
+            removeBtn.className = 'umkm-preview-remove-btn';
+            removeBtn.setAttribute('aria-label', 'Batal pilih foto');
+            removeBtn.onclick = function() {
+                removeSelectedUmkmFile(index);
+            };
+
+            imageContainer.appendChild(img);
+            imageContainer.appendChild(removeBtn);
+
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'umkm-upload-preview-info';
+
+            const label = document.createElement('small');
+            label.textContent = file.name;
+            label.className = 'umkm-upload-preview-name';
+
+            infoDiv.appendChild(label);
+            cardDiv.appendChild(imageContainer);
+            cardDiv.appendChild(infoDiv);
+            colDiv.appendChild(cardDiv);
+            container.appendChild(colDiv);
+        };
+        reader.readAsDataURL(file);
+    });
+
+    preview.style.display = 'block';
+    preview.appendChild(container);
 }
 
-function handleDeleteClick(photoId) {
-    const checkbox = document.getElementById(`checkbox_${photoId}`);
-    const form = document.getElementById(`deleteForm_${photoId}`);
-    
-    if (!checkbox.checked) {
-        alert('Pilih checkbox dulu untuk konfirmasi penghapusan');
-        checkbox.focus();
-        return false;
-    }
-    
-    // Checkbox sudah dicek, submit form
-    form.submit();
+function handleDeleteClick(deleteUrl) {
+    const form = document.getElementById('photoDeleteForm');
+
+    Swal.fire({
+        title: 'Hapus foto ini?',
+        text: 'Foto yang dihapus tidak bisa dikembalikan.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, hapus',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (!result.isConfirmed) {
+            return;
+        }
+
+        form.action = deleteUrl;
+        form.submit();
+    });
 }
 
 function updateVendorFromPaketTour() {
@@ -478,6 +535,43 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <style>
+    .custom-file-upload__label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        min-height: 54px;
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        background: #ffffff;
+        cursor: pointer;
+        transition: border-color 0.2s ease;
+    }
+
+    .custom-file-upload__label:hover {
+        border-color: #adb5bd;
+    }
+
+    .custom-file-upload__button {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 14px;
+        border-radius: 2px;
+        background: #f8f9fa;
+        color: #212529;
+        font-weight: 400;
+        border: 1px solid #6c757d;
+        white-space: nowrap;
+        line-height: 1.2;
+    }
+
+    .custom-file-upload__text {
+        color: #6c757d;
+        font-size: 15px;
+        word-break: break-word;
+    }
+
     .photo-preview-thumb {
         transition: transform 0.3s ease, filter 0.3s ease;
     }
@@ -515,9 +609,70 @@ document.addEventListener('DOMContentLoaded', function() {
         transform: translateY(-4px);
     }
     
-    /* Checkbox styling */
-    input[type="checkbox"] {
-        accent-color: #dc3545;
+    .photo-delete-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .umkm-upload-preview-card {
+        background: #fff;
+        border: 1px solid #d9dee5;
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+        height: 100%;
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+    }
+
+    .umkm-upload-preview-image {
+        position: relative;
+        background: #f0f0f0;
+        height: 220px;
+    }
+
+    .umkm-upload-preview-photo {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .umkm-upload-preview-info {
+        padding: 12px 14px;
+    }
+
+    .umkm-upload-preview-name {
+        display: block;
+        font-size: 13px;
+        color: #667085;
+        word-break: break-word;
+    }
+
+    .umkm-preview-remove-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 50%;
+        background: rgba(17, 24, 39, 0.92);
+        color: #fff;
+        font-size: 22px;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.2);
+        transition: transform 0.2s ease, background 0.2s ease;
+        z-index: 2;
+    }
+
+    .umkm-preview-remove-btn:hover {
+        background: rgba(220, 53, 69, 0.96);
+        transform: scale(1.06);
     }
 </style>
 

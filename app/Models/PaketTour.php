@@ -66,8 +66,25 @@ class PaketTour extends Model
      * @param int $pax Jumlah peserta
      * @return array Detail perhitungan [base_price, discount, total_price, applied_rule]
      */
-    public function calculatePrice($pax)
+    public function calculatePrice($pax, $useBundling = false)
     {
+        if (
+            $useBundling &&
+            $this->is_bundling_available &&
+            $this->harga_bundling !== null &&
+            $this->bundling_people !== null &&
+            (int) $pax === (int) $this->bundling_people
+        ) {
+            return [
+                'base_price_per_pax' => $this->harga_paket,
+                'total_base_price' => $this->harga_bundling,
+                'discount' => 0,
+                'total_price' => $this->harga_bundling,
+                'applied_rule' => null,
+                'applied_bundling' => true,
+            ];
+        }
+
         $basePrice = $this->harga_paket;
         $totalBase = $basePrice * $pax;
         $discount = 0;
@@ -96,7 +113,8 @@ class PaketTour extends Model
             'total_base_price' => $totalBase,
             'discount' => $discount,
             'total_price' => $totalBase - $discount,
-            'applied_rule' => $appliedRule
+            'applied_rule' => $appliedRule,
+            'applied_bundling' => false,
         ];
     }
 

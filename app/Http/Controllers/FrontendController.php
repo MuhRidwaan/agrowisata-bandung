@@ -57,7 +57,7 @@ class FrontendController extends Controller
     // ================= BOOKING =================
     public function booking($id)
     {
-        $paket = PaketTour::with(['pricingRules', 'vendor.area', 'vendor.whatsappsetting', 'photos', 'tanggalAvailables'])->findOrFail($id);
+        $paket = PaketTour::with(['pricingRules', 'vendor.area', 'vendor.whatsappsetting', 'photos', 'tanggalAvailables', 'umkmProducts.photos'])->findOrFail($id);
 
         // Ambil tanggal available yang aktif dan belum lewat
         $availableDates = $paket->tanggalAvailables()
@@ -85,6 +85,7 @@ class FrontendController extends Controller
         $request->validate([
             'paket_tour_id'  => 'required|exists:paket_tours,id',
             'jumlah_peserta' => 'required|integer|min:1',
+            'use_bundling'   => 'nullable|boolean',
             'customer_name'  => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|string|max:20',
@@ -119,7 +120,7 @@ class FrontendController extends Controller
         }
 
         // Kalkulasi harga menggunakan logic existing PaketTour::calculatePrice()
-        $pricing = $paket->calculatePrice($request->jumlah_peserta);
+        $pricing = $paket->calculatePrice($request->jumlah_peserta, $request->boolean('use_bundling'));
         $total = $pricing['total_price'];
 
         // Generate booking code

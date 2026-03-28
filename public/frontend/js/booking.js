@@ -8,7 +8,7 @@ let isProcessing = false;
 
 const config = window.BOOKING_CONFIG || {
   name: 'AgroBandung', location: 'Bandung',
-  basePrice: 50000, pricingRules: [],
+  basePrice: 50000, bundlingAvailable: false, bundlingPrice: 0, bundlingPeople: 0, pricingRules: [],
   storeUrl: '', csrfToken: '', invoiceUrl: ''
 };
 
@@ -67,40 +67,125 @@ function initParticipantCountInput() {
   syncParticipantCountFromInput();
 }
 
+function isBundlingActive() {
+  return !!document.querySelector('.bundling-card.active');
+}
+
+function getSelectedPricingRuleLimits() {
+  if (isBundlingActive()) {
+    var bundlingPeople = parseInt(config.bundlingPeople, 10) || 1;
+    return { min: bundlingPeople, max: bundlingPeople };
+  }
+
+  var activeCard = document.querySelector('.discount-card.active');
+  if (!activeCard) {
+    return { min: 1, max: null };
+  }
+
+  var min = parseInt(activeCard.dataset.min, 10);
+  var max = activeCard.dataset.max ? parseInt(activeCard.dataset.max, 10) : null;
+
+  return {
+    min: Number.isNaN(min) || min < 1 ? 1 : min,
+    max: Number.isNaN(max) ? null : max
+  };
+}
+
+function updateParticipantLimitButtons() {
+  var input = document.getElementById('participantCountInput');
+  if (!input) return;
+
+  var minusBtn = input.previousElementSibling;
+  var plusBtn = input.nextElementSibling;
+  if (!minusBtn || !plusBtn) return;
+
+  var limits = getSelectedPricingRuleLimits();
+  var value = parseInt(input.value, 10) || limits.min;
+  var remaining = getRemainingQuota();
+  var effectiveMax = limits.max;
+
+  if (remaining !== null && remaining > 0) {
+    effectiveMax = effectiveMax === null ? remaining : Math.min(effectiveMax, remaining);
+  }
+
+  if (isBundlingActive()) {
+    minusBtn.disabled = true;
+    plusBtn.disabled = true;
+    input.setAttribute('readonly', 'readonly');
+    input.classList.add('bg-light');
+  } else {
+    minusBtn.disabled = value <= limits.min;
+    plusBtn.disabled = effectiveMax !== null && value >= effectiveMax;
+    input.removeAttribute('readonly');
+    input.classList.remove('bg-light');
+  }
+
+  minusBtn.classList.toggle('opacity-50', minusBtn.disabled);
+  plusBtn.classList.toggle('opacity-50', plusBtn.disabled);
+}
+
 function syncParticipantCountFromInput() {
   var input = document.getElementById('participantCountInput');
   if (!input) return;
 
+  var limits = getSelectedPricingRuleLimits();
   var val = parseInt(input.value, 10);
-  if (!val || val < 1) val = 1;
+  if (!val || val < limits.min) val = limits.min;
+
+  if (limits.max !== null && val > limits.max) {
+    val = limits.max;
+  }
+
   var remaining = getRemainingQuota();
   if (remaining !== null && remaining > 0 && val > remaining) {
     val = remaining;
     showToast('Jumlah peserta melebihi sisa kuota. Disesuaikan ke ' + remaining + ' orang.');
   }
+
+  if (val < limits.min) {
+    val = limits.min;
+  }
+
   participantCount = val;
   input.value = val;
+  input.min = limits.min;
+  if (limits.max !== null) input.max = limits.max;
+  else input.removeAttribute('max');
 
   var totalEl = document.getElementById('participantTotal');
   if (totalEl) totalEl.textContent = participantCount;
 
   updateSummary();
   updatePriceTiers();
+  updateParticipantLimitButtons();
 }
 
 function increaseParticipantCount() {
   var input = document.getElementById('participantCountInput');
   if (!input) return;
-  var val = parseInt(input.value, 10) || 1;
-  input.value = val + 1;
+  var limits = getSelectedPricingRuleLimits();
+  var val = parseInt(input.value, 10) || limits.min;
+  var nextValue = val + 1;
+
+  if (limits.max !== null && nextValue > limits.max) {
+    nextValue = limits.max;
+  }
+
+  var remaining = getRemainingQuota();
+  if (remaining !== null && remaining > 0 && nextValue > remaining) {
+    nextValue = remaining;
+  }
+
+  input.value = Math.max(limits.min, nextValue);
   syncParticipantCountFromInput();
 }
 
 function decreaseParticipantCount() {
   var input = document.getElementById('participantCountInput');
   if (!input) return;
-  var val = parseInt(input.value, 10) || 1;
-  input.value = Math.max(1, val - 1);
+  var limits = getSelectedPricingRuleLimits();
+  var val = parseInt(input.value, 10) || limits.min;
+  input.value = Math.max(limits.min, val - 1);
   syncParticipantCountFromInput();
 }
 
@@ -278,23 +363,30 @@ function updateNavButtons() {
 }
 
 function getPriceCalculation() {
-  const totalBase = participantCount * config.basePrice;
+  const bundlingActive = isBundlingActive();
+  const totalBase = bundlingActive ? Number(config.bundlingPrice || 0) : participantCount * config.basePrice;
   let discount = 0;
   let appliedRule = null;
+  let appliedBundling = null;
+  var activeCard = document.querySelector('.discount-card.active');
 
-  if (config.pricingRules && config.pricingRules.length > 0) {
-    appliedRule = config.pricingRules.find(rule => {
-      const min = parseInt(rule.min_pax);
-      const max = rule.max_pax ? parseInt(rule.max_pax) : Infinity;
-      return participantCount >= min && participantCount <= max;
-    });
+  if (bundlingActive && config.bundlingAvailable) {
+    appliedBundling = {
+      bundling_people: parseInt(config.bundlingPeople, 10) || participantCount,
+      harga_bundling: Number(config.bundlingPrice || 0)
+    };
+  } else if (activeCard) {
+    appliedRule = {
+      min_pax: activeCard.dataset.min,
+      max_pax: activeCard.dataset.max,
+      discount_type: activeCard.dataset.type,
+      discount_value: activeCard.dataset.value
+    };
 
-    if (appliedRule) {
-      if (appliedRule.discount_type === 'percent') {
-        discount = (totalBase * parseFloat(appliedRule.discount_value)) / 100;
-      } else if (appliedRule.discount_type === 'nominal') {
-        discount = parseFloat(appliedRule.discount_value);
-      }
+    if (appliedRule.discount_type === 'percent') {
+      discount = (totalBase * parseFloat(appliedRule.discount_value)) / 100;
+    } else if (appliedRule.discount_type === 'nominal') {
+      discount = parseFloat(appliedRule.discount_value);
     }
   }
 
@@ -302,21 +394,20 @@ function getPriceCalculation() {
     totalBase,
     discount,
     totalPrice: totalBase - discount,
-    appliedRule
+    appliedRule,
+    appliedBundling
   };
 }
 
 function updatePriceTiers() {
   var tiers = document.querySelectorAll('.price-tier-card');
-  tiers.forEach(function(t) { t.classList.remove('active'); });
-  
-  const calc = getPriceCalculation();
-  if (calc.appliedRule) {
-    const activeTier = Array.from(tiers).find(t => 
-      parseInt(t.dataset.min) === parseInt(calc.appliedRule.min_pax)
-    );
-    if (activeTier) activeTier.classList.add('active');
-  }
+  var activeDiscountTier = document.querySelector('.discount-card.active');
+  var activeBundlingTier = document.querySelector('.bundling-card.active');
+  tiers.forEach(function(t) {
+    if (t !== activeDiscountTier && t !== activeBundlingTier) {
+      t.classList.remove('active');
+    }
+  });
 }
 
 function updateSummary() {
@@ -347,24 +438,24 @@ function updateSummary() {
   const calc = getPriceCalculation();
 
   var pl = document.getElementById('summaryPriceLabel');
-  if (pl) pl.textContent = formatCurrency(config.basePrice) + ' \u00d7 ' + participantCount;
+  if (pl) {
+    if (calc.appliedBundling) {
+      pl.textContent = 'Paket bundling \u00b7 ' + calc.appliedBundling.bundling_people + ' orang';
+    } else {
+      pl.textContent = formatCurrency(config.basePrice) + ' \u00d7 ' + participantCount;
+    }
+  }
   
   var st = document.getElementById('summarySubtotal');
   if (st) st.textContent = formatCurrency(calc.totalBase);
   
-  // Update Discount if exists
-  let discEl = document.getElementById('summaryDiscount');
-  if (calc.discount > 0) {
-    if (!discEl) {
-      discEl = document.createElement('div');
-      discEl.id = 'summaryDiscount';
-      discEl.className = 'd-flex justify-content-between small text-danger mb-1';
-      const subtotalEl = document.getElementById('summarySubtotal').parentElement;
-      subtotalEl.parentNode.insertBefore(discEl, subtotalEl.nextSibling);
+  var discountRow = document.getElementById('discountRow');
+  if (discountRow) {
+    if (calc.discount > 0) {
+      discountRow.innerHTML = '<div class="d-flex justify-content-between align-items-center small mt-3 summary-discount-row"><span>Diskon</span><span class="fw-medium">-' + formatCurrency(calc.discount) + '</span></div>';
+    } else {
+      discountRow.innerHTML = '';
     }
-    discEl.innerHTML = '<span>Diskon</span><span>-' + formatCurrency(calc.discount) + '</span>';
-  } else if (discEl) {
-    discEl.remove();
   }
 
   var tp = document.getElementById('totalPrice');
@@ -391,6 +482,7 @@ function submitBooking() {
   var payload = {
     paket_tour_id: paketId,
     jumlah_peserta: participantCount,
+    use_bundling: isBundlingActive(),
     customer_name: nameInput ? nameInput.value.trim() : '',
     customer_email: emailInput ? emailInput.value.trim() : '',
     customer_phone: phoneInput ? phoneInput.value.trim() : '',

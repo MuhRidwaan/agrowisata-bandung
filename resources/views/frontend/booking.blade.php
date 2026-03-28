@@ -184,6 +184,28 @@
                             </div>
                             @endif
 
+                            @if($paket->is_bundling_available && $paket->harga_bundling && $paket->bundling_people)
+                            <div class="mb-4" id="sectionBundling">
+                                <h3 class="fs-6 fw-semibold mb-3 d-flex align-items-center gap-2">
+                                    <i class="bi bi-box2-heart text-primary-agro"></i> Paket Bundling
+                                </h3>
+                                <div class="row g-2">
+                                    <div class="col-md-6 col-12">
+                                        <div class="price-tier-card bundling-card"
+                                                data-people="{{ $paket->bundling_people }}"
+                                                data-price="{{ $paket->harga_bundling }}"
+                                                onclick="selectBundling(this)">
+                                            <p class="text-muted small mb-1">{{ $paket->nama_paket }} Bundling</p>
+                                            <p class="font-display fs-6 fw-bold text-primary-agro mb-1">
+                                                Rp{{ number_format($paket->harga_bundling, 0, ',', '.') }}
+                                            </p>
+                                            <p class="text-muted small mb-0">{{ number_format($paket->bundling_people, 0, ',', '.') }} orang / bundling</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+
                             <!-- Activities -->
 <div class="mb-4" id="sectionAktivitas">
     <h3 class="fs-6 fw-semibold mb-2">Aktivitas yang tersedia:</h3>
@@ -214,8 +236,15 @@
              data-price="{{ $product->price }}">
 
             <!-- kiri -->
-            <div class="d-flex align-items-center gap-3">
-                <img src="{{ $product->photo_url }}"
+            <div class="d-flex align-items-center gap-3"
+                 style="cursor:pointer"
+                 onclick="openProductModal(
+                     @js($product->name),
+                     @js($product->price),
+                     @js(asset('storage/' . $product->photos->first()->path_foto)),
+                     @js($product->description ?? 'Produk UMKM lokal pilihan dari destinasi ini.')
+                 )">
+                <img src="{{ asset('storage/' . $product->photos->first()->path_foto) }}"
                      style="width:60px;height:60px;object-fit:cover;border-radius:10px;">
 
                 <div>
@@ -239,6 +268,13 @@
 
         </div>
         @endforeach
+    </div>
+
+    <div class="bg-agro-light rounded-3 p-3 d-flex gap-2 mt-3">
+        <i class="bi bi-info-circle text-primary-agro flex-shrink-0"></i>
+        <p class="text-muted small mb-0">
+            Produk UMKM diambil saat masuk ke area agrowisata.
+        </p>
     </div>
 </div>
 
@@ -458,7 +494,7 @@
 
                             {{-- Date & Kuota --}}
                             <div class="mb-3 pb-3 border-bottom">
-                                <div class="d-flex justify-content-between align-items-center small mb-1">
+                                <div class="d-flex justify-content-between align-items-center small mb-2">
                                     <span class="text-muted d-flex align-items-center gap-1">
                                         <i class="bi bi-calendar-event"></i> Tanggal
                                     </span>
@@ -474,15 +510,18 @@
 
                             {{-- Price breakdown --}}
                             <div class="mb-3 pb-3 border-bottom" id="priceBreakdown">
-                                <div class="d-flex justify-content-between align-items-center small mb-1">
-                                    <span class="text-muted" id="summaryPriceLabel">
+                                <div class="d-flex justify-content-between align-items-start gap-3 small mb-2">
+                                    <div>
+                                        <p class="summary-group-label mb-1">Tiket</p>
+                                        <span class="text-muted" id="summaryPriceLabel">
                                         Rp{{ number_format($paket->harga_paket, 0, ',', '.') }} × 1
-                                    </span>
-                                    <span class="fw-medium" id="summarySubtotal">
+                                        </span>
+                                    </div>
+                                    <span class="fw-medium text-end" id="summarySubtotal">
                                         Rp{{ number_format($paket->harga_paket, 0, ',', '.') }}
                                     </span>
                                 </div>
-                                <div id="umkmSummaryList" class="mt-2"></div>
+                                <div id="umkmSummaryList" class="mt-3"></div>
                                 <div id="discountRow"></div>
                             </div>
 
@@ -492,6 +531,7 @@
                                 <span class="fw-semibold">Total</span>
                                 <span class="font-display fs-4 fw-bold text-primary-agro" id="totalPrice">Rp{{ number_format($paket->harga_paket, 0, ',', '.') }}</span>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -514,6 +554,30 @@
             </div>
         </div>
     </div>
+    
+    <!-- MODAL PRODUK (DESIGN CLEAN) -->
+<div id="productModal" class="modal-overlay" onclick="closeProductModal(event)">
+    <div class="modal-sheet">
+        <button type="button" class="modal-close-btn" aria-label="Tutup" onclick="closeProductModalDirect()">
+            <i class="bi bi-x-lg"></i>
+        </button>
+
+        <div class="modal-handle"></div>
+
+        <div class="modal-img-wrap">
+            <img id="modalImage" class="modal-img">
+        </div>
+
+        <div class="mt-3 text-start px-1">
+            <h6 id="modalName" class="fw-semibold mb-1"></h6>
+            <p id="modalPrice" class="text-primary-agro fw-bold mb-2" style="font-size:16px;"></p>
+            <p id="modalDesc" class="text-muted small mb-0">
+                Produk UMKM lokal pilihan dari destinasi ini.
+            </p>
+        </div>
+
+    </div>
+</div>
 @endsection
 
 
@@ -550,6 +614,7 @@
 .discount-card {
     cursor: pointer;
     transition: 0.2s;
+    position: relative;
 }
 
 .discount-card:hover {
@@ -560,6 +625,51 @@
     border: 2px solid #198754;
     background: #f6fffa;
 }
+
+.discount-card.active::after {
+    content: '×';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    color: #55786b;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1;
+    box-shadow: 0 8px 18px rgba(18, 58, 45, 0.14);
+    border: 1px solid rgba(85, 120, 107, 0.08);
+}
+
+.bundling-card {
+    position: relative;
+}
+
+.bundling-card.active::after {
+    content: 'Ã—';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    color: #55786b;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1;
+    box-shadow: 0 8px 18px rgba(18, 58, 45, 0.14);
+    border: 1px solid rgba(85, 120, 107, 0.08);
+}
+
 .price-tier-card {
     border: 1px solid #dee2e6;
     border-radius: 12px;
@@ -586,18 +696,278 @@
 .price-tier-card.active p:last-child {
     color: #198754;
 }
+
+.summary-addon-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 0.875rem;
+    margin-top: 10px;
+}
+
+.summary-addon-label {
+    color: #6c757d;
+}
+
+.summary-addon-group {
+    border-top: 1px dashed #dee2e6;
+    padding-top: 12px;
+    margin-top: 12px;
+}
+
+.summary-group-label {
+    color: #495057;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.summary-discount-row {
+    color: #dc3545;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 26, 19, 0.56);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.28s ease, visibility 0.28s ease;
+    padding: 24px;
+}
+
+.modal-sheet {
+    width: 100%;
+    max-width: 760px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fcf9 100%);
+    border-radius: 24px;
+    padding: 24px;
+    border: 1px solid rgba(18, 94, 66, 0.14);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.22);
+    transform: translateY(20px) scale(0.96);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    position: relative;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    color: #355748;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.modal-close-btn:hover {
+    background: #ffffff;
+    color: #163a2d;
+}
+
+.modal-handle {
+    width: 48px;
+    height: 5px;
+    background: #d7e3dc;
+    border-radius: 999px;
+    margin: 0 auto 14px;
+}
+
+.modal-img-wrap {
+    width: 100%;
+    height: 300px;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: 0 10px 24px rgba(19, 68, 49, 0.18);
+    background: #f1f5f2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    transform: scale(1);
+    transition: none;
+}
+.umkm-item:hover {
+    transform: scale(1.01);
+    transition: 0.2s;
+}
+.modal-content-text {
+    display: flex;
+    justify-content: center;
+}
+#modalName {
+    font-size: 1.9rem;
+    line-height: 1.2;
+    margin-bottom: 4px !important;
+}
+#modalPrice {
+    font-size: 1.55rem !important;
+    margin-bottom: 8px !important;
+}
+#modalDesc {
+    line-height: 1.5;
+    color: #5a6f65 !important;
+    font-size: 1.02rem !important;
+}
+
+.modal-content-text .content-inner {
+    text-align: center;
+    max-width: 260px; 
+}
+.modal-content-text {
+    text-align: center;
+}
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+.modal-overlay.active .modal-sheet {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .modal-overlay {
+        align-items: flex-end;
+        padding: 12px;
+    }
+
+    .modal-sheet {
+        max-width: none;
+        width: 100%;
+        border-radius: 20px 20px 14px 14px;
+        padding: 16px;
+        transform: translateY(26px);
+    }
+
+    .modal-close-btn {
+        top: 10px;
+        right: 10px;
+        width: 30px;
+        height: 30px;
+    }
+
+    .modal-handle {
+        margin-bottom: 12px;
+    }
+
+    .modal-img-wrap {
+        height: 220px;
+        border-radius: 16px;
+    }
+
+    #modalName {
+        font-size: 1.35rem;
+    }
+
+    #modalPrice {
+        font-size: 1.15rem !important;
+    }
+
+    #modalDesc {
+        font-size: 0.98rem !important;
+    }
+}
+
+@media (max-width: 420px) {
+    .modal-overlay {
+        padding: 8px;
+    }
+
+    .modal-sheet {
+        padding: 14px;
+        border-radius: 18px 18px 12px 12px;
+    }
+
+    .modal-img-wrap {
+        height: 184px;
+        border-radius: 12px;
+    }
+
+    #modalName {
+        font-size: 1.2rem;
+    }
+
+    #modalPrice {
+        font-size: 1.05rem !important;
+    }
+
+    #modalDesc {
+        font-size: 0.95rem !important;
+    }
+}
 </style>
 
 
 <script>
 let basePrice = {{ $paket->harga_paket }};
-let selectedDiscount = null;
 let umkm = {};
-let isPackageSelected = false; 
+let isBundlingSelected = false;
 let minPax = 1;
 let maxPax = null;
 let isRendering = false;
 let isUpdatingTotal = false;
+
+function syncParticipantConstraintState() {
+    const input = document.getElementById('participantCountInput');
+    const participantTotal = document.getElementById('participantTotal');
+
+    if (!input) {
+        return;
+    }
+
+    const normalizedMin = Number.isFinite(minPax) && minPax > 0 ? minPax : 1;
+    const normalizedMax = Number.isFinite(maxPax) && maxPax > 0 ? maxPax : null;
+    let currentValue = parseInt(input.value, 10);
+
+    if (!Number.isFinite(currentValue) || currentValue < normalizedMin) {
+        currentValue = normalizedMin;
+    }
+
+    if (normalizedMax !== null && currentValue > normalizedMax) {
+        currentValue = normalizedMax;
+    }
+
+    input.min = normalizedMin;
+    if (normalizedMax !== null) {
+        input.max = normalizedMax;
+    } else {
+        input.removeAttribute('max');
+    }
+
+    input.value = currentValue;
+
+    if (participantTotal) {
+        participantTotal.innerText = currentValue;
+    }
+
+    updateParticipantButtons();
+}
 
 // ================= UMKM =================
 function increaseUmkm(id) {
@@ -619,117 +989,183 @@ function decreaseUmkm(id) {
     updateTotal();
 }
 
-// ================= DISKON =================
-function selectDiscount(el) {
-
-    // 🔥 KALAU DIKLIK LAGI → CANCEL
+function selectBundling(el) {
     if (el.classList.contains('active')) {
-        el.classList.remove('active');
-
-        selectedDiscount = null;
-        minPax = 1;
-        maxPax = null;
-
-        updateParticipantButtons();
-        updateTotal();
+        clearSelectedBundling();
         return;
     }
 
-    // 🔥 RESET SEMUA
+    const bundlingPeople = parseInt(el.dataset.people, 10) || 1;
+    const remainingQuota = parseInt(document.getElementById('visitDateSisa')?.value || '', 10);
+
+    if (Number.isFinite(remainingQuota) && bundlingPeople > remainingQuota) {
+        if (typeof window.showToast === 'function') {
+            window.showToast('Sisa kuota tidak cukup untuk paket bundling ini.');
+        } else {
+            alert('Sisa kuota tidak cukup untuk paket bundling ini.');
+        }
+        return;
+    }
+
+    clearSelectedDiscount();
+    document.querySelectorAll('.bundling-card').forEach(card => {
+        card.classList.remove('active');
+    });
+
+    el.classList.add('active');
+    isBundlingSelected = true;
+
+    minPax = bundlingPeople;
+    maxPax = bundlingPeople;
+
+    const input = document.getElementById('participantCountInput');
+    if (input) {
+        input.value = bundlingPeople;
+    }
+
+    syncParticipantConstraintState();
+    if (typeof window.syncParticipantCountFromInput === 'function') {
+        window.syncParticipantCountFromInput();
+    }
+    updateTotal();
+}
+
+function clearSelectedBundling() {
+    document.querySelectorAll('.bundling-card').forEach(card => {
+        card.classList.remove('active');
+    });
+
+    isBundlingSelected = false;
+    minPax = 1;
+    maxPax = null;
+
+    syncParticipantConstraintState();
+    if (typeof window.syncParticipantCountFromInput === 'function') {
+        window.syncParticipantCountFromInput();
+    }
+    updateTotal();
+}
+
+// ================= DISKON =================
+function selectDiscount(el) {
+
+    
+    if (el.classList.contains('active')) {
+        clearSelectedDiscount();
+        return;
+    }
+
+    clearSelectedBundling();
+
+    // 
     document.querySelectorAll('.discount-card').forEach(card => {
         card.classList.remove('active');
     });
 
-    // 🔥 AKTIFKAN YANG DIPILIH
+    // 
     el.classList.add('active');
 
-    // 🔥 SET DISKON
-    selectedDiscount = {
-        type: el.dataset.type,
-        value: parseFloat(el.dataset.value)
-    };
-
-    // 🔥 SET RANGE
+    // 
     minPax = parseInt(el.dataset.min);
     maxPax = el.dataset.max ? parseInt(el.dataset.max) : null;
 
-    let input = document.getElementById('participantCountInput');
+    const input = document.getElementById('participantCountInput');
 
-    // paksa ke min
+    // paksa ke minimum pricing rule yang dipilih
     input.value = minPax;
 
-    updateParticipantButtons();
+    syncParticipantConstraintState();
+    if (typeof window.syncParticipantCountFromInput === 'function') {
+        window.syncParticipantCountFromInput();
+    }
+    updateTotal();
+}
+
+function clearSelectedDiscount() {
+    document.querySelectorAll('.discount-card').forEach(card => {
+        card.classList.remove('active');
+    });
+
+    if (isBundlingSelected) {
+        return;
+    }
+
+    minPax = 1;
+    maxPax = null;
+
+    syncParticipantConstraintState();
+    if (typeof window.syncParticipantCountFromInput === 'function') {
+        window.syncParticipantCountFromInput();
+    }
     updateTotal();
 }
 
 // ================= TOTAL =================
 function updateTotal() {
 
-    let input = document.getElementById('participantCountInput');
-    let pax = parseInt(input.value) || 1;
+    const input = document.getElementById('participantCountInput');
+    let pax = parseInt(input.value, 10) || 1;
 
     if (pax < minPax) pax = minPax;
     if (maxPax !== null && pax > maxPax) pax = maxPax;
     input.value = pax;
 
-    // 🔥 HAPUS SEMUA DISKON LAMA (BIAR GA DOUBLE)
-    document.querySelectorAll('#priceBreakdown .text-danger').forEach(el => {
-        el.remove();
-    });
+    const participantTotal = document.getElementById('participantTotal');
+    if (participantTotal) {
+        participantTotal.innerText = pax;
+    }
 
-    // ===== HITUNG UMKM =====
     let totalUmkm = 0;
+    let umkmItemsHtml = '';
 
     document.querySelectorAll('.umkm-item').forEach(el => {
-        let id = el.dataset.id;
-        let price = parseFloat(el.dataset.price);
-        let qty = umkm[id] || 0;
+        const id = el.dataset.id;
+        const price = parseFloat(el.dataset.price);
+        const qty = umkm[id] || 0;
 
         if (qty > 0) {
             totalUmkm += price * qty;
+            const productName = el.querySelector('.fw-semibold.small')?.innerText?.trim() || 'Add-on UMKM';
+            umkmItemsHtml += `
+                <div class="summary-addon-item">
+                    <span class="text-muted">${productName} x ${qty}</span>
+                    <span class="fw-medium text-end">Rp${(price * qty).toLocaleString('id-ID')}</span>
+                </div>
+            `;
         }
     });
 
-    // ===== HITUNG PAKET =====
-    let paketTotal = basePrice * pax;
-
-    // ===== HITUNG DISKON =====
-    let discountAmount = 0;
-
-    if (selectedDiscount !== null) {
-        if (selectedDiscount.type === 'percent') {
-            discountAmount = paketTotal * (selectedDiscount.value / 100);
-        } else {
-            discountAmount = selectedDiscount.value * pax;
-        }
+    if (typeof window.syncParticipantCountFromInput === 'function') {
+        window.syncParticipantCountFromInput();
     }
 
-    // ===== TOTAL FINAL =====
-    let finalTotal = (paketTotal - discountAmount) + totalUmkm;
+    const pricingSummary = typeof window.getPriceCalculation === 'function'
+        ? window.getPriceCalculation()
+        : {
+            totalBase: basePrice * pax,
+            discount: 0,
+            totalPrice: basePrice * pax
+        };
 
-    // ===== UPDATE UI =====
-    document.getElementById('summaryPriceLabel').innerText =
-        'Rp' + basePrice.toLocaleString('id-ID') + ' × ' + pax;
-
-    document.getElementById('summarySubtotal').innerText =
-        'Rp' + paketTotal.toLocaleString('id-ID');
-
-    document.getElementById('totalPrice').innerText =
-        'Rp' + finalTotal.toLocaleString('id-ID');
-
-    // ===== DISKON (ONLY 1 SOURCE OF TRUTH) =====
-    let discountRow = document.getElementById('discountRow');
-    discountRow.innerHTML = '';
-
-    if (discountAmount > 0) {
-        discountRow.innerHTML = `
-            <div class="d-flex justify-content-between small text-success">
-                <span>Diskon</span>
-                <span>- Rp${discountAmount.toLocaleString('id-ID')}</span>
+    const umkmSummaryList = document.getElementById('umkmSummaryList');
+    if (umkmSummaryList) {
+        umkmSummaryList.innerHTML = umkmItemsHtml ? `
+            <div class="summary-addon-group">
+                <p class="summary-group-label mb-1">Add-on</p>
+                ${umkmItemsHtml}
             </div>
-        `;
+        ` : '';
+    }
+
+    const totalPrice = document.getElementById('totalPrice');
+    if (totalPrice) {
+        totalPrice.innerText = 'Rp' + (pricingSummary.totalPrice + totalUmkm).toLocaleString('id-ID');
     }
 }
+
+    
+   
+
 function lockParticipantInput(lock) {
 
     let input = document.getElementById('participantCountInput');
@@ -763,7 +1199,7 @@ function updateParticipantButtons() {
     let btnPlus = input.nextElementSibling;
     let btnMinus = input.previousElementSibling;
 
-    let value = parseInt(input.value);
+    let value = parseInt(input.value, 10) || minPax;
 
     // MIN LIMIT
     if (value <= minPax) {
@@ -785,7 +1221,7 @@ function updateParticipantButtons() {
 }
 function increaseParticipantCount() {
     let input = document.getElementById('participantCountInput');
-    let value = parseInt(input.value);
+    let value = parseInt(input.value, 10) || minPax;
 
     //VALIDASI MAX FIX
     if (maxPax !== null && value >= maxPax) {
@@ -802,7 +1238,7 @@ function increaseParticipantCount() {
 
 function decreaseParticipantCount() {
     let input = document.getElementById('participantCountInput');
-    let value = parseInt(input.value);
+    let value = parseInt(input.value, 10) || minPax;
 
     if (value <= minPax) {
         input.value = minPax;
@@ -817,7 +1253,7 @@ function decreaseParticipantCount() {
 }
 function validateParticipantInput() {
     let input = document.getElementById('participantCountInput');
-    let value = parseInt(input.value) || 1;
+    let value = parseInt(input.value, 10) || minPax;
 
     if (value < minPax) value = minPax;
     if (maxPax !== null && value > maxPax) value = maxPax;
@@ -832,7 +1268,8 @@ function validateParticipantInput() {
 
 document.addEventListener('DOMContentLoaded', function () {
 
-    updateTotal(); // 🔥 ini wajib
+    updateTotal();
+    syncParticipantConstraintState();
 
     const input = document.getElementById('participantCountInput');
 
@@ -870,9 +1307,10 @@ function enforceLimits() {
     if (!originalNextStep) return;
 
     window.nextStep = function () {
+        syncParticipantConstraintState();
 
         let input = document.getElementById('participantCountInput');
-        let value = parseInt(input.value);
+        let value = parseInt(input.value, 10) || minPax;
 
         
         if (value < minPax || (maxPax !== null && value > maxPax)) {
@@ -903,22 +1341,12 @@ function enforceLimits() {
 
 })();
 
-// ================= PATCH BUTTON CLICK =================
-document.addEventListener('click', function (e) {
 
-    if (
-        e.target.closest('[onclick*="increaseParticipantCount"]') ||
-        e.target.closest('[onclick*="decreaseParticipantCount"]')
-    ) {
-        setTimeout(() => {
-            enforceLimits();
-        }, 10);
-    }
 
-});
 // ================= SHOW AFTER DATE =================
 function showAfterDateSection() {
     document.getElementById('sectionDiskon')?.classList.remove('d-none');
+    document.getElementById('sectionBundling')?.classList.remove('d-none');
     document.getElementById('sectionAktivitas')?.classList.remove('d-none');
     document.getElementById('sectionUmkm')?.classList.remove('d-none');
 }
@@ -945,4 +1373,26 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 });
+
+function openProductModal(name, price, image, desc) {
+
+    document.getElementById('modalName').innerText = name;
+    document.getElementById('modalPrice').innerText =
+        'Rp' + parseInt(price).toLocaleString('id-ID');
+    document.getElementById('modalDesc').innerText = desc;
+    document.getElementById('modalImage').src = image;
+
+    document.getElementById('productModal').classList.add('active');
+}
+
+function closeProductModal(e) {
+    if (e.target.classList.contains('modal-overlay')) {
+        document.getElementById('productModal').classList.remove('active');
+    }
+}
+
+function closeProductModalDirect() {
+    document.getElementById('productModal').classList.remove('active');
+}
+
 </script>

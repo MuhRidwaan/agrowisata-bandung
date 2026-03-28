@@ -101,7 +101,7 @@
                             <th>Product Name</th>
                             <th>Description</th>
                             <th>Vendor</th>
-                            <th class="text-right">Price</th>
+                            <th class="text-right price-column">Price</th>
                             <th width="15%">Action</th>
                         </tr>
                     </thead>
@@ -117,8 +117,6 @@
                                             @foreach($product->photos->take(3) as $photo)
                                                 <a href="#" 
                                                    class="photo-preview-trigger"
-                                                   data-toggle="modal" 
-                                                   data-target="#photoModal"
                                                    data-product-name="{{ $product->name }}"
                                                    data-photos="{{ json_encode($product->photos->pluck('path_foto')->map(fn($p) => asset('storage/' . $p))->toArray()) }}"
                                                    style="display: inline-block;">
@@ -155,9 +153,9 @@
                                 </td>
 
                                 {{-- Price --}}
-                                <td class="text-right">
+                                <td class="text-right price-column">
                                     @if($product->price)
-                                        <strong>Rp {{ number_format($product->price, 0, ',', '.') }}</strong>
+                                        <strong class="price-value">Rp {{ number_format($product->price, 0, ',', '.') }}</strong>
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
@@ -200,33 +198,11 @@
     </div>
 </section>
 
-{{-- Photo Preview Modal --}}
-<div class="modal fade" id="photoModal" tabindex="-1" role="dialog" aria-labelledby="photoModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="photoModalLabel">Photo Preview - <span id="productName"></span></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body text-center">
-                <div id="photoCarousel" class="carousel slide" data-ride="carousel">
-                    <div class="carousel-inner" id="carouselInner">
-                        <!-- Photos akan di-inject via JavaScript -->
-                    </div>
-                    <a class="carousel-control-prev" href="#photoCarousel" role="button" data-slide="prev" style="display:none;" id="prevBtn">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="sr-only">Previous</span>
-                    </a>
-                    <a class="carousel-control-next" href="#photoCarousel" role="button" data-slide="next" style="display:none;" id="nextBtn">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="sr-only">Next</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+<div id="umkmPhotoLightbox" class="backend-lightbox" onclick="closeUmkmPhotoPreview()">
+    <button class="backend-lightbox-close" onclick="event.stopPropagation(); closeUmkmPhotoPreview()">✕</button>
+    <button class="backend-lightbox-nav prev d-none" id="umkmPhotoPrev" onclick="event.stopPropagation(); prevUmkmPhoto()">❮</button>
+    <img id="umkmPhotoPreviewImage" onclick="event.stopPropagation()">
+    <button class="backend-lightbox-nav next d-none" id="umkmPhotoNext" onclick="event.stopPropagation(); nextUmkmPhoto()">❯</button>
 </div>
 
 <style>
@@ -255,57 +231,173 @@
         border: 1px solid #ddd;
     }
     
-    .carousel-inner img {
-        max-height: 500px;
+    .price-column {
+        width: 130px;
+        min-width: 130px;
+        vertical-align: middle !important;
+    }
+
+    .price-value {
+        display: inline-block;
+        white-space: nowrap;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+    }
+
+    .backend-lightbox {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.88);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 24px;
+    }
+
+    .backend-lightbox img {
+        width: auto;
+        max-width: min(78vw, 1250px);
+        max-height: 82vh;
+        display: block;
+        border-radius: 12px;
         object-fit: contain;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+    }
+
+    .backend-lightbox-close {
+        position: absolute;
+        top: 18px;
+        right: 22px;
+        font-size: 32px;
+        background: rgba(10,10,10,0.92);
+        color: #e5e7eb;
+        border: 2px solid rgba(82, 186, 255, 0.32);
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 18px 30px rgba(0,0,0,0.28);
+        line-height: 1;
+    }
+
+    .backend-lightbox-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 54px;
+        height: 54px;
+        border: none;
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.72);
+        color: #fff;
+        font-size: 34px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .backend-lightbox-nav.prev {
+        left: 36px;
+    }
+
+    .backend-lightbox-nav.next {
+        right: 36px;
+    }
+
+    @media (max-width: 768px) {
+        .backend-lightbox {
+            padding: 12px;
+        }
+
+        .backend-lightbox img {
+            max-width: 100%;
+            max-height: 72vh;
+            border-radius: 10px;
+        }
+
+        .backend-lightbox-close {
+            top: 12px;
+            right: 12px;
+            width: 50px;
+            height: 50px;
+            font-size: 28px;
+        }
+
+        .backend-lightbox-nav {
+            width: 46px;
+            height: 46px;
+            font-size: 28px;
+        }
+
+        .backend-lightbox-nav.prev {
+            left: 12px;
+        }
+
+        .backend-lightbox-nav.next {
+            right: 12px;
+        }
     }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Photo preview modal handler
     var photoTriggers = document.querySelectorAll('.photo-preview-trigger');
+    var lightbox = document.getElementById('umkmPhotoLightbox');
+    var previewImage = document.getElementById('umkmPhotoPreviewImage');
+    var prevBtn = document.getElementById('umkmPhotoPrev');
+    var nextBtn = document.getElementById('umkmPhotoNext');
+    var currentPhotos = [];
+    var currentIndex = 0;
     
     photoTriggers.forEach(function(trigger) {
         trigger.addEventListener('click', function(e) {
             e.preventDefault();
             
-            var productName = this.getAttribute('data-product-name');
-            var photos = JSON.parse(this.getAttribute('data-photos'));
-            
-            // Update modal title
-            document.getElementById('productName').textContent = productName;
-            
-            // Build carousel
-            var carouselInner = document.getElementById('carouselInner');
-            carouselInner.innerHTML = '';
-            
-            photos.forEach(function(photoUrl, index) {
-                var isActive = index === 0 ? 'active' : '';
-                var htmlContent = `
-                    <div class="carousel-item ${isActive}">
-                        <img src="${photoUrl}" class="d-block w-100" alt="Photo ${index + 1}">
-                        <div class="carousel-caption d-none d-md-block" style="background: rgba(0,0,0,0.5); border-radius: 5px;">
-                            <small>Photo ${index + 1} of ${photos.length}</small>
-                        </div>
-                    </div>
-                `;
-                carouselInner.innerHTML += htmlContent;
-            });
-            
-            // Show/hide carousel controls based on photo count
-            if (photos.length > 1) {
-                document.getElementById('prevBtn').style.display = 'block';
-                document.getElementById('nextBtn').style.display = 'block';
-            } else {
-                document.getElementById('prevBtn').style.display = 'none';
-                document.getElementById('nextBtn').style.display = 'none';
+            currentPhotos = JSON.parse(this.getAttribute('data-photos') || '[]');
+            currentIndex = 0;
+            renderUmkmPreview();
+            if (lightbox) {
+                lightbox.style.display = 'flex';
             }
-            
-            // Restart carousel
-            $('#photoCarousel').carousel('pause').carousel(0);
         });
     });
+
+    function renderUmkmPreview() {
+        if (!previewImage || currentPhotos.length === 0) {
+            return;
+        }
+
+        previewImage.src = currentPhotos[currentIndex];
+
+        if (prevBtn && nextBtn) {
+            var shouldShowNav = currentPhotos.length > 1;
+            prevBtn.classList.toggle('d-none', !shouldShowNav);
+            nextBtn.classList.toggle('d-none', !shouldShowNav);
+        }
+    }
+
+    window.closeUmkmPhotoPreview = function() {
+        if (lightbox) {
+            lightbox.style.display = 'none';
+        }
+    };
+
+    window.nextUmkmPhoto = function() {
+        if (currentPhotos.length < 2) return;
+        currentIndex = (currentIndex + 1) % currentPhotos.length;
+        renderUmkmPreview();
+    };
+
+    window.prevUmkmPhoto = function() {
+        if (currentPhotos.length < 2) return;
+        currentIndex = (currentIndex - 1 + currentPhotos.length) % currentPhotos.length;
+        renderUmkmPreview();
+    };
 });
 </script>
 

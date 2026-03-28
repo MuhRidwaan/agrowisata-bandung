@@ -71,9 +71,14 @@
                                         <td>{{ $paket->nama_paket }}</td>
                                         <td>
                                             @if($paket->photos->count())
-                                                <div class="d-flex flex-wrap align-items-start justify-content-center" style="gap: 12px;">
+                                                <div class="photo-preview-grid">
                                                     @foreach($paket->photos as $photo)
-                                                        <img src="{{ $photo->photo_url }}" alt="Photo" class="preview-image" data-image="{{ $photo->photo_url }}" style="max-width:90px; border-radius:8px; margin-bottom:4px; cursor:pointer; transition:0.3s;">
+                                                        <div class="photo-preview-card">
+                                                            <img src="{{ $photo->photo_url }}"
+                                                                alt="Photo"
+                                                                class="preview-image photo-preview-thumb"
+                                                                data-image="{{ $photo->photo_url }}">
+                                                        </div>
                                                     @endforeach
                                                 </div>
                                             @else
@@ -115,6 +120,11 @@
         </div>
     </div>
 </section>
+
+<div id="photoPreviewLightbox" class="review-lightbox" onclick="closePhotoPreview()">
+    <button class="review-close photo-preview-close" onclick="event.stopPropagation(); closePhotoPreview()">✕</button>
+    <img id="photoPreviewImage" onclick="event.stopPropagation()">
+</div>
 
 
 {{-- ================= SUCCESS ALERT ================= --}}
@@ -160,17 +170,137 @@
 <script>
     document.querySelectorAll('.preview-image').forEach(image => {
         image.addEventListener('click', function () {
-            Swal.fire({
-                imageUrl: this.dataset.image,
-                imageAlt: 'Preview Photo',
-                showConfirmButton: false,
-                showCloseButton: true,
-                width: 900,
-                background: '#ffffff',
-                backdrop: 'rgba(0,0,0,0.85)'
-            });
+            openPhotoPreview(this.dataset.image);
         });
     });
+
+    function openPhotoPreview(src) {
+        const lightbox = document.getElementById('photoPreviewLightbox');
+        const image = document.getElementById('photoPreviewImage');
+
+        if (!lightbox || !image) {
+            return;
+        }
+
+        image.src = src;
+        lightbox.style.display = 'flex';
+    }
+
+    function closePhotoPreview() {
+        const lightbox = document.getElementById('photoPreviewLightbox');
+        if (lightbox) {
+            lightbox.style.display = 'none';
+        }
+    }
 </script>
+
+<style>
+.photo-preview-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+}
+
+.photo-preview-card {
+    width: 118px;
+}
+
+.photo-preview-thumb {
+    width: 118px;
+    height: 148px;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 14px;
+    cursor: pointer;
+    border: 1px solid #dfe5eb;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: #f8f9fa;
+}
+
+.photo-preview-thumb:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+}
+
+.review-lightbox{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 24px;
+}
+
+.review-lightbox img{
+    width: auto;
+    max-width: min(78vw, 1250px);
+    max-height: 82vh;
+    display: block;
+    border-radius: 12px;
+    object-fit: contain;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+}
+
+.review-close{
+    position: absolute;
+    top: 18px;
+    right: 22px;
+    font-size: 32px;
+    background: rgba(10,10,10,0.92);
+    color: #e5e7eb;
+    border: 2px solid rgba(82, 186, 255, 0.32);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 18px 30px rgba(0,0,0,0.28);
+}
+
+.photo-preview-close{
+    line-height: 1;
+}
+
+@media (max-width: 768px) {
+    .photo-preview-grid {
+        gap: 12px;
+    }
+
+    .photo-preview-card {
+        width: 96px;
+    }
+
+    .photo-preview-thumb {
+        width: 96px;
+        height: 120px;
+        border-radius: 12px;
+    }
+
+    .review-lightbox{
+        padding: 12px;
+    }
+
+    .review-lightbox img{
+        max-width: 100%;
+        max-height: 72vh;
+        border-radius: 10px;
+    }
+
+    .review-close{
+        top: 12px;
+        right: 12px;
+        width: 50px;
+        height: 50px;
+        font-size: 28px;
+    }
+}
+
+</style>
 
 @endsection
