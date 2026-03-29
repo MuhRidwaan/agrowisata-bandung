@@ -86,9 +86,9 @@
                             <!-- <th>Description</th> -->
                             <th>Operational Hours</th>
                             <th>Vendor</th>
-                            <th class="text-right">Price</th>
-                            <th class="text-right">Bundling Price</th>
-                            <th class="text-right">Bundling People</th>
+                            <th class="text-right" style="min-width: 120px;">Price</th>
+                            <th class="text-right" style="min-width: 140px;">Bundling Price</th>
+                            <th class="text-right" style="min-width: 130px;">Bundling People</th>
                             <th>Bundling Photos</th>
                             <!-- <th>Available Dates</th> -->
                             <!-- <th>Quota</th> -->
@@ -114,15 +114,15 @@
                                 </td>
 
                                 {{-- PRICE --}}
-                                <td class="text-right">
+                                <td class="text-right" style="white-space: nowrap;">
                                     @if ($paket->harga_paket)
-                                        Rp {{ number_format($paket->harga_paket, 0, ',', '.') }}
+                                        <span class="d-inline-block">Rp {{ number_format($paket->harga_paket, 0, ',', '.') }}</span>
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
 
-                                <td class="text-right">
+                                <td class="text-right" style="white-space: nowrap;">
                                     @if ($paket->bundlings->count())
                                         @foreach ($paket->bundlings as $bundling)
                                             <div class="mb-2">
@@ -136,7 +136,7 @@
                                     @endif
                                 </td>
 
-                                <td class="text-right">
+                                <td class="text-right" style="white-space: nowrap;">
                                     @if ($paket->bundlings->count())
                                         @foreach ($paket->bundlings as $bundling)
                                             <div class="mb-2">

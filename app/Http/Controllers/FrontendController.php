@@ -58,7 +58,7 @@ class FrontendController extends Controller
     // ================= BOOKING =================
     public function booking($id)
     {
-        $paket = PaketTour::with(['pricingRules', 'bundlings', 'vendor.area', 'vendor.whatsappsetting', 'photos', 'tanggalAvailables', 'umkmProducts.photos'])->findOrFail($id);
+        $paket = PaketTour::with(['pricingRules', 'bundlings.photos', 'vendor.area', 'vendor.whatsappsetting', 'photos', 'tanggalAvailables', 'umkmProducts.photos'])->findOrFail($id);
 
         // Ambil tanggal available yang aktif dan belum lewat
         $availableDates = $paket->tanggalAvailables()

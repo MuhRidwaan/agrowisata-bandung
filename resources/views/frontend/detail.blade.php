@@ -296,6 +296,7 @@
 
                                 </div>
 
+                                <div id="uploadLimitMessage" class="small text-danger mt-2 d-none"></div>
                                 <div id="previewContainer" class="d-flex gap-2 flex-wrap mt-3"></div>
                             </div>
 
@@ -620,12 +621,22 @@ let selectedFiles = [];
 function previewImage(event, max = 5) {
 
     const container = document.getElementById("previewContainer");
+    const limitMessage = document.getElementById("uploadLimitMessage");
     const files = event.target.files;
 
     if(!files.length) return;
 
+    if (limitMessage) {
+        limitMessage.classList.add("d-none");
+        limitMessage.textContent = "";
+    }
+
     if(selectedFiles.length + files.length > max){
-        alert("Maksimal upload " + max + " foto");
+        if (limitMessage) {
+            limitMessage.textContent = "Maksimal upload " + max + " foto.";
+            limitMessage.classList.remove("d-none");
+        }
+        event.target.value = "";
         return;
     }
 

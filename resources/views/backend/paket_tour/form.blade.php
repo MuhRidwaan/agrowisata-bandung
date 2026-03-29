@@ -175,7 +175,7 @@
                                         <label>Bundling Photos</label>
                                         <input type="file"
                                             name="bundlings[{{ $index }}][photos][]"
-                                            class="form-control-file @error('bundlings.' . $index . '.photos.*') is-invalid @enderror"
+                                            class="form-control-file bundling-photo-input @error('bundlings.' . $index . '.photos.*') is-invalid @enderror"
                                             accept="image/*"
                                             multiple>
                                         <small class="form-text text-muted">
@@ -184,25 +184,30 @@
                                         @error('bundlings.' . $index . '.photos.*')
                                             <div class="invalid-feedback d-block">{{ $message }}</div>
                                         @enderror
+                                        <div class="mt-3 bundling-photo-preview-list"></div>
 
                                         @if(!empty($bundling['photos']) && count($bundling['photos']) > 0)
                                             <div class="row mt-3">
                                                 @foreach($bundling['photos'] as $photo)
                                                     <div class="col-md-3 col-sm-4 col-6 mb-3">
-                                                        <div class="border rounded p-2 h-100">
+                                                        <div class="border rounded p-2 h-100 bundling-photo-card">
                                                             <img src="{{ $photo->photo_url }}"
                                                                 alt="Bundling Photo"
-                                                                class="img-fluid rounded mb-2"
+                                                                class="img-fluid rounded"
                                                                 style="height: 120px; width: 100%; object-fit: cover;">
-                                                            <div class="custom-control custom-checkbox">
-                                                                <input type="checkbox"
-                                                                    class="custom-control-input"
+                                                            <input type="checkbox"
+                                                                    class="d-none bundling-photo-delete-input"
                                                                     id="delete_bundling_photo_{{ $photo->id }}"
                                                                     name="bundlings[{{ $index }}][delete_photo_ids][]"
                                                                     value="{{ $photo->id }}">
-                                                                <label class="custom-control-label small" for="delete_bundling_photo_{{ $photo->id }}">
-                                                                    Hapus foto
-                                                                </label>
+                                                            <div class="bundling-photo-card-footer">
+                                                                <button type="button"
+                                                                    class="btn btn-sm btn-outline-danger bundling-photo-delete-btn"
+                                                                    data-target="#delete_bundling_photo_{{ $photo->id }}"
+                                                                    aria-label="Hapus foto bundling"
+                                                                    onclick="toggleBundlingPhotoDelete(this)">
+                                                                    <i class="fas fa-trash mr-1"></i> Hapus
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -344,6 +349,89 @@
 
 @endsection
 
+@push('styles')
+<style>
+.bundling-photo-card {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.bundling-photo-delete-btn {
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+.bundling-photo-card-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 0.75rem;
+}
+
+.bundling-photo-card.is-marked {
+    border-color: #dc3545 !important;
+    background: rgba(220, 53, 69, 0.06);
+}
+
+.bundling-photo-card.is-marked img {
+    opacity: 0.45;
+}
+
+.bundling-photo-preview-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.bundling-photo-preview-item {
+    width: 56px;
+    flex: 0 0 56px;
+}
+
+.bundling-photo-preview-card {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.bundling-photo-preview-card img {
+    width: 100%;
+    height: 56px;
+    object-fit: cover;
+    display: block;
+}
+
+.bundling-photo-preview-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.94);
+    color: #6c757d;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.14);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+}
+</style>
+@endpush
+
 @section('scripts')
 <script>
 function toggleBundlingPrice() {
@@ -386,8 +474,9 @@ function bundlingRowTemplate(index) {
             </div>
             <div class="form-group mt-3 mb-0">
                 <label>Bundling Photos</label>
-                <input type="file" name="bundlings[${index}][photos][]" class="form-control-file" accept="image/*" multiple>
+                <input type="file" name="bundlings[${index}][photos][]" class="form-control-file bundling-photo-input" accept="image/*" multiple>
                 <small class="form-text text-muted">Anda bisa upload beberapa foto sekaligus untuk bundling ini.</small>
+                <div class="mt-3 bundling-photo-preview-list"></div>
             </div>
         </div>
     `;
@@ -443,5 +532,118 @@ function addActivity() {
 function removeActivity(button) {
     button.closest('.input-group').remove();
 }
+
+function renderBundlingPhotoPreview(input) {
+    const previewList = input.closest('.form-group')?.querySelector('.bundling-photo-preview-list');
+    if (!previewList) {
+        return;
+    }
+
+    previewList.style.display = 'flex';
+    previewList.style.flexDirection = 'row';
+    previewList.style.flexWrap = 'wrap';
+    previewList.style.alignItems = 'flex-start';
+    previewList.style.gap = '8px';
+
+    previewList.innerHTML = '';
+
+    Array.from(input.files || []).forEach((file, index) => {
+        if (!file.type.startsWith('image/')) {
+            return;
+        }
+
+        const objectUrl = URL.createObjectURL(file);
+        const item = document.createElement('div');
+        item.className = 'bundling-photo-preview-item';
+        item.style.width = '56px';
+        item.style.height = '56px';
+        item.style.flex = '0 0 56px';
+        item.style.display = 'inline-block';
+        item.style.verticalAlign = 'top';
+        item.innerHTML = `
+            <div class="bundling-photo-preview-card" style="position:relative;width:56px;height:56px;border:1px solid #dee2e6;border-radius:8px;overflow:hidden;background:#fff;">
+                <img src="${objectUrl}" alt="Preview foto bundling ${index + 1}" style="width:56px;height:56px;object-fit:cover;display:block;">
+                <button type="button"
+                    class="bundling-photo-preview-remove"
+                    style="position:absolute;top:4px;right:4px;width:18px;height:18px;border:none;border-radius:999px;background:rgba(255,255,255,.94);color:#6c757d;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(15,23,42,.14);font-size:12px;font-weight:700;line-height:1;padding:0;"
+                    aria-label="Batalkan foto"
+                    onclick="removeBundlingSelectedPhoto(this, ${index})">
+                    &times;
+                </button>
+            </div>
+        `;
+
+        const img = item.querySelector('img');
+        if (img) {
+            img.onload = () => URL.revokeObjectURL(objectUrl);
+        }
+
+        previewList.appendChild(item);
+    });
+}
+
+function removeBundlingSelectedPhoto(button, index) {
+    const previewList = button.closest('.bundling-photo-preview-list');
+    const formGroup = previewList?.closest('.form-group');
+    const input = formGroup?.querySelector('.bundling-photo-input');
+
+    if (!input || typeof DataTransfer === 'undefined') {
+        return;
+    }
+
+    const dt = new DataTransfer();
+    Array.from(input.files || []).forEach((file, fileIndex) => {
+        if (fileIndex !== index) {
+            dt.items.add(file);
+        }
+    });
+
+    input.files = dt.files;
+    renderBundlingPhotoPreview(input);
+}
+
+function toggleBundlingPhotoDelete(button) {
+    const targetSelector = button.dataset.target;
+    const input = document.querySelector(targetSelector);
+    const card = button.closest('.bundling-photo-card');
+
+    if (!input || !card) {
+        return;
+    }
+
+    if (input.checked) {
+        input.checked = false;
+        card.classList.remove('is-marked');
+        button.classList.remove('btn-secondary');
+        button.classList.add('btn-outline-danger');
+        return;
+    }
+
+    Swal.fire({
+        title: 'Hapus foto ini?',
+        text: 'Foto akan ditandai untuk dihapus saat data bundling disimpan.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, hapus',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (!result.isConfirmed) {
+            return;
+        }
+
+        input.checked = true;
+        card.classList.add('is-marked');
+        button.classList.remove('btn-outline-danger');
+        button.classList.add('btn-secondary');
+    });
+}
+
+document.addEventListener('change', function (event) {
+    if (event.target.matches('.bundling-photo-input')) {
+        renderBundlingPhotoPreview(event.target);
+    }
+});
 </script>
 @endsection

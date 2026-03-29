@@ -187,25 +187,31 @@
                             @if($paket->bundlings->where('is_active', true)->count() > 0)
                             <div class="mb-4" id="sectionBundling">
                                 <h3 class="fs-6 fw-semibold mb-3 d-flex align-items-center gap-2">
-                                    <i class="bi bi-box2-heart text-primary-agro"></i> Paket Bundling
+                                    <i class="bi bi-box2-heart text-primary-agro"></i> Pilihan Paket Bundling
                                 </h3>
                                 <div class="row g-2">
-                                    @foreach($paket->bundlings->where('is_active', true) as $bundling)
-                                        <div class="col-md-6 col-12">
+                                    @foreach($paket->bundlings->where('is_active', true)->sortBy('people_count') as $bundling)
+                                        <div class="col-md-4 col-6">
                                             <div class="price-tier-card bundling-card"
                                                     data-id="{{ $bundling->id }}"
                                                     data-people="{{ $bundling->people_count }}"
                                                     data-price="{{ $bundling->bundle_price }}"
                                                     data-label="{{ $bundling->label ?: ($paket->nama_paket . ' Bundling') }}"
+                                                    data-description="{{ e($bundling->description ?: 'Paket bundling ini cocok untuk rombongan dengan kebutuhan kunjungan yang sudah dikemas praktis.') }}"
+                                                    data-photos='@json($bundling->photos->pluck("photo_url")->filter()->values())'
                                                     onclick="selectBundling(this)">
-                                                <p class="text-muted small mb-1">{{ $bundling->label ?: ($paket->nama_paket . ' Bundling') }}</p>
-                                                <p class="font-display fs-6 fw-bold text-primary-agro mb-1">
+                                                <p class="text-muted small mb-2 bundling-card-label">
+                                                    {{ $bundling->label ?: ($paket->nama_paket . ' Bundling') }}
+                                                </p>
+                                                <p class="text-muted small mb-2 bundling-card-people-text">
+                                                    {{ number_format($bundling->people_count, 0, ',', '.') }} orang
+                                                </p>
+                                                <p class="font-display fs-6 fw-bold text-primary-agro mb-0 bundling-card-price-text">
                                                     Rp{{ number_format($bundling->bundle_price, 0, ',', '.') }}
                                                 </p>
-                                                <p class="text-muted small mb-0">{{ number_format($bundling->people_count, 0, ',', '.') }} orang / bundling</p>
-                                                @if($bundling->description)
-                                                    <p class="text-muted small mb-0 mt-1">{{ $bundling->description }}</p>
-                                                @endif
+                                                <button type="button" class="bundling-detail-link" onclick="openBundlingDetail(event, this)">
+                                                    <i class="bi bi-eye"></i> Lihat detail
+                                                </button>
                                             </div>
                                         </div>
                                     @endforeach
@@ -588,6 +594,39 @@
 
     </div>
 </div>
+
+<div id="bundlingDetailModal" class="modal-overlay" onclick="closeBundlingDetail(event)">
+    <div class="modal-sheet bundling-detail-sheet">
+        <button type="button" class="modal-close-btn" aria-label="Tutup" onclick="closeBundlingDetailDirect()">
+            <i class="bi bi-x-lg"></i>
+        </button>
+
+        <div class="modal-handle"></div>
+
+        <div class="bundling-detail-content">
+            <span class="bundling-detail-badge">Detail Bundling</span>
+            <h5 id="bundlingDetailName" class="fw-semibold mb-3"></h5>
+
+            <div id="bundlingDetailGallery" class="bundling-detail-gallery"></div>
+
+            <div class="bundling-detail-meta">
+                <div class="bundling-detail-meta-item">
+                    <span class="text-muted small">Jumlah Peserta</span>
+                    <strong id="bundlingDetailPeople"></strong>
+                </div>
+                <div class="bundling-detail-meta-item">
+                    <span class="text-muted small">Harga Paket</span>
+                    <strong id="bundlingDetailPrice" class="text-primary-agro"></strong>
+                </div>
+            </div>
+
+            <div class="bundling-detail-description">
+                <p class="text-muted small mb-1">Informasi Paket</p>
+                <p id="bundlingDetailDescription" class="mb-0"></p>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 
@@ -658,6 +697,15 @@
 
 .bundling-card {
     position: relative;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: left;
+    padding: 18px 18px 16px;
+    border-radius: 18px;
+    border-color: #d6e2db;
+    box-shadow: 0 10px 24px rgba(17, 24, 39, 0.05);
 }
 
 .bundling-card.active::after {
@@ -705,6 +753,395 @@
 /* teks ikut berubah */
 .price-tier-card.active p:last-child {
     color: #198754;
+}
+
+.bundling-card-name {
+    line-height: 1.35;
+    min-height: 2.7em;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+.bundling-card-chip {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.7rem;
+    margin-bottom: 0.9rem;
+    border-radius: 999px;
+    background: #eef6f1;
+    color: #2f6d4f;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.bundling-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bundling-card-people {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.75rem;
+    border-radius: 999px;
+    background: #f5f7f6;
+    color: #52616b;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.bundling-card-price {
+    color: #1f6b4f;
+    font-family: var(--bs-font-sans-serif);
+    font-size: 1.35rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.bundling-card {
+    text-align: left;
+    padding: 18px 18px 16px;
+    border-radius: 18px;
+    border-color: #d6e2db;
+    box-shadow: 0 10px 24px rgba(17, 24, 39, 0.05);
+}
+
+.bundling-card.active::after {
+    content: '\2713';
+    top: 14px;
+    right: 14px;
+    width: 28px;
+    height: 28px;
+    background: #2f6d4f;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    box-shadow: 0 10px 22px rgba(47, 109, 79, 0.28);
+    border: none;
+}
+
+.bundling-card {
+    justify-content: space-between;
+    padding: 16px 18px 18px;
+    border-radius: 16px;
+    border-color: #d9e3dd;
+    box-shadow: 0 8px 22px rgba(17, 24, 39, 0.04);
+}
+
+.bundling-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 0.85rem;
+    padding-right: 1.75rem;
+}
+
+.bundling-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    min-height: 86px;
+}
+
+.bundling-card-footer {
+    margin-top: 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid #edf2ee;
+}
+
+.bundling-card-name {
+    color: #22313f;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.45;
+    min-height: 2.9em;
+}
+
+.bundling-card-chip {
+    padding: 0.32rem 0.72rem;
+    margin-bottom: 0;
+    font-size: 0.74rem;
+}
+
+.bundling-card-meta {
+    gap: 0.45rem;
+}
+
+.bundling-card-people {
+    padding: 0.38rem 0.72rem;
+}
+
+.bundling-card-price {
+    font-family: inherit;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.bundling-card.active::after {
+    content: '\00d7';
+    top: 12px;
+    right: 12px;
+    width: 26px;
+    height: 26px;
+    background: #fff;
+    color: #55786b;
+    font-size: 1rem;
+    font-weight: 600;
+    box-shadow: 0 8px 18px rgba(18, 58, 45, 0.14);
+    border: 1px solid rgba(85, 120, 107, 0.08);
+}
+
+.bundling-card.active .bundling-card-chip {
+    background: rgba(47, 109, 79, 0.12);
+    color: #21513b;
+}
+
+.bundling-card.active .bundling-card-people {
+    background: rgba(47, 109, 79, 0.1);
+    color: #21513b;
+}
+
+.bundling-card.active .bundling-card-price {
+    color: #21513b;
+}
+
+.bundling-card-name {
+    color: #1f2937;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.45;
+    min-height: 2.9em;
+}
+
+#sectionBundling .row {
+    row-gap: 12px;
+}
+
+.bundling-card {
+    min-height: 124px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 14px 18px;
+    border-radius: 18px;
+    border: 1px solid #d7dee3;
+    box-shadow: none;
+    background: #fff;
+    width: 100%;
+}
+
+.bundling-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+.bundling-card-label,
+.bundling-card-people-text {
+    max-width: 100%;
+    line-height: 1.45;
+    overflow-wrap: break-word;
+}
+
+.bundling-card-label {
+    font-size: 0.94rem;
+    font-weight: 500;
+    color: #5f6b76 !important;
+}
+
+.bundling-card-people-text {
+    font-size: 0.92rem;
+    color: #5f6b76 !important;
+}
+
+.bundling-card-price-text {
+    font-size: 0.98rem !important;
+    line-height: 1.3;
+}
+
+.bundling-detail-link {
+    margin-top: 0.6rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #2f6d4f;
+    font-size: 0.84rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.bundling-detail-link:hover {
+    color: #21513b;
+    text-decoration: underline;
+}
+
+.bundling-card.active {
+    border: 2px solid #198754;
+    background: #e9f7ef;
+    box-shadow: 0 6px 18px rgba(25, 135, 84, 0.25);
+}
+
+.bundling-card.active::after {
+    content: '\00d7';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    color: #55786b;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1;
+    box-shadow: 0 8px 18px rgba(18, 58, 45, 0.14);
+    border: 1px solid rgba(85, 120, 107, 0.08);
+}
+
+.bundling-card-chip,
+.bundling-card-header,
+.bundling-card-body,
+.bundling-card-footer,
+.bundling-card-meta,
+.bundling-card-people,
+.bundling-card-price {
+    all: unset;
+}
+
+.bundling-detail-sheet {
+    max-width: 520px;
+}
+
+.bundling-detail-content {
+    padding: 0.5rem 0.25rem 0.25rem;
+}
+
+.bundling-detail-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: #eef6f1;
+    color: #2f6d4f;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.bundling-detail-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.bundling-detail-gallery {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.bundling-detail-slider {
+    position: relative;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #e8efea;
+    background: #f8faf8;
+    aspect-ratio: 16 / 9;
+}
+
+.bundling-detail-slider img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.bundling-detail-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #2f6d4f;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+
+.bundling-detail-nav.prev {
+    left: 12px;
+}
+
+.bundling-detail-nav.next {
+    right: 12px;
+}
+
+.bundling-detail-counter {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    padding: 0.32rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.72);
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 600;
+    z-index: 2;
+}
+
+.bundling-detail-gallery-empty {
+    padding: 1rem;
+    border-radius: 14px;
+    border: 1px dashed #d6e2db;
+    background: #fbfcfb;
+    color: #64748b;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.bundling-detail-meta-item {
+    padding: 0.9rem 1rem;
+    border: 1px solid #e8efea;
+    border-radius: 14px;
+    background: #fbfcfb;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.bundling-detail-description {
+    padding: 1rem;
+    border-radius: 14px;
+    background: #f8faf8;
+    border: 1px solid #e8efea;
+    color: #334155;
+    line-height: 1.6;
+}
+
+@media (max-width: 576px) {
+    .bundling-detail-nav {
+        width: 34px;
+        height: 34px;
+    }
+
+    .bundling-detail-meta {
+        grid-template-columns: 1fr;
+    }
 }
 
 .summary-addon-item {
@@ -1403,6 +1840,94 @@ function closeProductModal(e) {
 
 function closeProductModalDirect() {
     document.getElementById('productModal').classList.remove('active');
+}
+
+function openBundlingDetail(event, trigger) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
+    const card = trigger.closest('.bundling-card');
+    if (!card) return;
+
+    const label = card.dataset.label || 'Paket Bundling';
+    const people = parseInt(card.dataset.people || '0', 10);
+    const price = parseInt(card.dataset.price || '0', 10);
+    const description = card.dataset.description || 'Paket bundling ini cocok untuk rombongan dengan kebutuhan kunjungan yang sudah dikemas praktis.';
+    let photos = [];
+
+    try {
+        photos = JSON.parse(card.dataset.photos || '[]');
+    } catch (error) {
+        photos = [];
+    }
+
+    document.getElementById('bundlingDetailName').innerText = label;
+    document.getElementById('bundlingDetailPeople').innerText = `${people.toLocaleString('id-ID')} orang`;
+    document.getElementById('bundlingDetailPrice').innerText = 'Rp' + price.toLocaleString('id-ID');
+    document.getElementById('bundlingDetailDescription').innerText = description;
+
+    window.currentBundlingPhotos = photos;
+    window.currentBundlingPhotoIndex = 0;
+
+    const gallery = document.getElementById('bundlingDetailGallery');
+    if (gallery) {
+        if (photos.length > 0) {
+            renderBundlingPhotoSlider(label);
+        } else {
+            gallery.innerHTML = `
+                <div class="bundling-detail-gallery-empty">
+                    Foto bundling belum tersedia.
+                </div>
+            `;
+        }
+    }
+
+    document.getElementById('bundlingDetailModal').classList.add('active');
+}
+
+function closeBundlingDetail(event) {
+    if (event.target.classList.contains('modal-overlay')) {
+        document.getElementById('bundlingDetailModal').classList.remove('active');
+    }
+}
+
+function closeBundlingDetailDirect() {
+    document.getElementById('bundlingDetailModal').classList.remove('active');
+}
+
+function renderBundlingPhotoSlider(label) {
+    const gallery = document.getElementById('bundlingDetailGallery');
+    const photos = window.currentBundlingPhotos || [];
+    const index = window.currentBundlingPhotoIndex || 0;
+
+    if (!gallery || photos.length === 0) {
+        return;
+    }
+
+    gallery.innerHTML = `
+        <div class="bundling-detail-slider">
+            ${photos.length > 1 ? '<button type="button" class="bundling-detail-nav prev" onclick="changeBundlingPhoto(-1)" aria-label="Foto sebelumnya"><i class="bi bi-chevron-left"></i></button>' : ''}
+            <img src="${photos[index]}" alt="${label} photo ${index + 1}">
+            ${photos.length > 1 ? '<button type="button" class="bundling-detail-nav next" onclick="changeBundlingPhoto(1)" aria-label="Foto berikutnya"><i class="bi bi-chevron-right"></i></button>' : ''}
+            ${photos.length > 1 ? `<span class="bundling-detail-counter">${index + 1}/${photos.length}</span>` : ''}
+        </div>
+    `;
+}
+
+function changeBundlingPhoto(direction) {
+    const photos = window.currentBundlingPhotos || [];
+    if (photos.length <= 1) {
+        return;
+    }
+
+    const total = photos.length;
+    const current = window.currentBundlingPhotoIndex || 0;
+    window.currentBundlingPhotoIndex = (current + direction + total) % total;
+
+    const label = document.getElementById('bundlingDetailName')?.innerText || 'Bundling';
+    renderBundlingPhotoSlider(label);
 }
 
 </script>

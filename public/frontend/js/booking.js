@@ -426,6 +426,23 @@ function updatePriceTiers() {
   });
 }
 
+function getUmkmTotal() {
+  var total = 0;
+
+  document.querySelectorAll('.umkm-item').forEach(function(item) {
+    var price = Number(item.dataset.price || 0);
+    var id = item.dataset.id;
+    var qtyEl = id ? document.getElementById('qty-' + id) : null;
+    var qty = qtyEl ? parseInt(qtyEl.textContent, 10) || 0 : 0;
+
+    if (qty > 0) {
+      total += price * qty;
+    }
+  });
+
+  return total;
+}
+
 function updateSummary() {
   var dateInput = document.getElementById('visitDate');
   var sisaInput = document.getElementById('visitDateSisa');
@@ -475,7 +492,7 @@ function updateSummary() {
   }
 
   var tp = document.getElementById('totalPrice');
-  if (tp) tp.textContent = formatCurrency(calc.totalPrice);
+  if (tp) tp.textContent = formatCurrency(calc.totalPrice + getUmkmTotal());
 }
 
 // ================= SUBMIT BOOKING TO BACKEND =================
