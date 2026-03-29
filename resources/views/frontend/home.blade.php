@@ -41,7 +41,7 @@
         </div>
 
         <!-- FORM (TETAP SAMA) -->
-        <form method="GET" id="destinationSearchForm">
+        <form method="GET">
 
             <!-- SEARCH -->
             <div class="search-container mb-4">
@@ -57,7 +57,7 @@
                         value="{{ request('search') }}"
                     >
 
-                    <button type="button" class="search-clear d-none">
+                    <button type="submit" class="search-clear d-none">
                         <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
@@ -88,7 +88,7 @@
         </form>
 
         <!-- GRID -->
-        <div class="row g-4" id="paketGrid">
+        <div class="row g-4">
 
             @forelse ($pakets as $paket)
             <div 
@@ -96,7 +96,6 @@
                 data-name="{{ strtolower($paket->nama_paket) }}"
                 data-area="{{ strtolower($paket->vendor->area->name ?? '') }}"
                 data-vendor="{{ strtolower($paket->vendor->name ?? '') }}"
-                data-activities="{{ strtolower(collect($paket->aktivitas ?? [])->implode(' ')) }}"
             >
 
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
@@ -229,164 +228,103 @@
 <!-- ================= JS ================= -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const searchForm = document.getElementById("destinationSearchForm");
+
     const searchInput = document.getElementById("searchInput");
-    const searchClear = document.querySelector(".search-clear");
-    const buttons = Array.from(document.querySelectorAll(".region-pill"));
-    const items = Array.from(document.querySelectorAll(".paket-item"));
+    const buttons = document.querySelectorAll(".region-pill");
+    const items = document.querySelectorAll(".paket-item");
     const noResult = document.getElementById("noResultMessage");
 
-    if (!searchInput) {
-        return;
-    }
-
-    const SEARCH_DELAY = 80;
-    const HIDE_DELAY = 180;
     let currentFilter = "all";
-    let searchTimer = null;
 
-    function normalize(value) {
-        return (value || "").toString().toLowerCase().trim();
-    }
-
-    function updateClearButton() {
-        if (!searchClear) {
-            return;
-        }
-
-        searchClear.classList.toggle("d-none", searchInput.value.trim() === "");
-    }
-
-    function setActiveFilterButton(value) {
-        buttons.forEach((button) => {
-            button.classList.toggle("active", normalize(button.value) === value);
-        });
-    }
-
-    function showItem(item, animate) {
-        if (item.hideTimer) {
-            clearTimeout(item.hideTimer);
-            item.hideTimer = null;
-        }
-
-        const wasHidden = item.style.display === "none";
-        item.style.display = "";
-        item.classList.remove("paket-hidden");
-
-        if (wasHidden || animate) {
-            item.classList.remove("paket-enter");
-            item.offsetWidth;
-            item.classList.add("paket-enter");
-        }
-    }
-
-    function hideItem(item) {
-        if (item.hideTimer) {
-            clearTimeout(item.hideTimer);
-        }
-
-        item.classList.remove("paket-enter");
-        item.classList.add("paket-hidden");
-        item.hideTimer = setTimeout(() => {
-            item.style.display = "none";
-            item.hideTimer = null;
-        }, HIDE_DELAY);
-    }
-
-    function matchesKeyword(item, keyword) {
-        if (!keyword) {
-            return true;
-        }
-
-        const haystacks = [
-            item.dataset.name,
-            item.dataset.area,
-            item.dataset.vendor,
-            item.dataset.activities,
-        ];
-
-        return haystacks.some((value) => normalize(value).includes(keyword));
-    }
-
-    function matchesFilter(item, filterValue, keyword) {
-        if (keyword) {
-            return true;
-        }
-
-        return filterValue === "all" || normalize(item.dataset.area).includes(filterValue);
-    }
-
-    function applyFilters() {
-        const keyword = normalize(searchInput.value);
-        const shouldAnimateMatches = keyword !== "";
-        let visibleCount = 0;
-
-        items.forEach((item) => {
-            const shouldShow = matchesKeyword(item, keyword) && matchesFilter(item, currentFilter, keyword);
-
-            if (shouldShow) {
-                showItem(item, shouldAnimateMatches);
-                visibleCount += 1;
-            } else {
-                hideItem(item);
-            }
-        });
-
-        if (noResult) {
-            noResult.style.display = items.length > 0 && visibleCount === 0 ? "block" : "none";
-        }
-    }
-
-    if (searchForm) {
-        searchForm.addEventListener("submit", function (event) {
-            event.preventDefault();
-        });
-    }
-
-    searchInput.addEventListener("keydown", function (event) {
-        if (event.key === "Enter") {
-            event.preventDefault();
-        }
+    // kasih transition sekali saja
+    items.forEach(item => {
+        item.style.transition = "opacity 0.25s ease";
     });
 
-    searchInput.addEventListener("input", function () {
-        updateClearButton();
+    function filterData() {
 
-        if (searchTimer) {
-            clearTimeout(searchTimer);
+    const keyword = (searchInput?.value || "").toLowerCase().trim();
+    let visible = 0;
+
+    items.forEach(item => {
+
+        const name   = item.dataset.name || "";
+        const area   = item.dataset.area || "";
+        const vendor = item.dataset.vendor || "";
+
+        const matchSearch =
+            keyword === "" ||
+            name.includes(keyword) ||
+            area.includes(keyword) ||
+            vendor.includes(keyword);
+
+        let matchFilter =
+            currentFilter === "all" ||
+            area.includes(currentFilter);
+
+        if (keyword !== "") {
+            matchFilter = true;
         }
 
-        searchTimer = setTimeout(() => {
-            currentFilter = "all";
-            setActiveFilterButton("all");
-            applyFilters();
-        }, SEARCH_DELAY);
+        if (matchSearch && matchFilter) {
+
+            item.classList.remove("paket-hide");
+            item.style.display = "block";
+            visible++;
+
+        } else {
+
+            item.classList.add("paket-hide");
+
+            setTimeout(()=>{
+                item.style.display="none";
+            },300);
+
+        }
+
     });
 
-    if (searchClear) {
-        searchClear.addEventListener("click", function () {
-            searchInput.value = "";
-            currentFilter = "all";
-            setActiveFilterButton("all");
-            updateClearButton();
-            applyFilters();
-            searchInput.focus();
-        });
+    if (noResult) {
+        noResult.style.display = visible === 0 ? "block" : "none";
     }
+}
+    // SEARCH realtime
+    let typingTimer;
+const delay = 120;
 
-    buttons.forEach((button) => {
-        button.addEventListener("click", function (event) {
-            event.preventDefault();
+searchInput.addEventListener("input", function () {
 
-            currentFilter = normalize(button.value) || "all";
-            setActiveFilterButton(currentFilter);
-            applyFilters();
+    clearTimeout(typingTimer);
+
+    typingTimer = setTimeout(() => {
+
+        currentFilter = "all";
+        buttons.forEach(b => b.classList.remove("active"));
+        if (buttons.length > 0) {
+            buttons[0].classList.add("active");
+        }
+
+        filterData();
+
+    }, delay);
+
+});
+
+    // FILTER BUTTON
+    buttons.forEach(btn => {
+        btn.addEventListener("click", function (e) {
+
+            e.preventDefault();
+
+            currentFilter = (this.value || "all").toLowerCase();
+
+            buttons.forEach(b => b.classList.remove("active"));
+            this.classList.add("active");
+
+            filterData();
         });
     });
 
-    updateClearButton();
-    setActiveFilterButton("all");
-    applyFilters();
 });
 
 
@@ -405,28 +343,13 @@ document.addEventListener("DOMContentLoaded", function () {
 .img-container:hover .img-zoom{
     transform: scale(1.1);
 }
-.paket-hidden{
+.paket-hide{
     opacity:0;
-    transform: translateY(6px);
+    transform:scale(.95);
     pointer-events:none;
 }
 .paket-item{
-    transition: opacity .18s ease, transform .18s ease;
+    transition: opacity .25s ease, transform .25s ease;
     will-change: transform, opacity;
-    opacity: 1;
-    transform: translateY(0);
-}
-.paket-enter{
-    animation: paketFadeIn .22s ease-out;
-}
-@keyframes paketFadeIn{
-    from{
-        opacity: 0;
-        transform: translateY(8px);
-    }
-    to{
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 </style>

@@ -78,7 +78,7 @@
 
             <div class="row invoice-header">
                 <div class="col-sm-6">
-                    <h2 class="text-success fw-bold"><i class="fas fa-leaf"></i> Agrotourism Bandung</h2>
+                    <h2 class="text-success fw-bold"><i class="fas fa-leaf"></i> {{ get_setting('app_name', 'AgroBandung') }}</h2>
                     <p class="text-muted mb-0">Invoice Resmi Pembayaran</p>
                 </div>
                 <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
