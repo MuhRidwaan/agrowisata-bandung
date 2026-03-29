@@ -15,7 +15,13 @@ class UmkmProductsExport implements FromCollection, WithHeadings, WithMapping, S
      */
     public function collection()
     {
-        return UmkmProduct::with('vendor')->get();
+        $query = UmkmProduct::with('vendor');
+
+        if (auth()->check() && auth()->user()->hasRole('Vendor')) {
+            $query->where('vendor_id', auth()->user()->vendor->id ?? null);
+        }
+
+        return $query->get();
     }
 
     /**

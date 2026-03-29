@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\UmkmProductPhoto;
 use App\Models\UmkmProduct;
 use App\Http\Requests\UmkmProductPhotoRequest;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 
 class UmkmProductPhotoController extends Controller
@@ -15,19 +16,16 @@ class UmkmProductPhotoController extends Controller
     public function store(UmkmProductPhotoRequest $request)
     {
         $data = $request->validated();
-        $files = $request->file('path_foto');
         $uploadedCount = 0;
 
-        if ($files) {
-            foreach ($files as $file) {
-                if ($file && $file->isValid()) {
-                    $path = $file->store('umkm_product_photos', 'public');
-                    UmkmProductPhoto::create([
-                        'umkm_product_id' => $data['umkm_product_id'],
-                        'path_foto' => $path,
-                    ]);
-                    $uploadedCount++;
-                }
+        foreach (Arr::wrap($request->file('path_foto')) as $file) {
+            if ($file && $file->isValid()) {
+                $path = $file->store('umkm_product_photos', 'public');
+                UmkmProductPhoto::create([
+                    'umkm_product_id' => $data['umkm_product_id'],
+                    'path_foto' => $path,
+                ]);
+                $uploadedCount++;
             }
         }
 

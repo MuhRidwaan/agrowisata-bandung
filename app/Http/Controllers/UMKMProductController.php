@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\UmkmProduct;
+use App\Models\UmkmProductPhoto;
 use App\Models\PaketTour;
 use App\Models\Vendor;
 use App\Http\Requests\UmkmProductRequest;
 use App\Exports\UmkmProductsExport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -63,11 +66,8 @@ class UMKMProductController extends Controller
      */
     public function create()
     {
-        $paketTours = PaketTour::with('vendor')
-            ->when(auth()->user()->hasRole('Vendor'), function ($query) {
-                $query->where('vendor_id', auth()->user()->vendor->id ?? null);
-            })
-            ->get();
+        $paketTours = $this->getSelectablePaketTours();
+
         return view('backend.umkm_products.form', [
             'umkmProduct' => new UmkmProduct(),
             'paketTours' => $paketTours,
@@ -80,33 +80,18 @@ class UMKMProductController extends Controller
     public function store(UmkmProductRequest $request)
     {
         $data = $request->validated();
+        $paketTours = $this->resolvePaketTours($data['paket_tour_ids'] ?? []);
+        $product = null;
 
-        // Remove paket_tour_id and path_foto from data as they need special handling
-        $paketTourId = $data['paket_tour_id'];
-        $paketTour = PaketTour::findOrFail($paketTourId);
-        $files = $request->file('path_foto');
-        unset($data['paket_tour_id']);
+        unset($data['paket_tour_ids']);
         unset($data['path_foto']);
-        $data['vendor_id'] = $paketTour->vendor_id;
+        $data['vendor_id'] = $paketTours->first()->vendor_id;
 
-        // Create the product
-        $product = UmkmProduct::create($data);
-
-        // Attach to paket tour
-        $product->paketTours()->attach($paketTourId);
-
-        // Handle photo uploads if provided
-        if ($files && is_array($files)) {
-            foreach ($files as $file) {
-                if ($file && $file->isValid()) {
-                    $path = $file->store('umkm_product_photos', 'public');
-                    \App\Models\UmkmProductPhoto::create([
-                        'umkm_product_id' => $product->id,
-                        'path_foto' => $path,
-                    ]);
-                }
-            }
-        }
+        DB::transaction(function () use ($request, $data, $paketTours, &$product) {
+            $product = UmkmProduct::create($data);
+            $product->paketTours()->sync($paketTours->pluck('id')->all());
+            $this->storeUploadedPhotos($product, Arr::wrap($request->file('path_foto')));
+        });
 
         return redirect()
             ->route('umkm-products.index')
@@ -125,11 +110,9 @@ class UMKMProductController extends Controller
             }
         }
 
-        $paketTours = PaketTour::with('vendor')
-            ->when(auth()->user()->hasRole('Vendor'), function ($query) {
-                $query->where('vendor_id', auth()->user()->vendor->id ?? null);
-            })
-            ->get();
+        $umkmProduct->loadMissing(['photos', 'paketTours']);
+        $paketTours = $this->getSelectablePaketTours();
+
         return view('backend.umkm_products.form', compact('umkmProduct', 'paketTours'));
     }
 
@@ -146,33 +129,17 @@ class UMKMProductController extends Controller
         }
 
         $data = $request->validated();
+        $paketTours = $this->resolvePaketTours($data['paket_tour_ids'] ?? []);
 
-        // Extract paket_tour_id and path_foto for special handling
-        $paketTourId = $data['paket_tour_id'];
-        $paketTour = PaketTour::findOrFail($paketTourId);
-        $files = $request->file('path_foto');
-        unset($data['paket_tour_id']);
+        unset($data['paket_tour_ids']);
         unset($data['path_foto']);
-        $data['vendor_id'] = $paketTour->vendor_id;
+        $data['vendor_id'] = $paketTours->first()->vendor_id;
 
-        // Update the product
-        $umkmProduct->update($data);
-
-        // Update paket tour association
-        $umkmProduct->paketTours()->sync($paketTourId);
-
-        // Handle photo uploads if provided
-        if ($files && is_array($files)) {
-            foreach ($files as $file) {
-                if ($file && $file->isValid()) {
-                    $path = $file->store('umkm_product_photos', 'public');
-                    \App\Models\UmkmProductPhoto::create([
-                        'umkm_product_id' => $umkmProduct->id,
-                        'path_foto' => $path,
-                    ]);
-                }
-            }
-        }
+        DB::transaction(function () use ($request, $umkmProduct, $data, $paketTours) {
+            $umkmProduct->update($data);
+            $umkmProduct->paketTours()->sync($paketTours->pluck('id')->all());
+            $this->storeUploadedPhotos($umkmProduct, Arr::wrap($request->file('path_foto')));
+        });
 
         return redirect()
             ->route('umkm-products.index')
@@ -208,5 +175,47 @@ class UMKMProductController extends Controller
         return redirect()
             ->route('umkm-products.index')
             ->with('success', 'Produk UMKM berhasil dihapus!');
+    }
+
+    private function getSelectablePaketTours()
+    {
+        return PaketTour::with('vendor')
+            ->when(auth()->user()->hasRole('Vendor'), function ($query) {
+                $query->where('vendor_id', auth()->user()->vendor->id ?? null);
+            })
+            ->orderBy('nama_paket')
+            ->get();
+    }
+
+    private function resolvePaketTours(array $paketTourIds)
+    {
+        $ids = collect($paketTourIds)
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        $paketTours = PaketTour::whereIn('id', $ids)->get();
+
+        abort_if($paketTours->isEmpty(), 422, 'Paket tour yang dipilih tidak valid.');
+        abort_if($paketTours->pluck('vendor_id')->unique()->count() > 1, 422, 'Semua paket tour harus berasal dari vendor yang sama.');
+
+        return $paketTours;
+    }
+
+    private function storeUploadedPhotos(UmkmProduct $product, array $files): void
+    {
+        foreach ($files as $file) {
+            if (! $file || ! $file->isValid()) {
+                continue;
+            }
+
+            $path = $file->store('umkm_product_photos', 'public');
+
+            UmkmProductPhoto::create([
+                'umkm_product_id' => $product->id,
+                'path_foto' => $path,
+            ]);
+        }
     }
 }

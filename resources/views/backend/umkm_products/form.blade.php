@@ -74,32 +74,38 @@
 
                             {{-- Paket Tour Selection --}}
                             <div class="form-group">
-                                <label for="paket_tour_id">
+                                <label for="paket_tour_ids">
                                     Paket Tour <span class="text-danger">*</span>
                                 </label>
 
-                                <select name="paket_tour_id" id="paket_tour_id"
-                                        class="form-control @error('paket_tour_id') is-invalid @enderror"
+                                @php
+                                    $selectedPaketTourIds = collect(old(
+                                        'paket_tour_ids',
+                                        isset($umkmProduct->id) ? $umkmProduct->paketTours->pluck('id')->all() : []
+                                    ))->map(fn ($id) => (int) $id)->all();
+                                @endphp
+
+                                <select name="paket_tour_ids[]" id="paket_tour_ids"
+                                        class="form-control @error('paket_tour_ids') is-invalid @enderror @error('paket_tour_ids.*') is-invalid @enderror"
+                                        multiple
+                                        size="6"
                                         onchange="updateVendorFromPaketTour()">
-                                    <option value="">Select Paket Tour</option>
                                     @foreach ($paketTours as $paket)
-                                        @php
-                                            // Get the first paket tour if editing
-                                            $selectedPaketTour = old('paket_tour_id', 
-                                                (isset($umkmProduct->id) && $umkmProduct->paketTours->count() > 0) 
-                                                    ? $umkmProduct->paketTours->first()->id 
-                                                    : null
-                                            );
-                                        @endphp
                                         <option value="{{ $paket->id }}" 
                                                 data-vendor-id="{{ $paket->vendor_id }}"
                                                 data-vendor-name="{{ $paket->vendor->name ?? '' }}"
-                                                {{ $selectedPaketTour == $paket->id ? 'selected' : '' }}>
+                                                {{ in_array((int) $paket->id, $selectedPaketTourIds, true) ? 'selected' : '' }}>
                                             {{ $paket->nama_paket }} ({{ $paket->vendor->name ?? '-' }})
                                         </option>
                                     @endforeach
                                 </select>
-                                @error('paket_tour_id')
+                                <small class="form-text text-muted mt-2">
+                                    Bisa pilih lebih dari satu paket tour, tetapi semuanya harus berasal dari vendor yang sama.
+                                </small>
+                                @error('paket_tour_ids')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                                @error('paket_tour_ids.*')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -222,9 +228,9 @@
                                                 <div class="col-lg-3 col-md-4 col-sm-6 mb-4" style="padding: 10px;">
                                                     <div style="background: white; border: 2px solid #e0e0e0; border-radius: 8px; overflow: hidden; transition: all 0.3s ease; position: relative; height: 100%;">
                                                         <div style="position: relative; background: #f0f0f0; height: 220px;">
-                                                            <img src="{{ asset('storage/' . $photo->path_foto) }}" 
+                                                            <img src="{{ $photo->photo_url }}" 
                                                                  alt="Photo" 
-                                                                 data-image="{{ asset('storage/' . $photo->path_foto) }}"
+                                                                 data-image="{{ $photo->photo_url }}"
                                                                  style="width: 100%; height: 100%; object-fit: cover; cursor: pointer; display: block;"
                                                                  class="photo-preview-thumb">
                                                             
@@ -261,7 +267,7 @@
 
                         <div class="card-footer">
                             <button type="submit" class="btn btn-primary">
-                                {{ isset($umkmProduct->id) ? 'Update' : 'Create' }} Product
+                                {{ isset($umkmProduct->id) ? 'Save' : 'Create' }} 
                             </button>
 
                             <a href="{{ route('umkm-products.index') }}"
@@ -424,15 +430,20 @@ function handleDeleteClick(deleteUrl) {
 }
 
 function updateVendorFromPaketTour() {
-    const paketTourSelect = document.getElementById('paket_tour_id');
-    const selectedOption = paketTourSelect.options[paketTourSelect.selectedIndex];
-    
-    if (selectedOption.value) {
-        const vendorId = selectedOption.getAttribute('data-vendor-id');
-        const vendorName = selectedOption.getAttribute('data-vendor-name');
-        
-        document.getElementById('vendor_id').value = vendorId;
-        document.getElementById('vendor_display').value = vendorName;
+    const paketTourSelect = document.getElementById('paket_tour_ids');
+    const selectedOptions = Array.from(paketTourSelect.selectedOptions || []);
+
+    if (selectedOptions.length > 0) {
+        const vendorIds = [...new Set(selectedOptions.map(option => option.getAttribute('data-vendor-id')).filter(Boolean))];
+        const vendorNames = [...new Set(selectedOptions.map(option => option.getAttribute('data-vendor-name')).filter(Boolean))];
+
+        if (vendorIds.length === 1) {
+            document.getElementById('vendor_id').value = vendorIds[0];
+            document.getElementById('vendor_display').value = vendorNames[0] ?? '';
+        } else {
+            document.getElementById('vendor_id').value = '';
+            document.getElementById('vendor_display').value = 'Pilih paket tour dari vendor yang sama';
+        }
     } else {
         document.getElementById('vendor_id').value = '';
         document.getElementById('vendor_display').value = '';
@@ -441,63 +452,35 @@ function updateVendorFromPaketTour() {
 
 // Trigger on page load if editing
 document.addEventListener('DOMContentLoaded', function() {
-    const paketTourSelect = document.getElementById('paket_tour_id');
-    const vendorIdField = document.getElementById('vendor_id');
-    
-    // Initialize vendor field on page load
-    if (paketTourSelect.value) {
-        updateVendorFromPaketTour();
-    } else if (vendorIdField.value) {
-        // If paket_tour not selected but vendor_id exists (editing), 
-        // try to find and select the correct paket tour
-        let selectedIndex = -1;
-        for (let i = 0; i < paketTourSelect.options.length; i++) {
-            if (paketTourSelect.options[i].getAttribute('data-vendor-id') == vendorIdField.value) {
-                selectedIndex = i;
-                break;
-            }
-        }
-        if (selectedIndex >= 0) {
-            paketTourSelect.selectedIndex = selectedIndex;
-            updateVendorFromPaketTour();
-        }
-    }
+    updateVendorFromPaketTour();
 });
 
 // Add form submit validation
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
-    const paketTourSelect = document.getElementById('paket_tour_id');
+    const paketTourSelect = document.getElementById('paket_tour_ids');
     const vendorIdField = document.getElementById('vendor_id');
     
     if (form) {
         form.addEventListener('submit', function(e) {
-            console.log('Form submit triggered');
-            console.log('initialVendorId:', vendorIdField.value);
-            console.log('paketTourSelect:', paketTourSelect.value);
-            
-            // Get initial vendor_id value (for checking if we're editing)
-            const initialVendorId = vendorIdField.value;
-            
-            // If editing (vendor_id already exists), allow submit without requiring paketTourSelect
-            if (initialVendorId) {
-                console.log('Editing mode - allowing submit');
-                return true;
-            }
-            
-            // For new product: require paketTourSelect
-            if (!paketTourSelect.value) {
+            const selectedOptions = Array.from(paketTourSelect.selectedOptions || []);
+
+            if (selectedOptions.length === 0) {
                 e.preventDefault();
-                alert('Mohon pilih Paket Tour terlebih dahulu');
+                alert('Mohon pilih minimal satu Paket Tour terlebih dahulu');
                 paketTourSelect.focus();
                 return false;
             }
-            
-            // Try to populate vendor_id if not yet set
-            if (!vendorIdField.value && paketTourSelect.value) {
-                updateVendorFromPaketTour();
+
+            updateVendorFromPaketTour();
+
+            if (!vendorIdField.value) {
+                e.preventDefault();
+                alert('Pilih paket tour yang berasal dari vendor yang sama');
+                paketTourSelect.focus();
+                return false;
             }
-            
+
             return true;
         });
     }

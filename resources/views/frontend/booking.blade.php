@@ -238,6 +238,9 @@
 
     <div class="d-flex flex-column gap-2">
         @foreach($paket->umkmProducts as $product)
+        @php
+            $productPhoto = $product->photos->first()?->photo_url ?? asset('frontend/img/logo.png');
+        @endphp
         <div class="d-flex align-items-center justify-content-between border rounded-3 p-3 umkm-item"
              data-id="{{ $product->id }}"
              data-price="{{ $product->price }}">
@@ -248,10 +251,10 @@
                  onclick="openProductModal(
                      @js($product->name),
                      @js($product->price),
-                     @js(asset('storage/' . $product->photos->first()->path_foto)),
+                     @js($productPhoto),
                      @js($product->description ?? 'Produk UMKM lokal pilihan dari destinasi ini.')
                  )">
-                <img src="{{ asset('storage/' . $product->photos->first()->path_foto) }}"
+                <img src="{{ $productPhoto }}"
                      style="width:60px;height:60px;object-fit:cover;border-radius:10px;">
 
                 <div>
