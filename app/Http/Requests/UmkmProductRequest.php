@@ -23,13 +23,26 @@ class UmkmProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'paket_tour_id' => [
+            'paket_tour_ids' => [
                 'required',
-                'exists:paket_tours,id',
+                'array',
+                'min:1',
                 function ($attribute, $value, $fail) {
-                    $paketTour = PaketTour::find($value);
+                    $paketTourIds = collect($value)
+                        ->filter()
+                        ->map(fn ($id) => (int) $id)
+                        ->unique()
+                        ->values();
 
-                    if (!$paketTour) {
+                    if ($paketTourIds->isEmpty()) {
+                        $fail('Minimal satu paket tour harus dipilih.');
+                        return;
+                    }
+
+                    $paketTours = PaketTour::whereIn('id', $paketTourIds)->get(['id', 'vendor_id']);
+
+                    if ($paketTours->count() !== $paketTourIds->count()) {
+                        $fail('Satu atau lebih paket tour yang dipilih tidak valid.');
                         return;
                     }
 
@@ -37,16 +50,24 @@ class UmkmProductRequest extends FormRequest
 
                     if ($user && $user->hasRole('Vendor')) {
                         $vendorId = $user->vendor->id ?? null;
-                        if ($paketTour->vendor_id !== $vendorId) {
+                        if ($paketTours->contains(fn ($paketTour) => (int) $paketTour->vendor_id !== (int) $vendorId)) {
                             $fail('Paket tour yang dipilih tidak valid untuk vendor ini.');
                         }
                     }
 
-                    if ($this->filled('vendor_id') && (int) $this->input('vendor_id') !== (int) $paketTour->vendor_id) {
+                    $vendorIds = $paketTours->pluck('vendor_id')->unique();
+
+                    if ($vendorIds->count() > 1) {
+                        $fail('Produk UMKM hanya boleh dihubungkan ke paket tour dari vendor yang sama.');
+                        return;
+                    }
+
+                    if ($this->filled('vendor_id') && (int) $this->input('vendor_id') !== (int) $vendorIds->first()) {
                         $fail('Vendor tidak sesuai dengan paket tour yang dipilih.');
                     }
                 },
             ],
+            'paket_tour_ids.*' => 'required|integer|distinct|exists:paket_tours,id',
             'vendor_id' => 'nullable|exists:vendors,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -62,8 +83,13 @@ class UmkmProductRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'paket_tour_id.required' => 'Paket tour harus dipilih.',
-            'paket_tour_id.exists' => 'Paket tour yang dipilih tidak valid.',
+            'paket_tour_ids.required' => 'Paket tour harus dipilih.',
+            'paket_tour_ids.array' => 'Paket tour harus berupa daftar pilihan.',
+            'paket_tour_ids.min' => 'Minimal satu paket tour harus dipilih.',
+            'paket_tour_ids.*.required' => 'Paket tour harus dipilih.',
+            'paket_tour_ids.*.integer' => 'Paket tour yang dipilih tidak valid.',
+            'paket_tour_ids.*.distinct' => 'Paket tour yang sama tidak boleh dipilih lebih dari sekali.',
+            'paket_tour_ids.*.exists' => 'Paket tour yang dipilih tidak valid.',
             'vendor_id.exists' => 'Vendor yang dipilih tidak valid.',
             'name.required' => 'Nama produk harus diisi.',
             'name.max' => 'Nama produk maksimal 255 karakter.',

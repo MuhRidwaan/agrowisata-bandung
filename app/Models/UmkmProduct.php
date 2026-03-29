@@ -67,8 +67,6 @@ class UmkmProduct extends Model
     {
         $photo = $this->photos->first();
 
-        return $photo 
-            ? asset('storage/' . $photo->photo) 
-            : 'https://via.placeholder.com/60';
+        return $photo?->photo_url ?? asset('frontend/img/logo.png');
     }
 }

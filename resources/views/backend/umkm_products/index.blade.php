@@ -116,23 +116,26 @@
 
                                 {{-- Photo --}}
                                 <td class="text-center">
-                                    @if($product->photos->count() > 0)
+                                    @php
+                                        $photoUrls = $product->photos->map(fn ($photo) => $photo->photo_url)->filter()->values();
+                                    @endphp
+                                    @if($photoUrls->count() > 0)
                                         <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
                                             @foreach($product->photos->take(3) as $photo)
                                                 <a href="#" 
                                                    class="photo-preview-trigger"
                                                    data-product-name="{{ $product->name }}"
-                                                   data-photos="{{ json_encode($product->photos->pluck('path_foto')->map(fn($p) => asset('storage/' . $p))->toArray()) }}"
+                                                   data-photos='@json($photoUrls)'
                                                    style="display: inline-block;">
-                                                    <img src="{{ asset('storage/' . $photo->path_foto) }}" 
+                                                    <img src="{{ $photo->photo_url }}" 
                                                          alt="Photo" 
                                                          style="width: 48px; height: 48px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid #ddd; display: block;"
                                                          class="img-hover">
                                                 </a>
                                             @endforeach
-                                            @if($product->photos->count() > 3)
+                                            @if($photoUrls->count() > 3)
                                                 <div style="width: 48px; height: 48px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #ddd;">
-                                                    <small><strong>+{{ $product->photos->count() - 3 }}</strong></small>
+                                                    <small><strong>+{{ $photoUrls->count() - 3 }}</strong></small>
                                                 </div>
                                             @endif
                                         </div>

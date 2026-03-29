@@ -184,24 +184,31 @@
                             </div>
                             @endif
 
-                            @if($paket->is_bundling_available && $paket->harga_bundling && $paket->bundling_people)
+                            @if($paket->bundlings->where('is_active', true)->count() > 0)
                             <div class="mb-4" id="sectionBundling">
                                 <h3 class="fs-6 fw-semibold mb-3 d-flex align-items-center gap-2">
                                     <i class="bi bi-box2-heart text-primary-agro"></i> Paket Bundling
                                 </h3>
                                 <div class="row g-2">
-                                    <div class="col-md-6 col-12">
-                                        <div class="price-tier-card bundling-card"
-                                                data-people="{{ $paket->bundling_people }}"
-                                                data-price="{{ $paket->harga_bundling }}"
-                                                onclick="selectBundling(this)">
-                                            <p class="text-muted small mb-1">{{ $paket->nama_paket }} Bundling</p>
-                                            <p class="font-display fs-6 fw-bold text-primary-agro mb-1">
-                                                Rp{{ number_format($paket->harga_bundling, 0, ',', '.') }}
-                                            </p>
-                                            <p class="text-muted small mb-0">{{ number_format($paket->bundling_people, 0, ',', '.') }} orang / bundling</p>
+                                    @foreach($paket->bundlings->where('is_active', true) as $bundling)
+                                        <div class="col-md-6 col-12">
+                                            <div class="price-tier-card bundling-card"
+                                                    data-id="{{ $bundling->id }}"
+                                                    data-people="{{ $bundling->people_count }}"
+                                                    data-price="{{ $bundling->bundle_price }}"
+                                                    data-label="{{ $bundling->label ?: ($paket->nama_paket . ' Bundling') }}"
+                                                    onclick="selectBundling(this)">
+                                                <p class="text-muted small mb-1">{{ $bundling->label ?: ($paket->nama_paket . ' Bundling') }}</p>
+                                                <p class="font-display fs-6 fw-bold text-primary-agro mb-1">
+                                                    Rp{{ number_format($bundling->bundle_price, 0, ',', '.') }}
+                                                </p>
+                                                <p class="text-muted small mb-0">{{ number_format($bundling->people_count, 0, ',', '.') }} orang / bundling</p>
+                                                @if($bundling->description)
+                                                    <p class="text-muted small mb-0 mt-1">{{ $bundling->description }}</p>
+                                                @endif
+                                            </div>
                                         </div>
-                                    </div>
+                                    @endforeach
                                 </div>
                             </div>
                             @endif
@@ -231,6 +238,9 @@
 
     <div class="d-flex flex-column gap-2">
         @foreach($paket->umkmProducts as $product)
+        @php
+            $productPhoto = $product->photos->first()?->photo_url ?? asset('frontend/img/logo.png');
+        @endphp
         <div class="d-flex align-items-center justify-content-between border rounded-3 p-3 umkm-item"
              data-id="{{ $product->id }}"
              data-price="{{ $product->price }}">
@@ -241,10 +251,10 @@
                  onclick="openProductModal(
                      @js($product->name),
                      @js($product->price),
-                     @js(asset('storage/' . $product->photos->first()->path_foto)),
+                     @js($productPhoto),
                      @js($product->description ?? 'Produk UMKM lokal pilihan dari destinasi ini.')
                  )">
-                <img src="{{ asset('storage/' . $product->photos->first()->path_foto) }}"
+                <img src="{{ $productPhoto }}"
                      style="width:60px;height:60px;object-fit:cover;border-radius:10px;">
 
                 <div>

@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\PaketTour;
 use App\Models\Payment;
 use App\Models\TransactionLog;
+use App\Models\UmkmProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -80,15 +81,9 @@ class BookingController extends Controller
 
         $pricing = $paket->calculatePrice($request->jumlah_peserta);
         $total = $pricing['total_price'];
-        
-        $umkmItems = json_decode($request->umkm_products, true) ?? [];
 
-        foreach ($umkmItems as $item) {
-            $product = \App\Models\UmkmProduct::find($item['id']);
-            if ($product) {
-                $total += $product->price * $item['qty'];
-            }
-        }
+        $umkmData = $this->resolveUmkmItems($paket, $request->umkm_products);
+        $total += $umkmData['addon_total'];
         $prefix = get_setting('booking_prefix', 'BOOK-');
         $bookingCode = $prefix . Str::upper(Str::random(6));
 
@@ -106,21 +101,8 @@ class BookingController extends Controller
             'visit_date'     => $request->visit_date,
         ]);
         
-        if (!empty($umkmItems)) {
-            $syncData = [];
-
-            foreach ($umkmItems as $item) {
-                $product = \App\Models\UmkmProduct::find($item['id']);
-
-                if ($product) {
-                    $syncData[$product->id] = [
-                        'quantity' => $item['qty'],
-                        'price' => $product->price,
-                    ];
-                }
-            }
-
-            $booking->umkmProducts()->sync($syncData);
+        if (!empty($umkmData['sync_data'])) {
+            $booking->umkmProducts()->sync($umkmData['sync_data']);
         }
         // Audit Log
         TransactionLog::create([
@@ -212,14 +194,8 @@ class BookingController extends Controller
         $pricing = $paket->calculatePrice($request->jumlah_peserta);
         $total = $pricing['total_price'];
 
-         $umkmItems = json_decode($request->umkm_products, true) ?? [];
-
-        foreach ($umkmItems as $item) {
-            $product = \App\Models\UmkmProduct::find($item['id']);
-            if ($product) {
-                $total += $product->price * $item['qty'];
-            }
-        }
+        $umkmData = $this->resolveUmkmItems($paket, $request->umkm_products);
+        $total += $umkmData['addon_total'];
 
         $oldStatus = $booking->status;
         $booking->update([
@@ -233,21 +209,8 @@ class BookingController extends Controller
             'visit_date'     => $request->visit_date,
         ]);
 
-        if (!empty($umkmItems)) {
-            $syncData = [];
-
-            foreach ($umkmItems as $item) {
-                $product = \App\Models\UmkmProduct::find($item['id']);
-
-                if ($product) {
-                    $syncData[$product->id] = [
-                        'quantity' => $item['qty'],
-                        'price' => $product->price,
-                    ];
-                }
-            }
-
-            $booking->umkmProducts()->sync($syncData);
+        if (!empty($umkmData['sync_data'])) {
+            $booking->umkmProducts()->sync($umkmData['sync_data']);
         } else {
             $booking->umkmProducts()->detach();
         }
@@ -281,5 +244,63 @@ class BookingController extends Controller
         return redirect()
             ->route('bookings.index')
             ->with('success', 'Data Booking berhasil dihapus permanen!');
+    }
+
+    private function resolveUmkmItems(PaketTour $paket, ?string $umkmProductsJson): array
+    {
+        $items = json_decode($umkmProductsJson ?? '[]', true);
+
+        if (!is_array($items) || empty($items)) {
+            return [
+                'addon_total' => 0,
+                'sync_data' => [],
+            ];
+        }
+
+        $requestedItems = collect($items)
+            ->filter(fn ($item) => is_array($item) && isset($item['id'], $item['qty']))
+            ->map(function ($item) {
+                return [
+                    'id' => (int) $item['id'],
+                    'qty' => max(0, (int) $item['qty']),
+                ];
+            })
+            ->filter(fn ($item) => $item['id'] > 0 && $item['qty'] > 0)
+            ->values();
+
+        if ($requestedItems->isEmpty()) {
+            return [
+                'addon_total' => 0,
+                'sync_data' => [],
+            ];
+        }
+
+        $allowedProducts = $paket->umkmProducts()
+            ->whereIn('umkm_products.id', $requestedItems->pluck('id')->all())
+            ->get()
+            ->keyBy('id');
+
+        $addonTotal = 0;
+        $syncData = [];
+
+        foreach ($requestedItems as $item) {
+            /** @var UmkmProduct|null $product */
+            $product = $allowedProducts->get($item['id']);
+
+            if (! $product) {
+                continue;
+            }
+
+            $addonTotal += $product->price * $item['qty'];
+            $syncData[$product->id] = [
+                'quantity' => $item['qty'],
+                'price' => $product->price,
+            ];
+        }
+
+        return [
+            'addon_total' => $addonTotal,
+            'sync_data' => $syncData,
+        ];
     }
 }
