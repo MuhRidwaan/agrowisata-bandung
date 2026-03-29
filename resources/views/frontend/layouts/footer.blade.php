@@ -50,6 +50,21 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 @if (isset($paket))
+    @php
+        $activeBundlings = ($paket->bundlings ?? collect())
+            ->where('is_active', true)
+            ->values()
+            ->map(function ($bundling) {
+                return [
+                    'id' => $bundling->id,
+                    'label' => $bundling->label,
+                    'people_count' => $bundling->people_count,
+                    'bundle_price' => $bundling->bundle_price,
+                    'description' => $bundling->description,
+                ];
+            })
+            ->all();
+    @endphp
     <script
         src="{{ config('midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}"
         data-client-key="{{ config('midtrans.client_key') }}"></script>
@@ -58,9 +73,7 @@
             name: '{{ $paket->nama_paket ?? 'AgroBandung' }}',
             location: '{{ $paket->vendor->area->name ?? 'Bandung' }}',
             basePrice: {{ $paket->harga_paket ?? 0 }},
-            bundlingAvailable: @json((bool) ($paket->is_bundling_available ?? false)),
-            bundlingPrice: {{ $paket->harga_bundling ?? 0 }},
-            bundlingPeople: {{ $paket->bundling_people ?? 0 }},
+            bundlings: @json($activeBundlings),
             pricingRules: @json($paket->pricingRules ?? []),
             waNumber: '{{ preg_replace('/[^0-9]/', '', $paket->vendor->whatsappsetting->phone_number ?? '') }}',
             waContact: '{{ $paket->vendor->name ?? 'Admin' }}',

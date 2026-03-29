@@ -60,28 +60,46 @@ class PaketTour extends Model
         return $this->hasMany(PricingRule::class, 'paket_tour_id');
     }
 
+    public function bundlings()
+    {
+        return $this->hasMany(PaketTourBundling::class)
+            ->orderBy('sort_order')
+            ->orderBy('people_count');
+    }
+
     /**
      * Menghitung total harga berdasarkan jumlah peserta dan aturan diskon (Pricing Rules)
      * 
      * @param int $pax Jumlah peserta
      * @return array Detail perhitungan [base_price, discount, total_price, applied_rule]
      */
-    public function calculatePrice($pax, $useBundling = false)
+    public function calculatePrice($pax, $useBundling = false, $bundlingId = null)
     {
-        if (
-            $useBundling &&
-            $this->is_bundling_available &&
-            $this->harga_bundling !== null &&
-            $this->bundling_people !== null &&
-            (int) $pax === (int) $this->bundling_people
-        ) {
+        $selectedBundling = null;
+
+        if ($useBundling) {
+            $bundlings = $this->relationLoaded('bundlings')
+                ? $this->bundlings->where('is_active', true)->values()
+                : $this->bundlings()->where('is_active', true)->get();
+
+            if ($bundlingId) {
+                $selectedBundling = $bundlings->firstWhere('id', (int) $bundlingId);
+            }
+
+            if (! $selectedBundling) {
+                $selectedBundling = $bundlings->firstWhere('people_count', (int) $pax);
+            }
+        }
+
+        if ($selectedBundling && (int) $pax === (int) $selectedBundling->people_count) {
             return [
                 'base_price_per_pax' => $this->harga_paket,
-                'total_base_price' => $this->harga_bundling,
+                'total_base_price' => $selectedBundling->bundle_price,
                 'discount' => 0,
-                'total_price' => $this->harga_bundling,
+                'total_price' => $selectedBundling->bundle_price,
                 'applied_rule' => null,
                 'applied_bundling' => true,
+                'bundling' => $selectedBundling,
             ];
         }
 
@@ -115,6 +133,7 @@ class PaketTour extends Model
             'total_price' => $totalBase - $discount,
             'applied_rule' => $appliedRule,
             'applied_bundling' => false,
+            'bundling' => null,
         ];
     }
 

@@ -44,10 +44,17 @@
 
                     <dt class="col-sm-3">Bundling Price</dt>
                     <dd class="col-sm-9">
-                        @if ($paketTour->is_bundling_available && $paketTour->harga_bundling)
-                            <span class="badge badge-success">
-                                Rp {{ number_format($paketTour->harga_bundling, 0, ',', '.') }}
-                            </span>
+                        @if ($paketTour->bundlings->count())
+                            @foreach ($paketTour->bundlings as $bundling)
+                                <div class="mb-2">
+                                    <span class="badge badge-success">
+                                        Rp {{ number_format($bundling->bundle_price, 0, ',', '.') }}
+                                    </span>
+                                    @if($bundling->label)
+                                        <span class="text-muted small ml-1">{{ $bundling->label }}</span>
+                                    @endif
+                                </div>
+                            @endforeach
                         @else
                             <span class="text-muted">-</span>
                         @endif
@@ -55,10 +62,29 @@
 
                     <dt class="col-sm-3">Bundling People</dt>
                     <dd class="col-sm-9">
-                        @if ($paketTour->is_bundling_available && $paketTour->bundling_people)
-                            <span class="badge badge-info">
-                                {{ number_format($paketTour->bundling_people, 0, ',', '.') }} orang
-                            </span>
+                        @if ($paketTour->bundlings->count())
+                            @foreach ($paketTour->bundlings as $bundling)
+                                <div class="mb-2">
+                                    <span class="badge badge-info">
+                                        {{ number_format($bundling->people_count, 0, ',', '.') }} orang
+                                    </span>
+                                    @if($bundling->description)
+                                        <div class="small text-muted mt-1">{{ $bundling->description }}</div>
+                                    @endif
+                                    @if($bundling->photos->count())
+                                        <div class="row mt-2">
+                                            @foreach($bundling->photos as $photo)
+                                                <div class="col-md-3 col-sm-4 col-6 mb-2">
+                                                    <img src="{{ $photo->photo_url }}"
+                                                        alt="Bundling Photo"
+                                                        class="img-fluid rounded border"
+                                                        style="height: 110px; width: 100%; object-fit: cover;">
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
                         @else
                             <span class="text-muted">-</span>
                         @endif

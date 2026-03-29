@@ -8,7 +8,7 @@ let isProcessing = false;
 
 const config = window.BOOKING_CONFIG || {
   name: 'AgroBandung', location: 'Bandung',
-  basePrice: 50000, bundlingAvailable: false, bundlingPrice: 0, bundlingPeople: 0, pricingRules: [],
+  basePrice: 50000, bundlings: [], pricingRules: [],
   storeUrl: '', csrfToken: '', invoiceUrl: ''
 };
 
@@ -71,10 +71,24 @@ function isBundlingActive() {
   return !!document.querySelector('.bundling-card.active');
 }
 
+function getSelectedBundling() {
+  var activeBundling = document.querySelector('.bundling-card.active');
+  if (!activeBundling) {
+    return null;
+  }
+
+  return {
+    id: parseInt(activeBundling.dataset.id, 10) || null,
+    label: activeBundling.dataset.label || 'Bundling',
+    people_count: parseInt(activeBundling.dataset.people, 10) || 1,
+    bundle_price: Number(activeBundling.dataset.price || 0)
+  };
+}
+
 function getSelectedPricingRuleLimits() {
-  if (isBundlingActive()) {
-    var bundlingPeople = parseInt(config.bundlingPeople, 10) || 1;
-    return { min: bundlingPeople, max: bundlingPeople };
+  var selectedBundling = getSelectedBundling();
+  if (selectedBundling) {
+    return { min: selectedBundling.people_count, max: selectedBundling.people_count };
   }
 
   var activeCard = document.querySelector('.discount-card.active');
@@ -363,17 +377,19 @@ function updateNavButtons() {
 }
 
 function getPriceCalculation() {
-  const bundlingActive = isBundlingActive();
-  const totalBase = bundlingActive ? Number(config.bundlingPrice || 0) : participantCount * config.basePrice;
+  const selectedBundling = getSelectedBundling();
+  const totalBase = selectedBundling ? Number(selectedBundling.bundle_price || 0) : participantCount * config.basePrice;
   let discount = 0;
   let appliedRule = null;
   let appliedBundling = null;
   var activeCard = document.querySelector('.discount-card.active');
 
-  if (bundlingActive && config.bundlingAvailable) {
+  if (selectedBundling) {
     appliedBundling = {
-      bundling_people: parseInt(config.bundlingPeople, 10) || participantCount,
-      harga_bundling: Number(config.bundlingPrice || 0)
+      bundling_id: selectedBundling.id,
+      bundling_label: selectedBundling.label,
+      bundling_people: selectedBundling.people_count,
+      harga_bundling: Number(selectedBundling.bundle_price || 0)
     };
   } else if (activeCard) {
     appliedRule = {
@@ -440,7 +456,7 @@ function updateSummary() {
   var pl = document.getElementById('summaryPriceLabel');
   if (pl) {
     if (calc.appliedBundling) {
-      pl.textContent = 'Paket bundling \u00b7 ' + calc.appliedBundling.bundling_people + ' orang';
+      pl.textContent = (calc.appliedBundling.bundling_label || 'Paket bundling') + ' \u00b7 ' + calc.appliedBundling.bundling_people + ' orang';
     } else {
       pl.textContent = formatCurrency(config.basePrice) + ' \u00d7 ' + participantCount;
     }
@@ -483,6 +499,7 @@ function submitBooking() {
     paket_tour_id: paketId,
     jumlah_peserta: participantCount,
     use_bundling: isBundlingActive(),
+    bundling_id: getSelectedBundling() ? getSelectedBundling().id : null,
     customer_name: nameInput ? nameInput.value.trim() : '',
     customer_email: emailInput ? emailInput.value.trim() : '',
     customer_phone: phoneInput ? phoneInput.value.trim() : '',

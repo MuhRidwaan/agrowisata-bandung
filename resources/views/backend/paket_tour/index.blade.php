@@ -89,6 +89,7 @@
                             <th class="text-right">Price</th>
                             <th class="text-right">Bundling Price</th>
                             <th class="text-right">Bundling People</th>
+                            <th>Bundling Photos</th>
                             <!-- <th>Available Dates</th> -->
                             <!-- <th>Quota</th> -->
                             <!-- <th>Activities</th> -->
@@ -121,22 +122,65 @@
                                     @endif
                                 </td>
 
-                                {{-- BUNDLING PRICE --}}
                                 <td class="text-right">
-                                    @if ($paket->is_bundling_available && $paket->harga_bundling)
-                                        <span class="badge badge-success">
-                                            Rp {{ number_format($paket->harga_bundling, 0, ',', '.') }}
-                                        </span>
+                                    @if ($paket->bundlings->count())
+                                        @foreach ($paket->bundlings as $bundling)
+                                            <div class="mb-2">
+                                                <span class="badge badge-success">
+                                                    Rp {{ number_format($bundling->bundle_price, 0, ',', '.') }}
+                                                </span>
+                                            </div>
+                                        @endforeach
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
 
                                 <td class="text-right">
-                                    @if ($paket->is_bundling_available && $paket->bundling_people)
-                                        <span class="badge badge-info">
-                                            {{ number_format($paket->bundling_people, 0, ',', '.') }} orang
-                                        </span>
+                                    @if ($paket->bundlings->count())
+                                        @foreach ($paket->bundlings as $bundling)
+                                            <div class="mb-2">
+                                                <span class="badge badge-info">
+                                                    {{ number_format($bundling->people_count, 0, ',', '.') }} orang
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+
+                                <td>
+                                    @if ($paket->bundlings->count())
+                                        @foreach ($paket->bundlings as $bundling)
+                                            <div class="mb-2">
+                                                @if ($bundling->photos->count())
+                                                    <div class="d-flex flex-wrap">
+                                                        @foreach ($bundling->photos->take(3) as $photo)
+                                                            <button type="button"
+                                                                class="btn p-0 border-0 bg-transparent mr-1 mb-1 bundling-photo-trigger"
+                                                                data-photo-url="{{ $photo->photo_url }}"
+                                                                data-photo-label="{{ $paket->nama_paket }}">
+                                                                <img
+                                                                    src="{{ $photo->photo_url }}"
+                                                                    alt="Bundling Photo"
+                                                                    class="rounded border"
+                                                                    style="width: 44px; height: 44px; object-fit: cover;">
+                                                            </button>
+                                                        @endforeach
+                                                        @if ($bundling->photos->count() > 3)
+                                                            <div
+                                                                class="d-inline-flex align-items-center justify-content-center border rounded text-muted small mb-1"
+                                                                style="width: 44px; height: 44px;">
+                                                                +{{ $bundling->photos->count() - 3 }}
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted small">Belum ada foto</span>
+                                                @endif
+                                            </div>
+                                        @endforeach
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
@@ -200,7 +244,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="text-center">
+                                <td colspan="11" class="text-center">
                                     No tour package data available yet.
                                 </td>
                             </tr>
@@ -230,8 +274,47 @@
 </script>
 @endif
 
+<div class="modal fade" id="bundlingPhotoPreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bundlingPhotoPreviewTitle">Preview Foto</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="bundlingPhotoPreviewImage"
+                    src=""
+                    alt="Bundling Preview"
+                    class="img-fluid rounded"
+                    style="max-height: 70vh; object-fit: contain;">
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- DELETE CONFIRMATION (FIXED MULTIPLE FORMS) --}}
 <script>
+    document.querySelectorAll('.bundling-photo-trigger').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const modalEl = document.getElementById('bundlingPhotoPreviewModal');
+            const imageEl = document.getElementById('bundlingPhotoPreviewImage');
+            const titleEl = document.getElementById('bundlingPhotoPreviewTitle');
+
+            if (!modalEl || !imageEl) {
+                return;
+            }
+
+            imageEl.src = this.dataset.photoUrl || '';
+            titleEl.textContent = this.dataset.photoLabel || 'Preview Foto';
+
+            if (window.jQuery && typeof window.jQuery(modalEl).modal === 'function') {
+                window.jQuery(modalEl).modal('show');
+            }
+        });
+    });
+
     document.querySelectorAll('.form-delete').forEach(function (form) {
         form.addEventListener('submit', function (e) {
             e.preventDefault();
