@@ -90,6 +90,9 @@ Route::middleware('auth')->group(function () {
     Route::get('tanggal-available/export', [TanggalAvailableController::class, 'export'])->name('tanggal-available.export');
     Route::post('tanggal-available/import', [TanggalAvailableController::class, 'import'])->name('tanggal-available.import');
     Route::get('tanggal-available/download-template', [TanggalAvailableController::class, 'downloadTemplate'])->name('tanggal-available.download-template');
+    Route::get('tanggal-available/package/{paket_tour_id}/edit', [TanggalAvailableController::class, 'editByPackage'])->name('tanggal-available.edit-package');
+    Route::put('tanggal-available/package/{paket_tour_id}', [TanggalAvailableController::class, 'updateByPackage'])->name('tanggal-available.update-package');
+    Route::delete('tanggal-available/delete-by-package/{paket_tour_id}', [TanggalAvailableController::class, 'destroyByPackage'])->name('tanggal-available.destroy-by-package');
     Route::resource('tanggal-available', TanggalAvailableController::class);
 
     // UMKM PRODUCTS

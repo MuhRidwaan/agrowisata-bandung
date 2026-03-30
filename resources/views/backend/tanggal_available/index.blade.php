@@ -95,9 +95,7 @@
                                 <tr>
                                     <th>No</th>
                                     <th>Tour Package</th>
-                                    <th>Date</th>
-                                    <th>Quota</th>
-                                    <th>Status</th>
+                                    <th>Total Dates</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -107,46 +105,84 @@
                                     <tr>
                                         <td>{{ $tanggalAvailables->firstItem() + $loop->index }}</td>
                                         <td>{{ $item->paketTour->nama_paket ?? '-' }}</td>
-                                        <td>{{ $item->tanggal }}</td>
-                                        <td>{{ $item->kuota }}</td>
                                         <td>
-                                            <span class="badge badge-{{ $item->status == 'aktif' ? 'success' : 'secondary' }}">
-                                                {{ ucfirst($item->status) }}
-                                            </span>
+                                            <span class="badge badge-info">{{ $item->total_dates }} Days</span>
                                         </td>
                                         <td>
-
-                                            <!-- EDIT -->
-                                            <a href="{{ route('tanggal-available.edit', $item) }}"
-                                               class="btn btn-warning btn-sm">
-                                                <i class="fas fa-edit"></i> 
+                                            <button type="button"
+                                                    class="btn btn-info btn-sm"
+                                                    data-toggle="modal"
+                                                    data-target="#detailModal{{ $item->paket_tour_id }}"
+                                                    title="View Detail">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <a href="{{ route('tanggal-available.edit-package', $item->paket_tour_id) }}"
+                                               class="btn btn-warning btn-sm"
+                                               title="Edit">
+                                                <i class="fas fa-edit"></i>
                                             </a>
-
-                                            <!-- DELETE -->
-                                            <form action="{{ route('tanggal-available.destroy', $item) }}"
+                                            <form action="{{ route('tanggal-available.destroy-by-package', $item->paket_tour_id) }}"
                                                   method="POST"
                                                   style="display:inline-block"
-                                                  class="form-delete">
+                                                  class="form-delete-package">
                                                 @csrf
                                                 @method('DELETE')
-
                                                 <button type="submit"
-                                                        class="btn btn-danger btn-sm">
-                                                    <i class="fas fa-trash"></i> 
+                                                        class="btn btn-danger btn-sm"
+                                                        title="Delete">
+                                                    <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
-
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center">
+                                        <td colspan="4" class="text-center">
                                             No data available
                                         </td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
+
+                        @foreach ($tanggalAvailables as $item)
+                            <div class="modal fade" id="detailModal{{ $item->paket_tour_id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                                <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">
+                                                Detail Available Date - {{ $item->paketTour->nama_paket ?? '-' }}
+                                            </h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body p-0">
+                                            <div class="p-3 border-bottom bg-light">
+                                                <div class="row">
+                                                    <div class="col-md-4 mb-2 mb-md-0">
+                                                        <small class="text-muted d-block">Date Range</small>
+                                                        <strong>{{ $item->tanggal_awal }} s/d {{ $item->tanggal_akhir }}</strong>
+                                                    </div>
+                                                    <div class="col-md-4 mb-2 mb-md-0">
+                                                        <small class="text-muted d-block">Total Quota</small>
+                                                        <strong>{{ number_format((int) $item->total_kuota) }}</strong>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <small class="text-muted d-block">Status Summary</small>
+                                                        <span class="badge badge-success mr-1">Aktif: {{ (int) $item->total_aktif }}</span>
+                                                        <span class="badge badge-secondary">Nonaktif: {{ (int) $item->total_nonaktif }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
 
                     </div>
 
@@ -167,7 +203,7 @@
 <script>
     Swal.fire({
         icon: 'success',
-        title: 'Success',
+        title: 'Berhasil',
         text: '{{ session('success') }}',
         timer: 2000,
         showConfirmButton: false
@@ -179,26 +215,25 @@
 <script>
     Swal.fire({
         icon: 'error',
-        title: 'Error',
+        title: 'Gagal',
         text: '{{ session('error') }}',
     });
 </script>
 @endif
 
-
 <script>
-    document.querySelectorAll('.form-delete').forEach(form => {
+    document.querySelectorAll('.form-delete-package').forEach(form => {
         form.addEventListener('submit', function (e) {
             e.preventDefault();
 
             Swal.fire({
-                title: 'Are you sure you want to delete?',
+                title: 'Yakin ingin menghapus semua tanggal pada paket ini?',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete!',
-                cancelButtonText: 'Cancel'
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {
                     form.submit();
