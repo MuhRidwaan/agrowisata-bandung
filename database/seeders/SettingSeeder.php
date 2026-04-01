@@ -21,9 +21,15 @@ class SettingSeeder extends Seeder
             ['key' => 'midtrans_merchant_id', 'value' => 'YOUR_MERCHANT_ID', 'category' => 'payment', 'label' => 'Midtrans Merchant ID', 'type' => 'text'],
             ['key' => 'midtrans_server_key', 'value' => 'YOUR_SERVER_KEY', 'category' => 'payment', 'label' => 'Midtrans Server Key', 'type' => 'text'],
             ['key' => 'midtrans_client_key', 'value' => 'YOUR_CLIENT_KEY', 'category' => 'payment', 'label' => 'Midtrans Client Key', 'type' => 'text'],
+            ['key' => 'enable_midtrans', 'value' => 'true', 'category' => 'payment', 'label' => 'Enable Midtrans', 'type' => 'checkbox'],
             ['key' => 'midtrans_is_production', 'value' => 'false', 'category' => 'payment', 'label' => 'Midtrans Production Mode', 'type' => 'checkbox'],
             ['key' => 'midtrans_is_sanitized', 'value' => 'true', 'category' => 'payment', 'label' => 'Midtrans Sanitized', 'type' => 'checkbox'],
             ['key' => 'midtrans_is_3ds', 'value' => 'true', 'category' => 'payment', 'label' => 'Midtrans 3DS', 'type' => 'checkbox'],
+            ['key' => 'enable_manual_payment', 'value' => 'true', 'category' => 'payment', 'label' => 'Enable Manual Transfer', 'type' => 'checkbox'],
+            ['key' => 'manual_payment_bank_name', 'value' => 'Bank BCA', 'category' => 'payment', 'label' => 'Manual Payment Bank Name', 'type' => 'text'],
+            ['key' => 'manual_payment_account_number', 'value' => '1234567890', 'category' => 'payment', 'label' => 'Manual Payment Account Number', 'type' => 'text'],
+            ['key' => 'manual_payment_account_name', 'value' => 'PT Agrowisata Bandung', 'category' => 'payment', 'label' => 'Manual Payment Account Name', 'type' => 'text'],
+            ['key' => 'manual_payment_instructions', 'value' => 'Silakan transfer sesuai total tagihan, lalu kirim bukti transfer ke admin/vendor agar pembayaran dapat diverifikasi secara manual.', 'category' => 'payment', 'label' => 'Manual Payment Instructions', 'type' => 'textarea'],
 
             // EMAIL
             ['key' => 'enable_email_notification', 'value' => 'true', 'category' => 'email', 'label' => 'Send Email Notification', 'type' => 'checkbox'],

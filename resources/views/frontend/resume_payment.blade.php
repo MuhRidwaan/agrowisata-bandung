@@ -29,16 +29,132 @@
                             </div>
                         </div>
 
-                        <!-- Tombol -->
+                        @if (($payment->payment_method ?? null) === 'manual_transfer')
+                            @php
+                                $channels = collect(json_decode(get_setting('manual_payment_channels', '[]'), true) ?? [])
+                                    ->where('is_active', true)->values();
+                                $selectedChannel = $payment->selected_channel
+                                    ? collect($channels)->firstWhere('name', $payment->selected_channel)
+                                    : null;
+                            @endphp
+
+                            @if ($selectedChannel)
+                                {{-- Sudah pilih channel, tampilkan detail --}}
+                                <div class="alert alert-warning border-0 rounded-3 mb-4">
+                                    <h2 class="h6 fw-bold mb-2">Instruksi Pembayaran — {{ $selectedChannel['name'] }}</h2>
+
+                                    {{-- Tampilkan QR Code jika ada --}}
+                                    @if (!empty($selectedChannel['qr_image']))
+                                        <div class="text-center my-3">
+                                            <img src="{{ asset('storage/' . $selectedChannel['qr_image']) }}"
+                                                alt="QR Code {{ $selectedChannel['name'] }}"
+                                                style="max-width: 200px; border: 1px solid #ddd; border-radius: 8px; padding: 8px; background:#fff;">
+                                            <p class="small text-muted mt-1">Scan QR Code di atas untuk membayar</p>
+                                        </div>
+                                    @endif
+
+                                    @if (!empty($selectedChannel['account_number']))
+                                        <div class="small text-muted mb-1">Nomor Rekening / VA / ID</div>
+                                        <div class="fw-semibold mb-2">{{ $selectedChannel['account_number'] }}</div>
+                                    @endif
+                                    @if (!empty($selectedChannel['account_name']))
+                                        <div class="small text-muted mb-1">Atas Nama</div>
+                                        <div class="fw-semibold mb-2">{{ $selectedChannel['account_name'] }}</div>
+                                    @endif
+                                    @if (!empty($selectedChannel['instructions']))
+                                        <div class="small text-muted">{!! nl2br(e($selectedChannel['instructions'])) !!}</div>
+                                    @endif
+                                </div>
+                            @elseif ($channels->isNotEmpty())
+                                {{-- Belum pilih channel, tampilkan pilihan --}}
+                                <div class="mb-4">
+                                    <p class="fw-semibold small mb-2">Pilih Metode Pembayaran Manual:</p>
+                                    <form action="{{ route('frontend.select_payment_channel', $booking->booking_code) }}"
+                                        method="POST">
+                                        @csrf
+                                        @foreach ($channels as $ch)
+                                            <label class="d-block border rounded-3 p-3 mb-2 cursor-pointer"
+                                                style="cursor:pointer;">
+                                                <input type="radio" name="selected_channel" value="{{ $ch['name'] }}" required>
+                                                <span class="fw-semibold ms-1">{{ $ch['name'] }}</span>
+                                                @if (!empty($ch['account_number']))
+                                                    <span class="text-muted small ms-2">— {{ $ch['account_number'] }}</span>
+                                                @endif
+                                                <span class="badge badge-secondary ms-1 text-uppercase" style="font-size:0.7rem;">{{ $ch['type'] }}</span>
+                                            </label>
+                                        @endforeach
+                                        <button type="submit" class="btn btn-warning w-100 py-2 fw-semibold rounded-3 mt-2">
+                                            Pilih & Lihat Instruksi
+                                        </button>
+                                    </form>
+                                </div>
+                            @else
+                                {{-- Fallback ke setting lama --}}
+                                <div class="alert alert-warning border-0 rounded-3 mb-4">
+                                    <h2 class="h6 fw-bold mb-2">Instruksi Transfer Manual</h2>
+                                    <div class="small text-muted mb-1">Bank Tujuan</div>
+                                    <div class="fw-semibold mb-2">{{ get_setting('manual_payment_bank_name', 'Transfer Bank') }}</div>
+                                    <div class="small text-muted mb-1">Nomor Rekening</div>
+                                    <div class="fw-semibold mb-2">{{ get_setting('manual_payment_account_number', '-') }}</div>
+                                    <div class="small text-muted mb-1">Atas Nama</div>
+                                    <div class="fw-semibold mb-3">{{ get_setting('manual_payment_account_name', '-') }}</div>
+                                    <div class="small text-muted">{!! nl2br(e(get_setting('manual_payment_instructions', ''))) !!}</div>
+                                </div>
+                            @endif
+
+                            {{-- UPLOAD BUKTI TRANSFER --}}
+                            @if (session('success'))
+                                <div class="alert alert-success rounded-3 mb-3">{{ session('success') }}</div>
+                            @endif
+
+                            @if ($payment->transfer_proof)
+                                <div class="mb-4">
+                                    <p class="small text-muted mb-1">Bukti transfer yang sudah diunggah:</p>
+                                    <img src="{{ asset('storage/' . $payment->transfer_proof) }}"
+                                        alt="Bukti Transfer"
+                                        class="img-fluid rounded-3 border"
+                                        style="max-height: 220px; object-fit: contain;">
+                                    <p class="small text-muted mt-1">
+                                        Diunggah: {{ \Carbon\Carbon::parse($payment->transfer_proof_uploaded_at)->format('d M Y, H:i') }}
+                                    </p>
+                                </div>
+                            @endif
+
+                            <form action="{{ route('frontend.upload_transfer_proof', $booking->booking_code) }}"
+                                method="POST" enctype="multipart/form-data" class="mb-4">
+                                @csrf
+                                <label class="form-label fw-semibold small">
+                                    {{ $payment->transfer_proof ? 'Ganti Bukti Transfer' : 'Upload Bukti Transfer' }}
+                                </label>
+                                <input type="file" name="transfer_proof" accept="image/*"
+                                    class="form-control rounded-3 @error('transfer_proof') is-invalid @enderror">
+                                @error('transfer_proof')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <p class="small text-muted mt-1">Format: JPG, PNG, WEBP. Maks 2MB.</p>
+                                <button type="submit" class="btn btn-warning w-100 py-2 fw-semibold rounded-3 mt-1">
+                                    <i class="fas fa-upload me-1"></i> Kirim Bukti Transfer
+                                </button>
+                            </form>
+                        @endif
+
                         <div class="mt-4 mb-5">
                             <div class="row g-3">
-
-                                <div class="col-12">
-                                    <button type="button" id="resumePayBtn"
-                                        class="btn btn-agro-primary w-100 py-3 fw-semibold rounded-3">
-                                        Lanjutkan Bayar Sekarang
-                                    </button>
-                                </div>
+                                @if (($payment->payment_method ?? null) === 'manual_transfer')
+                                    <div class="col-12">
+                                        <a href="{{ route('frontend.invoice', $booking->booking_code) }}"
+                                            class="btn btn-agro-primary w-100 py-3 fw-semibold rounded-3">
+                                            Lihat Instruksi Pembayaran
+                                        </a>
+                                    </div>
+                                @else
+                                    <div class="col-12">
+                                        <button type="button" id="resumePayBtn"
+                                            class="btn btn-agro-primary w-100 py-3 fw-semibold rounded-3">
+                                            Lanjutkan Bayar Sekarang
+                                        </button>
+                                    </div>
+                                @endif
 
                                 <div class="col-12">
                                     <a href="{{ route('home') }}"
@@ -46,10 +162,8 @@
                                         Kembali ke Beranda
                                     </a>
                                 </div>
-
                             </div>
                         </div>
-                        <!-- End Tombol -->
 
                     </div>
                 </div>
@@ -60,9 +174,11 @@
 @endsection
 
 @push('scripts')
+@if (($payment->payment_method ?? null) !== 'manual_transfer')
 <script src="{{ config('midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}" 
         data-client-key="{{ config('midtrans.client_key') }}">
 </script>
+<script>
 document.addEventListener('DOMContentLoaded', function () {
     var payBtn = document.getElementById('resumePayBtn');
     if (!payBtn) return;
@@ -94,4 +210,5 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+@endif
 @endpush

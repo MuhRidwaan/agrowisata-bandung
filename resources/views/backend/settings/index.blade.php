@@ -74,8 +74,108 @@
                                                     <input type="file" name="{{ $setting->key }}" class="custom-file-input">
                                                     <label class="custom-file-label">Choose file</label>
                                                 </div>
+                                            @elseif($setting->type == 'json_channels')
+                                                @php
+                                                    $channels = json_decode($setting->value ?? '[]', true) ?? [];
+                                                @endphp
+                                                <div id="channels-wrapper">
+                                                    @foreach($channels as $i => $ch)
+                                                    <div class="card card-secondary card-outline mb-3 channel-item">
+                                                        <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                                            <span class="font-weight-bold">Channel #{{ $i + 1 }}</span>
+                                                            <button type="button" class="btn btn-danger btn-xs remove-channel">
+                                                                <i class="fas fa-trash"></i> Hapus
+                                                            </button>
+                                                        </div>
+                                                        <div class="card-body py-2">
+                                                            <div class="form-row">
+                                                                <div class="form-group col-md-6">
+                                                                    <label class="small">Nama Channel</label>
+                                                                    <input type="text" name="channels_name[]" class="form-control form-control-sm"
+                                                                        placeholder="cth: Transfer BCA, QRIS, VA Mandiri"
+                                                                        value="{{ $ch['name'] ?? '' }}" required>
+                                                                </div>
+                                                                <div class="form-group col-md-6">
+                                                                    <label class="small">Tipe</label>
+                                                                    <select name="channels_type[]" class="form-control form-control-sm">
+                                                                        <option value="bank_transfer" {{ ($ch['type'] ?? '') === 'bank_transfer' ? 'selected' : '' }}>Bank Transfer</option>
+                                                                        <option value="qris" {{ ($ch['type'] ?? '') === 'qris' ? 'selected' : '' }}>QRIS</option>
+                                                                        <option value="va" {{ ($ch['type'] ?? '') === 'va' ? 'selected' : '' }}>Virtual Account</option>
+                                                                        <option value="ewallet" {{ ($ch['type'] ?? '') === 'ewallet' ? 'selected' : '' }}>E-Wallet</option>
+                                                                        <option value="other" {{ ($ch['type'] ?? '') === 'other' ? 'selected' : '' }}>Lainnya</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="form-group col-md-6">
+                                                                    <label class="small">Nomor Rekening / VA / ID</label>
+                                                                    <input type="text" name="channels_account_number[]" class="form-control form-control-sm"
+                                                                        placeholder="cth: 1234567890"
+                                                                        value="{{ $ch['account_number'] ?? '' }}">
+                                                                </div>
+                                                                <div class="form-group col-md-6">
+                                                                    <label class="small">Atas Nama</label>
+                                                                    <input type="text" name="channels_account_name[]" class="form-control form-control-sm"
+                                                                        placeholder="cth: PT Agrowisata Bandung"
+                                                                        value="{{ $ch['account_name'] ?? '' }}">
+                                                                </div>
+                                                                <div class="form-group col-12">
+                                                                    <label class="small">Instruksi Tambahan</label>
+                                                                    <textarea name="channels_instructions[]" class="form-control form-control-sm" rows="2"
+                                                                        placeholder="cth: Transfer sesuai total, lalu upload bukti.">{{ $ch['instructions'] ?? '' }}</textarea>
+                                                                </div>
+                                                                {{-- QR IMAGE UPLOAD (hanya untuk channel yang sudah tersimpan) --}}
+                                                                <div class="form-group col-12 qr-upload-section" data-type="{{ $ch['type'] ?? '' }}">
+                                                                    <label class="small">QR Code Image <span class="text-muted">(opsional, untuk QRIS / E-Wallet)</span></label>
+                                                                    @if (!empty($ch['qr_image']))
+                                                                        <div class="mb-2 d-flex align-items-center gap-2">
+                                                                            <img src="{{ asset('storage/' . $ch['qr_image']) }}"
+                                                                                alt="QR Code"
+                                                                                style="max-height:100px; border:1px solid #ddd; border-radius:6px; padding:4px;">
+                                                                            <form action="{{ route('settings.channel_qr_delete', $i) }}"
+                                                                                method="POST" style="display:inline"
+                                                                                onsubmit="return confirm('Hapus QR Code ini?')">
+                                                                                @csrf
+                                                                                @method('DELETE')
+                                                                                <button type="submit" class="btn btn-danger btn-xs ml-2">
+                                                                                    <i class="fas fa-trash"></i> Hapus QR
+                                                                                </button>
+                                                                            </form>
+                                                                        </div>
+                                                                    @endif
+                                                                    <form action="{{ route('settings.channel_qr', $i) }}"
+                                                                        method="POST" enctype="multipart/form-data"
+                                                                        class="d-flex align-items-center gap-2">
+                                                                        @csrf
+                                                                        <input type="file" name="qr_image" accept="image/*"
+                                                                            class="form-control form-control-sm" style="max-width:260px;">
+                                                                        <button type="submit" class="btn btn-secondary btn-sm ml-2">
+                                                                            <i class="fas fa-upload"></i> {{ empty($ch['qr_image']) ? 'Upload QR' : 'Ganti QR' }}
+                                                                        </button>
+                                                                    </form>
+                                                                    <small class="text-muted">Format: JPG, PNG, WEBP. Maks 2MB.</small>
+                                                                </div>
+                                                                <div class="form-group col-12 mb-0">
+                                                                    <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                                                        <input type="checkbox" name="channels_is_active[{{ $i }}]"
+                                                                            value="true"
+                                                                            class="custom-control-input"
+                                                                            id="ch-active-{{ $i }}"
+                                                                            {{ ($ch['is_active'] ?? true) ? 'checked' : '' }}>
+                                                                        <label class="custom-control-label" for="ch-active-{{ $i }}">Aktif</label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    @endforeach
+                                                </div>
+                                                <button type="button" id="add-channel" class="btn btn-secondary btn-sm mt-1">
+                                                    <i class="fas fa-plus"></i> Tambah Channel
+                                                </button>
+                                                <small class="d-block text-muted mt-2">Key: <code>{{ $setting->key }}</code></small>
                                             @endif
+                                            @if($setting->type !== 'json_channels')
                                             <small class="text-muted">Key: <code>{{ $setting->key }}</code></small>
+                                            @endif
                                         </div>
                                     </div>
                                     @endforeach
@@ -104,6 +204,61 @@
         $('.custom-file-input').on('change', function() {
             let fileName = $(this).val().split('\\').pop();
             $(this).next('.custom-file-label').addClass("selected").html(fileName);
+        });
+
+        // Tambah channel baru
+        let channelCount = $('#channels-wrapper .channel-item').length;
+        $('#add-channel').on('click', function () {
+            const i = channelCount++;
+            const html = `
+            <div class="card card-secondary card-outline mb-3 channel-item">
+                <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                    <span class="font-weight-bold">Channel Baru</span>
+                    <button type="button" class="btn btn-danger btn-xs remove-channel"><i class="fas fa-trash"></i> Hapus</button>
+                </div>
+                <div class="card-body py-2">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label class="small">Nama Channel</label>
+                            <input type="text" name="channels_name[]" class="form-control form-control-sm" placeholder="cth: Transfer BCA, QRIS, VA Mandiri" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="small">Tipe</label>
+                            <select name="channels_type[]" class="form-control form-control-sm">
+                                <option value="bank_transfer">Bank Transfer</option>
+                                <option value="qris">QRIS</option>
+                                <option value="va">Virtual Account</option>
+                                <option value="ewallet">E-Wallet</option>
+                                <option value="other">Lainnya</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="small">Nomor Rekening / VA / ID</label>
+                            <input type="text" name="channels_account_number[]" class="form-control form-control-sm" placeholder="cth: 1234567890">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="small">Atas Nama</label>
+                            <input type="text" name="channels_account_name[]" class="form-control form-control-sm" placeholder="cth: PT Agrowisata Bandung">
+                        </div>
+                        <div class="form-group col-12">
+                            <label class="small">Instruksi Tambahan</label>
+                            <textarea name="channels_instructions[]" class="form-control form-control-sm" rows="2" placeholder="cth: Transfer sesuai total, lalu upload bukti."></textarea>
+                        </div>
+                        <div class="form-group col-12 mb-0">
+                            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                <input type="checkbox" name="channels_is_active[${i}]" value="true" class="custom-control-input" id="ch-active-${i}" checked>
+                                <label class="custom-control-label" for="ch-active-${i}">Aktif</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            $('#channels-wrapper').append(html);
+        });
+
+        // Hapus channel
+        $(document).on('click', '.remove-channel', function () {
+            $(this).closest('.channel-item').remove();
         });
     });
 </script>

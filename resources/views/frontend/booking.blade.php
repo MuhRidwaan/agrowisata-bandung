@@ -363,20 +363,40 @@
                                 <i class="bi bi-credit-card text-primary-agro"></i> Metode Pembayaran
                             </h3>
                             <div class="d-flex flex-column gap-3">
-                                <label class="payment-method-card">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="payment-icon-circle">
-                                                <i class="bi bi-wallet2 fs-4 text-primary-agro"></i>
+                                @if (get_setting('enable_manual_payment', 'true') === 'true')
+                                    <label class="payment-method-card selected">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="payment-icon-circle">
+                                                    <i class="bi bi-bank fs-4 text-primary-agro"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="fw-bold mb-0">Transfer Manual</p>
+                                                    <p class="text-muted small mb-0">Transfer bank dan diverifikasi admin/vendor</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p class="fw-bold mb-0">Pembayaran Otomatis (Midtrans)</p>
-                                                <p class="text-muted small mb-0">Virtual Account, E-Wallet, Kartu Kredit, dll</p>
-                                            </div>
+                                            <input type="radio" name="payment" value="manual_transfer" class="form-check-input" checked>
                                         </div>
-                                        <input type="radio" name="payment" value="midtrans" class="form-check-input" checked>
-                                    </div>
-                                </label>
+                                    </label>
+                                @endif
+
+                                @if (get_setting('enable_midtrans', 'true') === 'true' && filled(config('midtrans.client_key')) && ! str_starts_with((string) config('midtrans.client_key'), 'YOUR_'))
+                                    <label class="payment-method-card {{ get_setting('enable_manual_payment', 'true') !== 'true' ? 'selected' : '' }}">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="payment-icon-circle">
+                                                    <i class="bi bi-wallet2 fs-4 text-primary-agro"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="fw-bold mb-0">Pembayaran Otomatis (Midtrans)</p>
+                                                    <p class="text-muted small mb-0">Virtual Account, E-Wallet, Kartu Kredit, dll</p>
+                                                </div>
+                                            </div>
+                                            <input type="radio" name="payment" value="midtrans" class="form-check-input"
+                                                {{ get_setting('enable_manual_payment', 'true') !== 'true' ? 'checked' : '' }}>
+                                        </div>
+                                    </label>
+                                @endif
                             </div>
 
                             <div class="bg-agro-light rounded-3 p-3 mt-4">
@@ -385,9 +405,15 @@
                                     <div>
                                         <p class="fw-semibold small mb-1">Informasi Pembayaran:</p>
                                         <ul class="text-muted small mb-0 ps-3">
-                                            <li>Pembayaran diproses secara aman melalui Midtrans.</li>
-                                            <li>Tiket akan langsung aktif setelah pembayaran berhasil.</li>
-                                            <li>Invoice akan dikirimkan ke email Anda secara otomatis.</li>
+                                            @if (get_setting('enable_manual_payment', 'true') === 'true')
+                                                <li>Transfer manual tersedia ke rekening {{ get_setting('manual_payment_bank_name', 'tujuan') }}.</li>
+                                                <li>Status booking akan menunggu verifikasi admin/vendor setelah Anda transfer.</li>
+                                            @endif
+                                            @if (get_setting('enable_midtrans', 'true') === 'true' && filled(config('midtrans.client_key')) && ! str_starts_with((string) config('midtrans.client_key'), 'YOUR_'))
+                                                <li>Pembayaran otomatis diproses secara aman melalui Midtrans.</li>
+                                                <li>Tiket akan langsung aktif setelah pembayaran berhasil.</li>
+                                            @endif
+                                            <li>Invoice akan dikirimkan ke email Anda secara otomatis setelah pembayaran lunas.</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -428,6 +454,8 @@
                                 style="max-width: 400px;">
                                 Lanjutkan Pembayaran
                             </a>
+                            <div id="manualPaymentInfo" class="alert alert-light border text-start mx-auto mt-4 d-none"
+                                style="max-width: 520px;"></div>
                         </div>
                     </div>
 

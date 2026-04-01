@@ -13,6 +13,23 @@ use Illuminate\Support\Str;
 
 class BookingController extends Controller
 {
+    private function isMidtransEnabled(): bool
+    {
+        $enabled = get_setting('enable_midtrans', 'true') === 'true';
+        $serverKey = (string) config('midtrans.server_key');
+        $clientKey = (string) config('midtrans.client_key');
+
+        if (! $enabled) {
+            return false;
+        }
+
+        if (blank($serverKey) || blank($clientKey)) {
+            return false;
+        }
+
+        return ! str_starts_with($serverKey, 'YOUR_') && ! str_starts_with($clientKey, 'YOUR_');
+    }
+
     public function index(Request $request)
     {
         $query = Booking::with(['paketTour', 'user', 'payment']);
@@ -114,6 +131,18 @@ class BookingController extends Controller
             'description'=> "Booking baru dibuat oleh " . auth()->user()->name,
         ]);
 
+        if (! $this->isMidtransEnabled()) {
+            Payment::create([
+                'booking_id' => $booking->id,
+                'status' => 'pending',
+                'payment_method' => 'manual_transfer',
+            ]);
+
+            return redirect()
+                ->route('bookings.index')
+                ->with('success', 'Booking berhasil ditambahkan dengan metode transfer manual.');
+        }
+
         // 4. Konfigurasi Midtrans
         try {
             \Midtrans\Config::$serverKey = config('midtrans.server_key');
@@ -141,6 +170,7 @@ class BookingController extends Controller
             Payment::create([
                 'booking_id' => $booking->id,
                 'status'     => 'pending',
+                'payment_method' => 'midtrans',
                 'snap_token' => $snapToken,
             ]);
 

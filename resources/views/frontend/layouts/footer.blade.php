@@ -65,9 +65,11 @@
             })
             ->all();
     @endphp
-    <script
-        src="{{ config('midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}"
-        data-client-key="{{ config('midtrans.client_key') }}"></script>
+    @if (get_setting('enable_midtrans', 'true') === 'true' && filled(config('midtrans.client_key')) && ! str_starts_with((string) config('midtrans.client_key'), 'YOUR_'))
+        <script
+            src="{{ config('midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}"
+            data-client-key="{{ config('midtrans.client_key') }}"></script>
+    @endif
     <script>
         window.BOOKING_CONFIG = {
             name: '{{ $paket->nama_paket ?? 'AgroBandung' }}',
@@ -75,6 +77,12 @@
             basePrice: {{ $paket->harga_paket ?? 0 }},
             bundlings: @json($activeBundlings),
             pricingRules: @json($paket->pricingRules ?? []),
+            manualPayment: {
+                bankName: @json(get_setting('manual_payment_bank_name', 'Transfer Bank')),
+                accountNumber: @json(get_setting('manual_payment_account_number', '-')),
+                accountName: @json(get_setting('manual_payment_account_name', '-')),
+                instructions: @json(get_setting('manual_payment_instructions', 'Silakan transfer sesuai total tagihan lalu konfirmasi ke admin/vendor untuk verifikasi.'))
+            },
             waNumber: '{{ preg_replace('/[^0-9]/', '', $paket->vendor->whatsappsetting->phone_number ?? '') }}',
             waContact: '{{ $paket->vendor->name ?? 'Admin' }}',
             storeUrl: '{{ route('booking.store') }}',

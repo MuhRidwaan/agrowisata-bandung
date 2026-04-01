@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
                 if ($setting->key === 'app_name') {
                     config()->set('app.name', $setting->value);
                 }
-                if ($setting->category === 'payment') {
+                if ($setting->category === 'payment' && str_starts_with($setting->key, 'midtrans_')) {
                     config()->set('midtrans.' . str_replace('midtrans_', '', $setting->key), $setting->value === 'true' ? true : ($setting->value === 'false' ? false : $setting->value));
                 }
                 if ($setting->category === 'email') {

@@ -44,6 +44,8 @@ Route::get('/payment/{id}', [FrontendController::class, 'payment'])->name('payme
 Route::get('/pembayaran/lanjut/{booking_code}', [FrontendController::class, 'resumePayment'])->name('payment.resume');
 Route::get('/pembayaran/status/{booking_code}', [FrontendController::class, 'pendingBookingStatus'])->name('payment.status');
 Route::post('/pembayaran/invoice-email/{booking_code}', [PaymentController::class, 'dispatchFrontendInvoiceEmail'])->name('frontend.invoice_email');
+Route::post('/pembayaran/bukti-transfer/{booking_code}', [PaymentController::class, 'uploadTransferProof'])->name('frontend.upload_transfer_proof');
+Route::post('/pembayaran/pilih-channel/{booking_code}', [PaymentController::class, 'selectPaymentChannel'])->name('frontend.select_payment_channel');
 
 // Success Page
 Route::get('/success', [FrontendController::class, 'success'])->name('success');
@@ -171,6 +173,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
         Route::get('/settings/delete-logo/{id}', [SettingController::class, 'deleteLogo'])->name('settings.deleteLogo');
+        Route::post('/settings/channel-qr/{index}', [SettingController::class, 'uploadChannelQr'])->name('settings.channel_qr');
+        Route::delete('/settings/channel-qr/{index}', [SettingController::class, 'deleteChannelQr'])->name('settings.channel_qr_delete');
     });
 });
 
