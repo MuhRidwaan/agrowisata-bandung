@@ -105,6 +105,9 @@
                     @elseif($payment->status == 'pending')
                         <span class="badge bg-warning text-dark fs-6 px-3 py-2"><i class="fas fa-clock"></i> MENUNGGU
                             PEMBAYARAN</span>
+                        @if(($payment->payment_method ?? null) === 'manual_transfer')
+                            <p class="mt-2 mb-0 small text-muted">Metode: Transfer Manual</p>
+                        @endif
                     @else
                         <span class="badge bg-danger fs-6 px-3 py-2"><i class="fas fa-times-circle"></i> KADALUARSA /
                             BATAL</span>
@@ -144,6 +147,80 @@
                         Harap simpan bukti ini dan tunjukkan kepada petugas loket saat daftar ulang di lokasi
                         Agrowisata.
                     </div>
+                    @if ($payment->status == 'pending' && ($payment->payment_method ?? null) === 'manual_transfer')
+                        @php
+                            $invoiceChannels = collect(json_decode(get_setting('manual_payment_channels', '[]'), true) ?? [])
+                                ->where('is_active', true);
+                            $invoiceSelectedChannel = $payment->selected_channel
+                                ? $invoiceChannels->firstWhere('name', $payment->selected_channel)
+                                : null;
+                        @endphp
+
+                        @if ($invoiceSelectedChannel)
+                            <div class="alert alert-light border mt-3 mb-0" style="font-size: 0.9rem;">
+                                <strong>Instruksi Pembayaran — {{ $invoiceSelectedChannel['name'] }}</strong><br>
+
+                                @if (!empty($invoiceSelectedChannel['qr_image']))
+                                    <div class="text-center my-2">
+                                        <img src="{{ asset('storage/' . $invoiceSelectedChannel['qr_image']) }}"
+                                            alt="QR Code"
+                                            style="max-width:180px; border:1px solid #ddd; border-radius:6px; padding:6px; background:#fff;">
+                                        <p class="small text-muted mt-1 mb-0">Scan QR Code untuk membayar</p>
+                                    </div>
+                                @endif
+
+                                @if (!empty($invoiceSelectedChannel['account_number']))
+                                    No. Rek / VA / ID: <strong>{{ $invoiceSelectedChannel['account_number'] }}</strong><br>
+                                @endif
+                                @if (!empty($invoiceSelectedChannel['account_name']))
+                                    A/N: {{ $invoiceSelectedChannel['account_name'] }}<br>
+                                @endif
+                                @if (!empty($invoiceSelectedChannel['instructions']))
+                                    <br>{!! nl2br(e($invoiceSelectedChannel['instructions'])) !!}
+                                @endif
+                            </div>
+                        @else
+                            <div class="alert alert-light border mt-3 mb-0" style="font-size: 0.9rem;">
+                                <strong>Transfer ke rekening berikut:</strong><br>
+                                Bank: {{ get_setting('manual_payment_bank_name', 'Transfer Bank') }}<br>
+                                No. Rek: {{ get_setting('manual_payment_account_number', '-') }}<br>
+                                A/N: {{ get_setting('manual_payment_account_name', '-') }}<br><br>
+                                {!! nl2br(e(get_setting('manual_payment_instructions', 'Silakan transfer sesuai total tagihan lalu konfirmasi ke admin/vendor untuk verifikasi.'))) !!}
+                            </div>
+                        @endif
+
+                        {{-- UPLOAD BUKTI TRANSFER DI INVOICE --}}
+                        @if (session('success'))
+                            <div class="alert alert-success mt-3 mb-0">{{ session('success') }}</div>
+                        @endif
+
+                        @if ($payment->transfer_proof)
+                            <div class="mt-3">
+                                <p class="small text-muted mb-1">Bukti transfer yang sudah diunggah:</p>
+                                <img src="{{ asset('storage/' . $payment->transfer_proof) }}"
+                                    alt="Bukti Transfer"
+                                    class="img-fluid rounded border"
+                                    style="max-height: 200px; object-fit: contain;">
+                                <p class="small text-muted mt-1">
+                                    Diunggah: {{ \Carbon\Carbon::parse($payment->transfer_proof_uploaded_at)->format('d M Y, H:i') }}
+                                </p>
+                            </div>
+                        @endif
+
+                        <form action="{{ route('frontend.upload_transfer_proof', $booking->booking_code) }}"
+                            method="POST" enctype="multipart/form-data" class="mt-3 no-print">
+                            @csrf
+                            <label class="form-label fw-semibold small">
+                                {{ $payment->transfer_proof ? 'Ganti Bukti Transfer' : 'Upload Bukti Transfer' }}
+                            </label>
+                            <input type="file" name="transfer_proof" accept="image/*"
+                                class="form-control form-control-sm">
+                            <p class="small text-muted mt-1">Format: JPG, PNG, WEBP. Maks 2MB.</p>
+                            <button type="submit" class="btn btn-warning btn-sm w-100 mt-1">
+                                <i class="fas fa-upload"></i> Kirim Bukti Transfer
+                            </button>
+                        </form>
+                    @endif
                     @if ($waLink)
                         <div class="mt-3 no-print">
                             <a href="{{ $waLink }}" target="_blank" rel="noopener" class="btn btn-success w-100">

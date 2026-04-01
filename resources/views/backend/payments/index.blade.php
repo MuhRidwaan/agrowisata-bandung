@@ -51,6 +51,7 @@
                                         <th>Booking Code</th>
                                         <th>Customer Name</th>
                                         <th>Total Price</th>
+                                        <th class="text-center">Method</th>
                                         <th class="text-center">Status</th>
                                         <th width="22%" class="text-center">Action</th>
                                     </tr>
@@ -69,6 +70,15 @@
                                                     class="text-muted">{{ $payment->booking->customer_phone ?? '' }}</small>
                                             </td>
                                             <td>Rp {{ number_format($payment->booking->total_price ?? 0, 0, ',', '.') }}
+                                            </td>
+                                            <td class="text-center">
+                                                @if (($payment->payment_method ?? null) === 'manual_transfer')
+                                                    <span class="badge badge-info">Manual Transfer</span>
+                                                @elseif (($payment->payment_method ?? null) === 'midtrans' || $payment->snap_token)
+                                                    <span class="badge badge-primary">Midtrans</span>
+                                                @else
+                                                    <span class="badge badge-secondary">-</span>
+                                                @endif
                                             </td>
 
                                             <!-- UPDATE STATUS BADGE -->
@@ -114,6 +124,16 @@
                                                             <i class="fas fa-times"></i> Cancel
                                                         </button>
                                                     </form>
+
+                                                    @if ($payment->transfer_proof && ($payment->payment_method ?? null) === 'manual_transfer')
+                                                        <button type="button"
+                                                            class="btn btn-info btn-sm mb-1"
+                                                            data-toggle="modal"
+                                                            data-target="#proofModal{{ $payment->id }}"
+                                                            title="Lihat Bukti Transfer">
+                                                            <i class="fas fa-image"></i> Bukti
+                                                        </button>
+                                                    @endif
                                                 @elseif ($payment->status == 'success')
                                                     <span class="text-success font-weight-bold mr-2"><i
                                                             class="fas fa-check"></i> Paid</span>
@@ -158,7 +178,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="6" class="text-center py-4">
+                                            <td colspan="7" class="text-center py-4">
                                                 <i class="fas fa-money-check-alt fa-3x text-muted mb-2"></i><br>
                                                 No payment data yet.
                                             </td>
@@ -263,4 +283,38 @@
             });
         });
     </script>
+    <!-- MODAL BUKTI TRANSFER -->
+    @foreach ($payments as $payment)
+        @if ($payment->transfer_proof)
+            <div class="modal fade" id="proofModal{{ $payment->id }}" tabindex="-1" role="dialog">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Bukti Transfer — {{ $payment->booking->booking_code ?? '-' }}</h5>
+                            <button type="button" class="close" data-dismiss="modal">
+                                <span>&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <img src="{{ asset('storage/' . $payment->transfer_proof) }}"
+                                alt="Bukti Transfer"
+                                class="img-fluid rounded"
+                                style="max-height: 400px; object-fit: contain;">
+                            <p class="small text-muted mt-2">
+                                Diunggah: {{ $payment->transfer_proof_uploaded_at ? \Carbon\Carbon::parse($payment->transfer_proof_uploaded_at)->format('d M Y, H:i') : '-' }}
+                            </p>
+                        </div>
+                        <div class="modal-footer">
+                            <a href="{{ asset('storage/' . $payment->transfer_proof) }}"
+                                target="_blank" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-external-link-alt"></i> Buka di Tab Baru
+                            </a>
+                            <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">Tutup</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
+
 @endsection

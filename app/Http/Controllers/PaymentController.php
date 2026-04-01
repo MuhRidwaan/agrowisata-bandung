@@ -26,6 +26,10 @@ class PaymentController extends Controller
             return $payment;
         }
 
+        if (($payment->payment_method ?? null) === 'manual_transfer' || blank($payment->snap_token)) {
+            return $payment->fresh(['booking.paketTour', 'booking.user']);
+        }
+
         $shouldSendInvoiceEmail = false;
 
         try {
@@ -179,7 +183,8 @@ class PaymentController extends Controller
 
         $payment->update([
             'status' => 'success',
-            'paid_at' => now()
+            'paid_at' => now(),
+            'payment_method' => $payment->payment_method ?: 'manual_transfer',
         ]);
 
         $payment->booking->update([
@@ -352,6 +357,61 @@ class PaymentController extends Controller
         $payment = $this->syncPaymentStatus($payment);
 
         return view('frontend.invoice', compact('payment'));
+    }
+
+    public function selectPaymentChannel(Request $request, $booking_code)
+    {
+        $request->validate([
+            'selected_channel' => 'required|string|max:255',
+        ]);
+
+        $payment = Payment::whereHas('booking', function ($q) use ($booking_code) {
+            $q->where('booking_code', $booking_code);
+        })->firstOrFail();
+
+        // Validasi channel ada dan aktif
+        $channels = collect(json_decode(get_setting('manual_payment_channels', '[]'), true) ?? [])
+            ->where('is_active', true);
+
+        $channel = $channels->firstWhere('name', $request->selected_channel);
+
+        if (! $channel) {
+            return back()->with('error', 'Channel pembayaran tidak valid.');
+        }
+
+        $payment->update(['selected_channel' => $channel['name']]);
+
+        return back()->with('success', 'Metode pembayaran dipilih. Silakan transfer sesuai instruksi.');
+    }
+
+    public function uploadTransferProof(Request $request, $booking_code)
+    {
+        $request->validate([
+            'transfer_proof' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ], [
+            'transfer_proof.required' => 'Bukti transfer wajib diunggah.',
+            'transfer_proof.image'    => 'File harus berupa gambar.',
+            'transfer_proof.mimes'    => 'Format gambar harus JPG, PNG, atau WEBP.',
+            'transfer_proof.max'      => 'Ukuran file maksimal 2MB.',
+        ]);
+
+        $payment = Payment::whereHas('booking', function ($q) use ($booking_code) {
+            $q->where('booking_code', $booking_code);
+        })->firstOrFail();
+
+        // Hapus file lama jika ada
+        if ($payment->transfer_proof) {
+            \Storage::disk('public')->delete($payment->transfer_proof);
+        }
+
+        $path = $request->file('transfer_proof')->store('transfer_proofs', 'public');
+
+        $payment->update([
+            'transfer_proof'             => $path,
+            'transfer_proof_uploaded_at' => now(),
+        ]);
+
+        return back()->with('success', 'Bukti transfer berhasil diunggah. Silakan tunggu konfirmasi dari admin.');
     }
 
     public function dispatchFrontendInvoiceEmail($booking_code)

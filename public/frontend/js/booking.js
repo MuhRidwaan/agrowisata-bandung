@@ -12,6 +12,13 @@ const config = window.BOOKING_CONFIG || {
   storeUrl: '', csrfToken: '', invoiceUrl: ''
 };
 
+const MANUAL_PAYMENT_INFO = config.manualPayment || {
+  bankName: '',
+  accountNumber: '',
+  accountName: '',
+  instructions: ''
+};
+
 function getResumeUrl(bookingCode) {
   if (!config.resumeBaseUrl || !bookingCode) return '';
   return config.resumeBaseUrl.replace(/\/$/, '') + '/' + encodeURIComponent(bookingCode);
@@ -212,6 +219,11 @@ function getRemainingQuota() {
 
 function initPaymentOptions() {
   document.querySelectorAll('.payment-method-card input[type="radio"]').forEach(function(r) {
+    if (r.checked) {
+      var card = r.closest('.payment-method-card');
+      if (card) card.classList.add('selected');
+    }
+
     r.addEventListener('change', function() {
       document.querySelectorAll('.payment-method-card').forEach(function(c) { c.classList.remove('selected'); });
       this.closest('.payment-method-card').classList.add('selected');
@@ -515,6 +527,7 @@ function submitBooking() {
   var payload = {
     paket_tour_id: paketId,
     jumlah_peserta: participantCount,
+    payment_method: document.querySelector('input[name="payment"]:checked') ? document.querySelector('input[name="payment"]:checked').value : 'manual_transfer',
     use_bundling: isBundlingActive(),
     bundling_id: getSelectedBundling() ? getSelectedBundling().id : null,
     customer_name: nameInput ? nameInput.value.trim() : '',
@@ -539,6 +552,13 @@ function submitBooking() {
     return response.json();
   })
   .then(function(data) {
+    if (data.success && data.payment_method === 'manual_transfer') {
+      bookingCode = data.booking_code;
+      savePendingBooking(data);
+      handlePaymentResult('manual_pending', data, null);
+      return;
+    }
+
     if (data.success && data.snap_token) {
       bookingCode = data.booking_code;
       savePendingBooking(data);
@@ -615,13 +635,30 @@ function handlePaymentResult(status, bookingData, midtransResult) {
     document.getElementById('paymentWaiting').classList.remove('d-none');
     document.getElementById('paymentSuccess').classList.add('d-none');
     document.getElementById('bookingCode').textContent = bookingData.booking_code;
-    document.getElementById('paymentMethodName').textContent = 'Midtrans';
+    document.getElementById('paymentMethodName').textContent = status === 'manual_pending' ? 'Transfer Manual' : 'Midtrans';
     document.getElementById('waitingTotal').textContent = formatCurrency(bookingData.total_price);
 
     var continueLink = document.getElementById('continuePaymentLink');
     if (continueLink) {
-      continueLink.href = getResumeUrl(bookingData.booking_code);
+      continueLink.href = bookingData.redirect_url || getResumeUrl(bookingData.booking_code);
+      continueLink.textContent = status === 'manual_pending' ? 'Lihat Instruksi Pembayaran' : 'Lanjutkan Pembayaran';
       continueLink.classList.remove('d-none');
+    }
+
+    var manualPaymentInfo = document.getElementById('manualPaymentInfo');
+    if (manualPaymentInfo) {
+      if (status === 'manual_pending') {
+        manualPaymentInfo.innerHTML =
+          '<strong>Silakan transfer ke rekening berikut:</strong><br>' +
+          'Bank: ' + (MANUAL_PAYMENT_INFO.bankName || '-') + '<br>' +
+          'No. Rek: ' + (MANUAL_PAYMENT_INFO.accountNumber || '-') + '<br>' +
+          'A/N: ' + (MANUAL_PAYMENT_INFO.accountName || '-') +
+          (MANUAL_PAYMENT_INFO.instructions ? '<br><br>' + MANUAL_PAYMENT_INFO.instructions.replace(/\n/g, '<br>') : '');
+        manualPaymentInfo.classList.remove('d-none');
+      } else {
+        manualPaymentInfo.classList.add('d-none');
+        manualPaymentInfo.innerHTML = '';
+      }
     }
   }
 }

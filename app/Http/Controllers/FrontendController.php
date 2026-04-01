@@ -12,6 +12,28 @@ use Illuminate\Support\Str;
 
 class FrontendController extends Controller
 {
+    private function isMidtransEnabled(): bool
+    {
+        $enabled = get_setting('enable_midtrans', 'true') === 'true';
+        $serverKey = (string) config('midtrans.server_key');
+        $clientKey = (string) config('midtrans.client_key');
+
+        if (! $enabled) {
+            return false;
+        }
+
+        if (blank($serverKey) || blank($clientKey)) {
+            return false;
+        }
+
+        return ! str_starts_with($serverKey, 'YOUR_') && ! str_starts_with($clientKey, 'YOUR_');
+    }
+
+    private function isManualPaymentEnabled(): bool
+    {
+        return get_setting('enable_manual_payment', 'true') === 'true';
+    }
+
     // ================= HOME =================
     public function home(Request $request)
     {
@@ -86,6 +108,7 @@ class FrontendController extends Controller
         $request->validate([
             'paket_tour_id'  => 'required|exists:paket_tours,id',
             'jumlah_peserta' => 'required|integer|min:1',
+            'payment_method' => 'required|in:midtrans,manual_transfer',
             'use_bundling'   => 'nullable|boolean',
             'bundling_id'    => 'nullable|exists:paket_tour_bundlings,id',
             'customer_name'  => 'required|string|max:255',
@@ -123,6 +146,21 @@ class FrontendController extends Controller
 
         $bundlingId = $request->input('bundling_id');
         $bundling = null;
+        $paymentMethod = $request->input('payment_method');
+
+        if ($paymentMethod === 'midtrans' && ! $this->isMidtransEnabled()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pembayaran otomatis sedang tidak tersedia. Silakan gunakan transfer manual.',
+            ], 422);
+        }
+
+        if ($paymentMethod === 'manual_transfer' && ! $this->isManualPaymentEnabled()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pembayaran manual sedang tidak tersedia.',
+            ], 422);
+        }
 
         if ($request->boolean('use_bundling')) {
             $bundling = $paket->bundlings()
@@ -181,6 +219,22 @@ class FrontendController extends Controller
             'description'=> "Booking baru dibuat dari Frontend oleh Customer " . $request->customer_name,
         ]);
 
+        if ($paymentMethod === 'manual_transfer') {
+            Payment::create([
+                'booking_id' => $booking->id,
+                'status' => 'pending',
+                'payment_method' => 'manual_transfer',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'booking_code' => $bookingCode,
+                'total_price' => $total,
+                'payment_method' => 'manual_transfer',
+                'redirect_url' => route('payment.resume', $bookingCode),
+            ]);
+        }
+
         // Konfigurasi & buat Snap Token Midtrans
         try {
             \Midtrans\Config::$serverKey = config('midtrans.server_key');
@@ -206,6 +260,7 @@ class FrontendController extends Controller
             Payment::create([
                 'booking_id' => $booking->id,
                 'status'     => 'pending',
+                'payment_method' => 'midtrans',
                 'snap_token' => $snapToken,
             ]);
 
@@ -214,6 +269,7 @@ class FrontendController extends Controller
                 'booking_code' => $bookingCode,
                 'snap_token'   => $snapToken,
                 'total_price'  => $total,
+                'payment_method' => 'midtrans',
             ]);
 
         } catch (\Exception $e) {
@@ -246,6 +302,10 @@ class FrontendController extends Controller
         if ($booking->status === 'paid' || ($payment && $payment->status === 'success')) {
             return redirect()->route('frontend.invoice', $booking->booking_code)
                 ->with('success', 'Pembayaran sudah berhasil. Berikut invoice Anda.');
+        }
+
+        if ($payment && $payment->payment_method === 'manual_transfer') {
+            return view('frontend.resume_payment', compact('booking', 'payment'));
         }
 
         // Jika belum ada payment/snap token, tampilkan error
@@ -282,6 +342,16 @@ class FrontendController extends Controller
             return response()->json([
                 'active' => false,
                 'reason' => $booking->payment->status,
+            ]);
+        }
+
+        if (($booking->payment->payment_method ?? null) === 'manual_transfer') {
+            return response()->json([
+                'active' => true,
+                'booking_code' => $booking->booking_code,
+                'resume_url' => route('payment.resume', $booking->booking_code),
+                'total_price' => $booking->total_price,
+                'payment_method' => 'manual_transfer',
             ]);
         }
 
