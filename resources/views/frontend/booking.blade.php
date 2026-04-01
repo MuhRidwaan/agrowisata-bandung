@@ -200,6 +200,13 @@
                                                     data-description="{{ e($bundling->description ?: 'Paket bundling ini cocok untuk rombongan dengan kebutuhan kunjungan yang sudah dikemas praktis.') }}"
                                                     data-photos='@json($bundling->photos->pluck("photo_url")->filter()->values())'
                                                     onclick="selectBundling(this)">
+                                                <button
+                                                    type="button"
+                                                    class="bundling-remove-btn"
+                                                    onclick="clearBundlingSelection(event)"
+                                                    aria-label="Hapus pilihan bundling">
+                                                    &times;
+                                                </button>
                                                 <p class="text-muted small mb-2 bundling-card-label">
                                                     {{ $bundling->label ?: ($paket->nama_paket . ' Bundling') }}
                                                 </p>
@@ -925,6 +932,7 @@
 
 .bundling-card {
     min-height: 124px;
+    position: relative;
     justify-content: center;
     align-items: center;
     text-align: center;
@@ -988,24 +996,36 @@
     box-shadow: 0 6px 18px rgba(25, 135, 84, 0.25);
 }
 
-.bundling-card.active::after {
-    content: '\00d7';
+.bundling-remove-btn {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 24px;
-    height: 24px;
+    top: 8px;
+    right: 8px;
+    width: 36px;
+    height: 36px;
     border-radius: 999px;
-    display: inline-flex;
+    display: none;
     align-items: center;
     justify-content: center;
     background: #fff;
     color: #55786b;
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 500;
     line-height: 1;
     box-shadow: 0 8px 18px rgba(18, 58, 45, 0.14);
     border: 1px solid rgba(85, 120, 107, 0.08);
+    z-index: 3;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.bundling-card.active .bundling-remove-btn {
+    display: inline-flex;
+}
+
+.bundling-remove-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.2), 0 8px 18px rgba(18, 58, 45, 0.14);
 }
 
 .bundling-card-chip,
@@ -1475,6 +1495,15 @@ function selectBundling(el) {
         window.syncParticipantCountFromInput();
     }
     updateTotal();
+}
+
+function clearBundlingSelection(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    clearSelectedBundling();
 }
 
 function clearSelectedBundling() {
