@@ -297,8 +297,6 @@ class PaketTourController extends Controller
 
     private function validateBundlings(array $bundlings): void
     {
-        $peopleCounts = [];
-
         foreach ($bundlings as $index => $bundling) {
             $row = $index + 1;
 
@@ -307,14 +305,6 @@ class PaketTourController extends Controller
                     "bundlings.{$index}.people_count" => "Bundling baris {$row} harus mengisi jumlah orang dan harga bundling.",
                 ]);
             }
-
-            if (in_array($bundling['people_count'], $peopleCounts, true)) {
-                throw ValidationException::withMessages([
-                    "bundlings.{$index}.people_count" => 'Jumlah orang bundling tidak boleh duplikat dalam satu paket.',
-                ]);
-            }
-
-            $peopleCounts[] = $bundling['people_count'];
         }
     }
 
