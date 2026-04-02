@@ -21,6 +21,7 @@ class PaketTour extends Model
         'minimum_person',
         'kuota',
         'aktivitas',
+        'facilities',
         'vendor_id',
     ];
 
@@ -31,6 +32,7 @@ class PaketTour extends Model
         'jam_awal'  => 'datetime:H:i:s',
         'jam_akhir' => 'datetime:H:i:s',
         'aktivitas' => 'array',
+        'facilities' => 'array',
         'is_bundling_available' => 'boolean',
         'bundling_people' => 'integer',
         'has_minimum_person' => 'boolean',

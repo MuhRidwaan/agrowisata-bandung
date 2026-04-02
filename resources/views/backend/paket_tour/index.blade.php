@@ -84,16 +84,16 @@
                             <th width="5%">No</th>
                             <th>Package Name</th>
                             <!-- <th>Description</th> -->
-                            <th>Operational Hours</th>
+                            <th style="min-width: 150px;">Operational Hours</th>
                             <th>Vendor</th>
                             <th class="text-right" style="min-width: 120px;">Price</th>
                             <th class="text-right" style="min-width: 140px;">Bundling Price</th>
                             <th class="text-right" style="min-width: 130px;">Bundling People</th>
-                            <th>Bundling Photos</th>
+                            <th style="min-width: 180px;">Bundling Photos</th>
                             <!-- <th>Available Dates</th> -->
                             <!-- <th>Quota</th> -->
                             <!-- <th>Activities</th> -->
-                            <th width="15%">Action</th>
+                            <th style="min-width: 140px;">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -105,8 +105,10 @@
 
                                 <!-- <td>{{ $paket->deskripsi }}</td> -->
 
-                                <td>
-                                    {{ $paket->jam_operasional }}
+                                <td class="operational-hours-cell">
+                                    <span class="operational-hours-badge">
+                                        {{ $paket->jam_operasional }}
+                                    </span>
                                 </td>
 
                                 <td>
@@ -150,37 +152,39 @@
                                     @endif
                                 </td>
 
-                                <td>
+                                <td class="bundling-photos-cell">
                                     @if ($paket->bundlings->count())
-                                        @foreach ($paket->bundlings as $bundling)
-                                            <div class="mb-2">
-                                                @if ($bundling->photos->count())
-                                                    <div class="d-flex flex-wrap">
-                                                        @foreach ($bundling->photos->take(3) as $photo)
-                                                            <button type="button"
-                                                                class="btn p-0 border-0 bg-transparent mr-1 mb-1 bundling-photo-trigger"
-                                                                data-photo-url="{{ $photo->photo_url }}"
-                                                                data-photo-label="{{ $paket->nama_paket }}">
-                                                                <img
-                                                                    src="{{ $photo->photo_url }}"
-                                                                    alt="Bundling Photo"
-                                                                    class="rounded border"
-                                                                    style="width: 44px; height: 44px; object-fit: cover;">
-                                                            </button>
-                                                        @endforeach
-                                                        @if ($bundling->photos->count() > 3)
-                                                            <div
-                                                                class="d-inline-flex align-items-center justify-content-center border rounded text-muted small mb-1"
-                                                                style="width: 44px; height: 44px;">
-                                                                +{{ $bundling->photos->count() - 3 }}
-                                                            </div>
-                                                        @endif
+                                        @php
+                                            $allBundlingPhotos = $paket->bundlings
+                                                ->flatMap(function ($bundling) {
+                                                    return $bundling->photos;
+                                                })
+                                                ->values();
+                                        @endphp
+
+                                        @if ($allBundlingPhotos->count())
+                                            <div class="bundling-photo-grid">
+                                                @foreach ($allBundlingPhotos->take(4) as $photo)
+                                                    <button type="button"
+                                                        class="btn p-0 border-0 bg-transparent bundling-photo-trigger bundling-photo-thumb"
+                                                        data-photo-url="{{ $photo->photo_url }}"
+                                                        data-photo-label="{{ $paket->nama_paket }}">
+                                                        <img
+                                                            src="{{ $photo->photo_url }}"
+                                                            alt="Bundling Photo"
+                                                            class="rounded border bundling-photo-thumb-image">
+                                                    </button>
+                                                @endforeach
+
+                                                @if ($allBundlingPhotos->count() > 4)
+                                                    <div class="bundling-photo-more">
+                                                        +{{ $allBundlingPhotos->count() - 4 }}
                                                     </div>
-                                                @else
-                                                    <span class="text-muted small">Belum ada foto</span>
                                                 @endif
                                             </div>
-                                        @endforeach
+                                        @else
+                                            <span class="text-muted small">Belum ada foto</span>
+                                        @endif
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
@@ -226,20 +230,22 @@
                                 -->
 
                                 {{-- ACTION --}}
-                                <td>
-                                    <a href="{{ route('paket-tours.show', $paket->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{{ route('paket-tours.edit', $paket->id) }}" class="btn btn-warning btn-sm">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form action="{{ route('paket-tours.destroy', $paket->id) }}" method="POST" style="display:inline-block" class="form-delete">
+                                <td class="action-cell">
+                                    <div class="action-group">
+                                        <a href="{{ route('paket-tours.show', $paket->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ route('paket-tours.edit', $paket->id) }}" class="btn btn-warning btn-sm" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form action="{{ route('paket-tours.destroy', $paket->id) }}" method="POST" class="form-delete mb-0">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger btn-sm">
                                             <i class="fas fa-trash"></i>
                                         </button>
-                                    </form>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -335,5 +341,83 @@
         });
     });
 </script>
+
+<style>
+    .action-cell {
+        min-width: 140px;
+        vertical-align: middle;
+    }
+
+    .action-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: nowrap;
+    }
+
+    .action-group .btn,
+    .action-group .form-delete {
+        margin: 0;
+    }
+
+    .operational-hours-cell {
+        min-width: 150px;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .operational-hours-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.45rem 0.75rem;
+        border-radius: 999px;
+        background: #f4f8f5;
+        border: 1px solid #dbe8df;
+        color: #274c3a;
+        font-weight: 600;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+
+    .bundling-photos-cell {
+        min-width: 180px;
+        vertical-align: top;
+    }
+
+    .bundling-photo-grid {
+        display: inline-flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 6px;
+        min-width: max-content;
+    }
+
+    .bundling-photo-thumb {
+        line-height: 0;
+        border-radius: 0.35rem;
+        overflow: hidden;
+    }
+
+    .bundling-photo-thumb-image {
+        width: 42px;
+        height: 42px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .bundling-photo-more {
+        width: 42px;
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #dee2e6;
+        border-radius: 0.35rem;
+        background: #f8f9fa;
+        color: #6c757d;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+</style>
 
 @endsection

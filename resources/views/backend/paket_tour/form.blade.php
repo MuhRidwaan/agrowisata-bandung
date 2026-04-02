@@ -368,8 +368,8 @@
                                         class="form-control">
                                     <div class="input-group-append">
                                         <button type="button"
-                                            class="btn btn-success"
-                                            onclick="addActivity()">+</button>
+                                            class="btn btn-danger"
+                                            onclick="removeActivity(this)">-</button>
                                     </div>
                                 </div>
                             @endif
@@ -383,6 +383,71 @@
                         </button>
 
                         @error('aktivitas')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    {{-- FACILITIES --}}
+                    <div class="form-group">
+                        <label>Facilities <small class="text-muted">(Optional)</small></label>
+
+                        <div id="facility-wrapper">
+
+                            @if(old('facilities'))
+                                @foreach(old('facilities') as $item)
+                                    <div class="input-group mb-2">
+                                        <input type="text"
+                                            name="facilities[]"
+                                            class="form-control"
+                                            value="{{ $item }}"
+                                            placeholder="Contoh: Toilet, Mushola, Area Parkir">
+                                        <div class="input-group-append">
+                                            <button type="button"
+                                                class="btn btn-danger"
+                                                onclick="removeFacility(this)">-</button>
+                                        </div>
+                                    </div>
+                                @endforeach
+
+                            @elseif(isset($paketTour->facilities) && is_array($paketTour->facilities))
+                                @foreach($paketTour->facilities as $item)
+                                    <div class="input-group mb-2">
+                                        <input type="text"
+                                            name="facilities[]"
+                                            class="form-control"
+                                            value="{{ $item }}"
+                                            placeholder="Contoh: Toilet, Mushola, Area Parkir">
+                                        <div class="input-group-append">
+                                            <button type="button"
+                                                class="btn btn-danger"
+                                                onclick="removeFacility(this)">-</button>
+                                        </div>
+                                    </div>
+                                @endforeach
+
+                            @else
+                                <div class="input-group mb-2">
+                                    <input type="text"
+                                        name="facilities[]"
+                                        class="form-control"
+                                        placeholder="Contoh: Toilet, Mushola, Area Parkir">
+                                    <div class="input-group-append">
+                                        <button type="button"
+                                            class="btn btn-danger"
+                                            onclick="removeFacility(this)">-</button>
+                                    </div>
+                                </div>
+                            @endif
+
+                        </div>
+
+                        <button type="button"
+                            class="btn btn-sm btn-secondary mt-2"
+                            onclick="addFacility()">
+                            + Add Facility
+                        </button>
+
+                        @error('facilities')
                             <div class="text-danger mt-1">{{ $message }}</div>
                         @enderror
                     </div>
@@ -644,6 +709,26 @@ function addActivity() {
 }
 
 function removeActivity(button) {
+    button.closest('.input-group').remove();
+}
+
+function addFacility() {
+    const wrapper = document.getElementById('facility-wrapper');
+
+    const div = document.createElement('div');
+    div.classList.add('input-group', 'mb-2');
+
+    div.innerHTML = `
+        <input type="text" name="facilities[]" class="form-control" placeholder="Contoh: Toilet, Mushola, Area Parkir">
+        <div class="input-group-append">
+            <button type="button" class="btn btn-danger" onclick="removeFacility(this)">-</button>
+        </div>
+    `;
+
+    wrapper.appendChild(div);
+}
+
+function removeFacility(button) {
     button.closest('.input-group').remove();
 }
 

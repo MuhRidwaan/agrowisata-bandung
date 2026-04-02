@@ -94,17 +94,26 @@
                                 ({{ $paket->reviews->where('status','approved')->count() }} ulasan)
                             </span>
 
-                            @if($paket->has_minimum_person && $paket->minimum_person)
-                            <span class="d-flex align-items-center gap-1">
-                                <i class="bi bi-people"></i>
-                                Minimal {{ number_format($paket->minimum_person, 0, ',', '.') }} orang
-                            </span>
-                            @endif
                         </div>
 
                         <p class="text-muted">
                             {{ $paket->deskripsi }}
                         </p>
+
+                        @if($paket->has_minimum_person && $paket->minimum_person)
+                        <div class="minimum-order-notice mt-4">
+                            <div class="minimum-order-notice-icon">
+                                <i class="bi bi-megaphone-fill"></i>
+                            </div>
+                            <div>
+                                <div class="minimum-order-notice-label">Minimal Peserta</div>
+                                <div class="minimum-order-notice-text">
+                                    Paket ini hanya bisa dipesan untuk minimal
+                                    <strong>{{ number_format($paket->minimum_person, 0, ',', '.') }} orang</strong>.
+                                </div>
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
 
@@ -112,10 +121,35 @@
                 @if($paket->aktivitas)
                 <div class="card card-agro">
                     <div class="card-body p-4">
-                        <h3 class="font-display fs-5 fw-semibold mb-3">Aktivitas</h3>
+                        <h3 class="font-display fs-5 fw-semibold mb-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-tree text-primary-agro"></i>Aktivitas
+                        </h3>
                         <div class="d-flex flex-wrap gap-2">
                             @foreach($paket->aktivitas as $item)
                                 <span class="badge-primary-light">{{ $item }}</span>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                @if(!empty($paket->facilities) && count($paket->facilities) > 0)
+                <div class="card card-agro">
+                    <div class="card-body p-4">
+                        <h3 class="font-display fs-5 fw-semibold mb-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-stars text-primary-agro"></i>Fasilitas
+                        </h3>
+
+                        <div class="facility-list">
+                            @foreach($paket->facilities as $facility)
+                                @if(filled($facility))
+                                    <div class="facility-list-item">
+                                        <span class="facility-list-icon">
+                                            <i class="bi bi-check2"></i>
+                                        </span>
+                                        <span class="facility-list-text">{{ $facility }}</span>
+                                    </div>
+                                @endif
                             @endforeach
                         </div>
                     </div>
@@ -365,9 +399,6 @@
                             <i class="bi bi-shield-check text-primary-agro flex-shrink-0"></i>
                             <div class="text-muted small mb-0">
                                 <p class="mb-1">Pemesanan harus dilakukan minimal 24 jam sebelum jadwal kunjungan.</p>
-                                @if($paket->has_minimum_person && $paket->minimum_person)
-                                <p class="mb-0">Minimal peserta: {{ number_format($paket->minimum_person, 0, ',', '.') }} orang.</p>
-                                @endif
                             </div>
                         </div>
 
@@ -871,5 +902,78 @@ function updateInputFiles(input){
 .review-scroll::-webkit-scrollbar-thumb{
     background:#ccc;
     border-radius:10px;
+}
+
+.facility-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.facility-list-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:12px 14px;
+    border:1px solid rgba(47, 109, 79, 0.10);
+    border-radius:14px;
+    background:#fcfdfc;
+}
+
+.facility-list-icon{
+    width:26px;
+    height:26px;
+    border-radius:50%;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    background:#f1f7f3;
+    color:#2f6d4f;
+    flex-shrink:0;
+    font-size:0.85rem;
+}
+
+.facility-list-text{
+    color:#294536;
+    font-weight:500;
+    line-height:1.45;
+}
+
+.minimum-order-notice{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+    padding:16px 18px;
+    border-radius:18px;
+    background:linear-gradient(135deg, #f4fbf6 0%, #fbfefa 100%);
+    border:1px solid rgba(47, 109, 79, 0.14);
+    box-shadow:0 14px 34px rgba(47, 109, 79, 0.08);
+}
+
+.minimum-order-notice-icon{
+    width:42px;
+    height:42px;
+    border-radius:14px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    background:#fff;
+    color:#2f6d4f;
+    flex-shrink:0;
+    box-shadow:0 10px 24px rgba(47, 109, 79, 0.12);
+}
+
+.minimum-order-notice-label{
+    font-size:0.78rem;
+    font-weight:700;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:#2f6d4f;
+    margin-bottom:0.2rem;
+}
+
+.minimum-order-notice-text{
+    color:#31503e;
+    line-height:1.55;
 }
 </style>
