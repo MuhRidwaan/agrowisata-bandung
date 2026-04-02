@@ -369,42 +369,52 @@
                             <h3 class="fs-5 fw-semibold mb-4 d-flex align-items-center gap-2">
                                 <i class="bi bi-credit-card text-primary-agro"></i> Metode Pembayaran
                             </h3>
-                            <div class="d-flex flex-column gap-3">
-                                @if (get_setting('enable_manual_payment', 'true') === 'true')
-                                    <label class="payment-method-card selected">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div class="d-flex align-items-center gap-3">
-                                                <div class="payment-icon-circle">
-                                                    <i class="bi bi-bank fs-4 text-primary-agro"></i>
-                                                </div>
-                                                <div>
-                                                    <p class="fw-bold mb-0">Transfer Manual</p>
-                                                    <p class="text-muted small mb-0">Transfer bank dan diverifikasi admin/vendor</p>
-                                                </div>
-                                            </div>
-                                            <input type="radio" name="payment" value="manual_transfer" class="form-check-input" checked>
-                                        </div>
-                                    </label>
-                                @endif
-
-                                @if (get_setting('enable_midtrans', 'true') === 'true' && filled(config('midtrans.client_key')) && ! str_starts_with((string) config('midtrans.client_key'), 'YOUR_'))
-                                    <label class="payment-method-card {{ get_setting('enable_manual_payment', 'true') !== 'true' ? 'selected' : '' }}">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div class="d-flex align-items-center gap-3">
-                                                <div class="payment-icon-circle">
-                                                    <i class="bi bi-wallet2 fs-4 text-primary-agro"></i>
-                                                </div>
-                                                <div>
-                                                    <p class="fw-bold mb-0">Pembayaran Otomatis (Midtrans)</p>
-                                                    <p class="text-muted small mb-0">Virtual Account, E-Wallet, Kartu Kredit, dll</p>
-                                                </div>
-                                            </div>
-                                            <input type="radio" name="payment" value="midtrans" class="form-check-input"
-                                                {{ get_setting('enable_manual_payment', 'true') !== 'true' ? 'checked' : '' }}>
-                                        </div>
-                                    </label>
-                                @endif
+                @php
+                    $manualEnabled = get_setting('enable_manual_payment', 'true') === 'true';
+                    $midtransEnabled = get_setting('enable_midtrans', 'true') === 'true'
+                        && filled(config('midtrans.client_key'))
+                        && ! str_starts_with((string) config('midtrans.client_key'), 'YOUR_');
+                    // Fallback: jika tidak ada yang aktif, tampilkan manual
+                    if (!$manualEnabled && !$midtransEnabled) {
+                        $manualEnabled = true;
+                    }
+                @endphp
+                <div class="d-flex flex-column gap-3">
+                    @if ($manualEnabled)
+                        <label class="payment-method-card selected">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="payment-icon-circle">
+                                        <i class="bi bi-bank fs-4 text-primary-agro"></i>
+                                    </div>
+                                    <div>
+                                        <p class="fw-bold mb-0">Transfer Manual</p>
+                                        <p class="text-muted small mb-0">Transfer bank dan diverifikasi admin/vendor</p>
+                                    </div>
+                                </div>
+                                <input type="radio" name="payment" value="manual_transfer" class="form-check-input" checked>
                             </div>
+                        </label>
+                    @endif
+
+                    @if ($midtransEnabled)
+                        <label class="payment-method-card {{ !$manualEnabled ? 'selected' : '' }}">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="payment-icon-circle">
+                                        <i class="bi bi-wallet2 fs-4 text-primary-agro"></i>
+                                    </div>
+                                    <div>
+                                        <p class="fw-bold mb-0">Pembayaran Otomatis (Midtrans)</p>
+                                        <p class="text-muted small mb-0">Virtual Account, E-Wallet, Kartu Kredit, dll</p>
+                                    </div>
+                                </div>
+                                <input type="radio" name="payment" value="midtrans" class="form-check-input"
+                                    {{ !$manualEnabled ? 'checked' : '' }}>
+                            </div>
+                        </label>
+                    @endif
+                </div>
 
                             <div class="bg-agro-light rounded-3 p-3 mt-4">
                                 <div class="d-flex gap-2">

@@ -17,6 +17,7 @@ class Payment extends Model
         'snap_token',
         'transfer_proof',
         'transfer_proof_uploaded_at',
+        'admin_note',
     ];
 
     protected $casts = [

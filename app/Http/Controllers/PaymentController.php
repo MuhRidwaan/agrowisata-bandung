@@ -209,6 +209,47 @@ class PaymentController extends Controller
     }
 
     // FUNGSI BARU: Untuk membatalkan pembayaran yang expired
+    public function requestRevision(Request $request, $id)
+    {
+        $request->validate([
+            'admin_note' => 'required|string|max:500',
+        ], [
+            'admin_note.required' => 'Catatan untuk customer wajib diisi.',
+        ]);
+
+        $user = auth()->user();
+        $payment = Payment::findOrFail($id);
+
+        if ($user->hasRole('Vendor')) {
+            if ($payment->booking->paketTour->vendor_id !== ($user->vendor->id ?? null)) {
+                abort(403, 'Akses ditolak.');
+            }
+        }
+
+        $payment->update([
+            'status'      => 'revision',
+            'admin_note'  => $request->admin_note,
+            // Reset bukti transfer agar customer upload ulang
+            'transfer_proof'             => null,
+            'transfer_proof_uploaded_at' => null,
+        ]);
+
+        // Booking tetap pending
+        $payment->booking->update(['status' => 'pending']);
+
+        TransactionLog::create([
+            'booking_id'  => $payment->booking_id,
+            'user_id'     => auth()->id(),
+            'action'      => 'payment_revision_requested',
+            'old_status'  => 'pending',
+            'new_status'  => 'revision',
+            'amount'      => $payment->booking->total_price,
+            'description' => 'Admin meminta revisi bukti transfer: ' . $request->admin_note,
+        ]);
+
+        return back()->with('success', 'Permintaan revisi berhasil dikirim ke customer.');
+    }
+
     public function markAsFailed($id)
     {
         $user = auth()->user();
@@ -409,6 +450,9 @@ class PaymentController extends Controller
         $payment->update([
             'transfer_proof'             => $path,
             'transfer_proof_uploaded_at' => now(),
+            // Reset status revision ke pending saat customer upload ulang
+            'status'     => $payment->status === 'revision' ? 'pending' : $payment->status,
+            'admin_note' => $payment->status === 'revision' ? null : $payment->admin_note,
         ]);
 
         return back()->with('success', 'Bukti transfer berhasil diunggah. Silakan tunggu konfirmasi dari admin.');

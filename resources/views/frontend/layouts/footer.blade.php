@@ -77,12 +77,19 @@
             basePrice: {{ $paket->harga_paket ?? 0 }},
             bundlings: @json($activeBundlings),
             pricingRules: @json($paket->pricingRules ?? []),
-            manualPayment: {
-                bankName: @json(get_setting('manual_payment_bank_name', 'Transfer Bank')),
-                accountNumber: @json(get_setting('manual_payment_account_number', '-')),
-                accountName: @json(get_setting('manual_payment_account_name', '-')),
-                instructions: @json(get_setting('manual_payment_instructions', 'Silakan transfer sesuai total tagihan lalu konfirmasi ke admin/vendor untuk verifikasi.'))
-            },
+            manualPayment: @php
+                $firstChannel = collect(json_decode(get_setting('manual_payment_channels', '[]'), true) ?? [])
+                    ->where('is_active', true)
+                    ->first();
+                echo json_encode([
+                    'bankName'      => $firstChannel['name'] ?? null,
+                    'accountNumber' => $firstChannel['account_number'] ?? null,
+                    'accountName'   => $firstChannel['account_name'] ?? null,
+                    'instructions'  => $firstChannel['instructions'] ?? null,
+                    'type'          => $firstChannel['type'] ?? 'bank_transfer',
+                    'qrImage'       => !empty($firstChannel['qr_image']) ? storage_asset_url($firstChannel['qr_image']) : null,
+                ]);
+            @endphp,
             waNumber: '{{ preg_replace('/[^0-9]/', '', $paket->vendor->whatsappsetting->phone_number ?? '') }}',
             waContact: '{{ $paket->vendor->name ?? 'Admin' }}',
             storeUrl: '{{ route('booking.store') }}',

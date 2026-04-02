@@ -97,7 +97,7 @@
                                                                 </div>
                                                                 <div class="form-group col-md-6">
                                                                     <label class="small">Tipe</label>
-                                                                    <select name="channels_type[]" class="form-control form-control-sm">
+                                                                    <select name="channels_type[]" class="form-control form-control-sm channel-type-select">
                                                                         <option value="bank_transfer" {{ ($ch['type'] ?? '') === 'bank_transfer' ? 'selected' : '' }}>Bank Transfer</option>
                                                                         <option value="qris" {{ ($ch['type'] ?? '') === 'qris' ? 'selected' : '' }}>QRIS</option>
                                                                         <option value="va" {{ ($ch['type'] ?? '') === 'va' ? 'selected' : '' }}>Virtual Account</option>
@@ -105,13 +105,15 @@
                                                                         <option value="other" {{ ($ch['type'] ?? '') === 'other' ? 'selected' : '' }}>Lainnya</option>
                                                                     </select>
                                                                 </div>
-                                                                <div class="form-group col-md-6">
-                                                                    <label class="small">Nomor Rekening / VA / ID</label>
+                                                                <div class="form-group col-md-6 field-account-number"
+                                                                    style="{{ ($ch['type'] ?? '') === 'qris' ? 'display:none;' : '' }}">
+                                                                    <label class="small account-number-label">Nomor Rekening / VA / ID</label>
                                                                     <input type="text" name="channels_account_number[]" class="form-control form-control-sm"
                                                                         placeholder="cth: 1234567890"
                                                                         value="{{ $ch['account_number'] ?? '' }}">
                                                                 </div>
-                                                                <div class="form-group col-md-6">
+                                                                <div class="form-group col-md-6 field-account-name"
+                                                                    style="{{ ($ch['type'] ?? '') === 'qris' ? 'display:none;' : '' }}">
                                                                     <label class="small">Atas Nama</label>
                                                                     <input type="text" name="channels_account_name[]" class="form-control form-control-sm"
                                                                         placeholder="cth: PT Agrowisata Bandung"
@@ -122,35 +124,36 @@
                                                                     <textarea name="channels_instructions[]" class="form-control form-control-sm" rows="2"
                                                                         placeholder="cth: Transfer sesuai total, lalu upload bukti.">{{ $ch['instructions'] ?? '' }}</textarea>
                                                                 </div>
-                                                                {{-- QR IMAGE UPLOAD (hanya untuk channel yang sudah tersimpan) --}}
-                                                                <div class="form-group col-12 qr-upload-section" data-type="{{ $ch['type'] ?? '' }}">
-                                                                    <label class="small">QR Code Image <span class="text-muted">(opsional, untuk QRIS / E-Wallet)</span></label>
+                                                                {{-- QR IMAGE UPLOAD (hanya untuk tipe qris / ewallet) --}}
+                                                                @php $chType = $ch['type'] ?? ''; @endphp
+                                                                <div class="form-group col-12 qr-upload-section"
+                                                                    style="{{ in_array($chType, ['qris','ewallet']) ? '' : 'display:none;' }}">
+                                                                    <label class="small">QR Code Image</label>
                                                                     @if (!empty($ch['qr_image']))
                                                                         <div class="mb-2 d-flex align-items-center gap-2">
-                                                                            <img src="{{ asset('storage/' . $ch['qr_image']) }}"
+                                                                            <img src="{{ storage_asset_url($ch['qr_image']) }}"
                                                                                 alt="QR Code"
                                                                                 style="max-height:100px; border:1px solid #ddd; border-radius:6px; padding:4px;">
-                                                                            <form action="{{ route('settings.channel_qr_delete', $i) }}"
-                                                                                method="POST" style="display:inline"
-                                                                                onsubmit="return confirm('Hapus QR Code ini?')">
-                                                                                @csrf
-                                                                                @method('DELETE')
-                                                                                <button type="submit" class="btn btn-danger btn-xs ml-2">
-                                                                                    <i class="fas fa-trash"></i> Hapus QR
-                                                                                </button>
-                                                                            </form>
+                                                                            {{-- Hapus QR: gunakan form attribute agar tidak nested --}}
+                                                                            <button type="submit"
+                                                                                form="form-qr-delete-{{ $i }}"
+                                                                                class="btn btn-danger btn-xs ml-2"
+                                                                                onclick="return confirm('Hapus QR Code ini?')">
+                                                                                <i class="fas fa-trash"></i> Hapus QR
+                                                                            </button>
                                                                         </div>
                                                                     @endif
-                                                                    <form action="{{ route('settings.channel_qr', $i) }}"
-                                                                        method="POST" enctype="multipart/form-data"
-                                                                        class="d-flex align-items-center gap-2">
-                                                                        @csrf
-                                                                        <input type="file" name="qr_image" accept="image/*"
+                                                                    <div class="d-flex align-items-center gap-2">
+                                                                        <input type="file" name="qr_image"
+                                                                            form="form-qr-upload-{{ $i }}"
+                                                                            accept="image/*"
                                                                             class="form-control form-control-sm" style="max-width:260px;">
-                                                                        <button type="submit" class="btn btn-secondary btn-sm ml-2">
+                                                                        <button type="submit"
+                                                                            form="form-qr-upload-{{ $i }}"
+                                                                            class="btn btn-secondary btn-sm ml-2">
                                                                             <i class="fas fa-upload"></i> {{ empty($ch['qr_image']) ? 'Upload QR' : 'Ganti QR' }}
                                                                         </button>
-                                                                    </form>
+                                                                    </div>
                                                                     <small class="text-muted">Format: JPG, PNG, WEBP. Maks 2MB.</small>
                                                                 </div>
                                                                 <div class="form-group col-12 mb-0">
@@ -224,7 +227,7 @@
                         </div>
                         <div class="form-group col-md-6">
                             <label class="small">Tipe</label>
-                            <select name="channels_type[]" class="form-control form-control-sm">
+                            <select name="channels_type[]" class="form-control form-control-sm channel-type-select">
                                 <option value="bank_transfer">Bank Transfer</option>
                                 <option value="qris">QRIS</option>
                                 <option value="va">Virtual Account</option>
@@ -232,17 +235,22 @@
                                 <option value="other">Lainnya</option>
                             </select>
                         </div>
-                        <div class="form-group col-md-6">
-                            <label class="small">Nomor Rekening / VA / ID</label>
+                        <div class="form-group col-md-6 field-account-number">
+                            <label class="small account-number-label">Nomor Rekening / VA / ID</label>
                             <input type="text" name="channels_account_number[]" class="form-control form-control-sm" placeholder="cth: 1234567890">
                         </div>
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-6 field-account-name">
                             <label class="small">Atas Nama</label>
                             <input type="text" name="channels_account_name[]" class="form-control form-control-sm" placeholder="cth: PT Agrowisata Bandung">
                         </div>
                         <div class="form-group col-12">
                             <label class="small">Instruksi Tambahan</label>
                             <textarea name="channels_instructions[]" class="form-control form-control-sm" rows="2" placeholder="cth: Transfer sesuai total, lalu upload bukti."></textarea>
+                        </div>
+                        <div class="form-group col-12 qr-upload-section" style="display:none;">
+                            <div class="alert alert-info py-2 mb-0" style="font-size:0.85rem;">
+                                <i class="fas fa-info-circle"></i> Simpan channel terlebih dahulu, lalu upload QR Code.
+                            </div>
                         </div>
                         <div class="form-group col-12 mb-0">
                             <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
@@ -260,6 +268,64 @@
         $(document).on('click', '.remove-channel', function () {
             $(this).closest('.channel-item').remove();
         });
+
+        // Show/hide QR section berdasarkan tipe (untuk channel existing)
+        $(document).on('change', '.channel-type-select', function () {
+            const type = $(this).val();
+            const row = $(this).closest('.form-row');
+            const qrSection = row.find('.qr-upload-section');
+            const accountNumber = row.find('.field-account-number');
+            const accountName = row.find('.field-account-name');
+            const accountLabel = row.find('.account-number-label');
+
+            // QR: hanya untuk qris & ewallet
+            if (type === 'qris' || type === 'ewallet') {
+                qrSection.show();
+            } else {
+                qrSection.hide();
+            }
+
+            // Nomor rekening & atas nama: sembunyikan untuk qris
+            if (type === 'qris') {
+                accountNumber.hide();
+                accountName.hide();
+            } else {
+                accountNumber.show();
+                accountName.show();
+                // Update label sesuai tipe
+                if (type === 'va') {
+                    accountLabel.text('Nomor Virtual Account');
+                } else if (type === 'ewallet') {
+                    accountLabel.text('Nomor / ID E-Wallet');
+                } else {
+                    accountLabel.text('Nomor Rekening');
+                }
+            }
+        });
     });
 </script>
+
+{{-- HIDDEN FORMS untuk Upload & Hapus QR (di luar form utama agar tidak nested) --}}
+@php
+    $qrChannels = collect(json_decode(\App\Models\Setting::getValue('manual_payment_channels', '[]'), true) ?? []);
+@endphp
+@foreach ($qrChannels as $qi => $qch)
+    {{-- Form Upload QR --}}
+    <form id="form-qr-upload-{{ $qi }}"
+        action="{{ route('settings.channel_qr', $qi) }}"
+        method="POST"
+        enctype="multipart/form-data"
+        style="display:none;">
+        @csrf
+    </form>
+    {{-- Form Hapus QR --}}
+    <form id="form-qr-delete-{{ $qi }}"
+        action="{{ route('settings.channel_qr_delete', $qi) }}"
+        method="POST"
+        style="display:none;">
+        @csrf
+        @method('DELETE')
+    </form>
+@endforeach
+
 @endpush

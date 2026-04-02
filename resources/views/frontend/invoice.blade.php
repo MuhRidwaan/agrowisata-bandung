@@ -102,15 +102,21 @@
                         <span class="badge bg-success fs-6 px-3 py-2"><i class="fas fa-check-circle"></i> LUNAS</span>
                         <p class="mt-2 mb-0 small text-muted">Dibayar pada:
                             <br>{{ \Carbon\Carbon::parse($payment->paid_at)->format('d M Y, H:i') }}</p>
+                    @elseif($payment->status == 'pending' && ($payment->payment_method ?? null) === 'manual_transfer' && $payment->transfer_proof)
+                        <span class="badge bg-info fs-6 px-3 py-2"><i class="fas fa-hourglass-half"></i> MENUNGGU KONFIRMASI ADMIN</span>
+                        <p class="mt-2 mb-0 small text-muted">Bukti transfer sudah dikirim.<br>Silakan tunggu konfirmasi dari admin.</p>
+                    @elseif($payment->status == 'revision')
+                        <span class="badge bg-warning text-dark fs-6 px-3 py-2"><i class="fas fa-redo"></i> PERLU REVISI</span>
+                        @if ($payment->admin_note)
+                            <p class="mt-2 mb-0 small text-danger"><strong>Catatan Admin:</strong> {{ $payment->admin_note }}</p>
+                        @endif
                     @elseif($payment->status == 'pending')
-                        <span class="badge bg-warning text-dark fs-6 px-3 py-2"><i class="fas fa-clock"></i> MENUNGGU
-                            PEMBAYARAN</span>
+                        <span class="badge bg-warning text-dark fs-6 px-3 py-2"><i class="fas fa-clock"></i> MENUNGGU PEMBAYARAN</span>
                         @if(($payment->payment_method ?? null) === 'manual_transfer')
                             <p class="mt-2 mb-0 small text-muted">Metode: Transfer Manual</p>
                         @endif
                     @else
-                        <span class="badge bg-danger fs-6 px-3 py-2"><i class="fas fa-times-circle"></i> KADALUARSA /
-                            BATAL</span>
+                        <span class="badge bg-danger fs-6 px-3 py-2"><i class="fas fa-times-circle"></i> KADALUARSA / BATAL</span>
                     @endif
                 </div>
             </div>
@@ -156,37 +162,39 @@
                                 : null;
                         @endphp
 
-                        @if ($invoiceSelectedChannel)
-                            <div class="alert alert-light border mt-3 mb-0" style="font-size: 0.9rem;">
-                                <strong>Instruksi Pembayaran — {{ $invoiceSelectedChannel['name'] }}</strong><br>
+                        @if (!$payment->transfer_proof)
+                            @if ($invoiceSelectedChannel)
+                                <div class="alert alert-light border mt-3 mb-0" style="font-size: 0.9rem;">
+                                    <strong>Instruksi Pembayaran — {{ $invoiceSelectedChannel['name'] }}</strong><br>
 
-                                @if (!empty($invoiceSelectedChannel['qr_image']))
-                                    <div class="text-center my-2">
-                                        <img src="{{ asset('storage/' . $invoiceSelectedChannel['qr_image']) }}"
-                                            alt="QR Code"
-                                            style="max-width:180px; border:1px solid #ddd; border-radius:6px; padding:6px; background:#fff;">
-                                        <p class="small text-muted mt-1 mb-0">Scan QR Code untuk membayar</p>
-                                    </div>
-                                @endif
+                                    @if (!empty($invoiceSelectedChannel['qr_image']))
+                                        <div class="text-center my-2">
+                                            <img src="{{ storage_asset_url($invoiceSelectedChannel['qr_image']) }}"
+                                                alt="QR Code"
+                                                style="max-width:180px; border:1px solid #ddd; border-radius:6px; padding:6px; background:#fff;">
+                                            <p class="small text-muted mt-1 mb-0">Scan QR Code untuk membayar</p>
+                                        </div>
+                                    @endif
 
-                                @if (!empty($invoiceSelectedChannel['account_number']))
-                                    No. Rek / VA / ID: <strong>{{ $invoiceSelectedChannel['account_number'] }}</strong><br>
-                                @endif
-                                @if (!empty($invoiceSelectedChannel['account_name']))
-                                    A/N: {{ $invoiceSelectedChannel['account_name'] }}<br>
-                                @endif
-                                @if (!empty($invoiceSelectedChannel['instructions']))
-                                    <br>{!! nl2br(e($invoiceSelectedChannel['instructions'])) !!}
-                                @endif
-                            </div>
-                        @else
-                            <div class="alert alert-light border mt-3 mb-0" style="font-size: 0.9rem;">
-                                <strong>Transfer ke rekening berikut:</strong><br>
-                                Bank: {{ get_setting('manual_payment_bank_name', 'Transfer Bank') }}<br>
-                                No. Rek: {{ get_setting('manual_payment_account_number', '-') }}<br>
-                                A/N: {{ get_setting('manual_payment_account_name', '-') }}<br><br>
-                                {!! nl2br(e(get_setting('manual_payment_instructions', 'Silakan transfer sesuai total tagihan lalu konfirmasi ke admin/vendor untuk verifikasi.'))) !!}
-                            </div>
+                                    @if (!empty($invoiceSelectedChannel['account_number']))
+                                        No. Rek / VA / ID: <strong>{{ $invoiceSelectedChannel['account_number'] }}</strong><br>
+                                    @endif
+                                    @if (!empty($invoiceSelectedChannel['account_name']))
+                                        A/N: {{ $invoiceSelectedChannel['account_name'] }}<br>
+                                    @endif
+                                    @if (!empty($invoiceSelectedChannel['instructions']))
+                                        <br>{!! nl2br(e($invoiceSelectedChannel['instructions'])) !!}
+                                    @endif
+                                </div>
+                            @else
+                                <div class="alert alert-light border mt-3 mb-0" style="font-size: 0.9rem;">
+                                    <strong>Transfer ke rekening berikut:</strong><br>
+                                    Bank: {{ get_setting('manual_payment_bank_name', 'Transfer Bank') }}<br>
+                                    No. Rek: {{ get_setting('manual_payment_account_number', '-') }}<br>
+                                    A/N: {{ get_setting('manual_payment_account_name', '-') }}<br><br>
+                                    {!! nl2br(e(get_setting('manual_payment_instructions', 'Silakan transfer sesuai total tagihan lalu konfirmasi ke admin/vendor untuk verifikasi.'))) !!}
+                                </div>
+                            @endif
                         @endif
 
                         {{-- UPLOAD BUKTI TRANSFER DI INVOICE --}}
@@ -197,29 +205,29 @@
                         @if ($payment->transfer_proof)
                             <div class="mt-3">
                                 <p class="small text-muted mb-1">Bukti transfer yang sudah diunggah:</p>
-                                <img src="{{ asset('storage/' . $payment->transfer_proof) }}"
+                                <img src="{{ storage_asset_url($payment->transfer_proof) }}"
                                     alt="Bukti Transfer"
                                     class="img-fluid rounded border"
                                     style="max-height: 200px; object-fit: contain;">
                                 <p class="small text-muted mt-1">
                                     Diunggah: {{ \Carbon\Carbon::parse($payment->transfer_proof_uploaded_at)->format('d M Y, H:i') }}
                                 </p>
+                                <p class="small text-info mb-0"><i class="fas fa-hourglass-half"></i> Sedang diverifikasi oleh admin.</p>
                             </div>
+                        @else
+                            {{-- Tampilkan form upload jika belum ada bukti ATAU status revision --}}
+                            <form action="{{ route('frontend.upload_transfer_proof', $booking->booking_code) }}"
+                                method="POST" enctype="multipart/form-data" class="mt-3 no-print">
+                                @csrf
+                                <label class="form-label fw-semibold small">Upload Bukti Transfer</label>
+                                <input type="file" name="transfer_proof" accept="image/*"
+                                    class="form-control form-control-sm">
+                                <p class="small text-muted mt-1">Format: JPG, PNG, WEBP. Maks 2MB.</p>
+                                <button type="submit" class="btn btn-warning btn-sm w-100 mt-1">
+                                    <i class="fas fa-upload"></i> Kirim Bukti Transfer
+                                </button>
+                            </form>
                         @endif
-
-                        <form action="{{ route('frontend.upload_transfer_proof', $booking->booking_code) }}"
-                            method="POST" enctype="multipart/form-data" class="mt-3 no-print">
-                            @csrf
-                            <label class="form-label fw-semibold small">
-                                {{ $payment->transfer_proof ? 'Ganti Bukti Transfer' : 'Upload Bukti Transfer' }}
-                            </label>
-                            <input type="file" name="transfer_proof" accept="image/*"
-                                class="form-control form-control-sm">
-                            <p class="small text-muted mt-1">Format: JPG, PNG, WEBP. Maks 2MB.</p>
-                            <button type="submit" class="btn btn-warning btn-sm w-100 mt-1">
-                                <i class="fas fa-upload"></i> Kirim Bukti Transfer
-                            </button>
-                        </form>
                     @endif
                     @if ($waLink)
                         <div class="mt-3 no-print">

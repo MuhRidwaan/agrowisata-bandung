@@ -133,6 +133,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::post('/payments/{payment}/paid', [PaymentController::class, 'markAsPaid'])->name('payments.paid');
     Route::post('/payments/{payment}/cancel',[PaymentController::class, 'markAsFailed'])->name('payments.cancel');
+    Route::post('/payments/{payment}/revision', [PaymentController::class, 'requestRevision'])->name('payments.revision');
     Route::get('/payments/{payment}/invoice', [PaymentController::class, 'invoice'])->name('payments.invoice');
     Route::post('payments/{id}/send-email', [PaymentController::class, 'sendEmail'])->name('payments.send_email');
 

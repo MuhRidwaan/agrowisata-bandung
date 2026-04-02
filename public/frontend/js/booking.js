@@ -648,13 +648,35 @@ function handlePaymentResult(status, bookingData, midtransResult) {
     var manualPaymentInfo = document.getElementById('manualPaymentInfo');
     if (manualPaymentInfo) {
       if (status === 'manual_pending') {
-        manualPaymentInfo.innerHTML =
-          '<strong>Silakan transfer ke rekening berikut:</strong><br>' +
-          'Bank: ' + (MANUAL_PAYMENT_INFO.bankName || '-') + '<br>' +
-          'No. Rek: ' + (MANUAL_PAYMENT_INFO.accountNumber || '-') + '<br>' +
-          'A/N: ' + (MANUAL_PAYMENT_INFO.accountName || '-') +
-          (MANUAL_PAYMENT_INFO.instructions ? '<br><br>' + MANUAL_PAYMENT_INFO.instructions.replace(/\n/g, '<br>') : '');
-        manualPaymentInfo.classList.remove('d-none');
+        var mp = MANUAL_PAYMENT_INFO;
+        var html = '';
+
+        if (mp.type === 'qris' && mp.qrImage) {
+          html += '<div class="text-center mb-2">';
+          html += '<img src="' + mp.qrImage + '" alt="QR Code" style="max-width:180px;border:1px solid #ddd;border-radius:8px;padding:6px;">';
+          html += '<p class="small text-muted mt-1 mb-0">Scan QR Code untuk membayar</p>';
+          html += '</div>';
+        }
+
+        if (mp.bankName) {
+          html += '<strong>' + mp.bankName + '</strong><br>';
+        }
+        if (mp.accountNumber) {
+          html += 'No. Rek / VA: ' + mp.accountNumber + '<br>';
+        }
+        if (mp.accountName) {
+          html += 'A/N: ' + mp.accountName + '<br>';
+        }
+        if (mp.instructions) {
+          html += '<br>' + mp.instructions.replace(/\n/g, '<br>');
+        }
+
+        if (html) {
+          manualPaymentInfo.innerHTML = html;
+          manualPaymentInfo.classList.remove('d-none');
+        } else {
+          manualPaymentInfo.classList.add('d-none');
+        }
       } else {
         manualPaymentInfo.classList.add('d-none');
         manualPaymentInfo.innerHTML = '';

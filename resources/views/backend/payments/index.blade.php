@@ -89,6 +89,9 @@
                                                 @elseif ($payment->status == 'failed')
                                                     <span class="badge badge-danger"><i class="fas fa-times-circle"></i>
                                                         Expired / Failed</span>
+                                                @elseif ($payment->status == 'revision')
+                                                    <span class="badge badge-warning"><i class="fas fa-redo"></i>
+                                                        Perlu Revisi</span>
                                                 @else
                                                     <span class="badge badge-warning"><i class="fas fa-clock"></i> Waiting
                                                         Payment</span>
@@ -96,36 +99,57 @@
                                             </td>
 
                                             <td class="text-center">
-                                                @if ($payment->status == 'pending')
-                                                    <!-- Tombol Bayar via Midtrans -->
-                                                    <button class="btn btn-primary btn-sm btn-pay mb-1"
-                                                        data-token="{{ $payment->snap_token }}"
-                                                        data-url="{{ route('payments.paid', $payment->id) }}"
-                                                        title="Pay with Midtrans">
-                                                        <i class="fas fa-money-bill-wave"></i> Pay
-                                                    </button>
+                                                @php
+                                                    $isManual = ($payment->payment_method ?? null) === 'manual_transfer';
+                                                    $isMidtrans = !$isManual && $payment->snap_token;
+                                                @endphp
 
-                                                    <!-- Tombol Tandai Lunas (Manual) -->
+                                                @if ($payment->status == 'pending')
+
+                                                    {{-- Tombol Pay: hanya untuk Midtrans --}}
+                                                    @if ($isMidtrans)
+                                                        <button class="btn btn-primary btn-sm btn-pay mb-1"
+                                                            data-token="{{ $payment->snap_token }}"
+                                                            data-url="{{ route('payments.paid', $payment->id) }}"
+                                                            title="Pay with Midtrans">
+                                                            <i class="fas fa-money-bill-wave"></i> Pay
+                                                        </button>
+                                                    @endif
+
+                                                    {{-- Tombol Mark Paid --}}
                                                     <form action="{{ route('payments.paid', $payment->id) }}"
                                                         method="POST" style="display:inline-block" class="form-mark-paid">
                                                         @csrf
                                                         <button type="submit" class="btn btn-success btn-sm mb-1"
-                                                            title="Mark as Paid Manually">
+                                                            title="Mark as Paid">
                                                             <i class="fas fa-check"></i> Mark Paid
                                                         </button>
                                                     </form>
 
-                                                    <!-- Tombol Batalkan (Manual) -->
+                                                    {{-- Tombol Cancel --}}
                                                     <form action="{{ route('payments.cancel', $payment->id) }}"
-                                                        method="POST" style="display:inline-block" class="form-cancel">
+                                                        method="POST" style="display:inline-block" class="form-cancel"
+                                                        data-method="{{ $isManual ? 'manual' : 'midtrans' }}">
                                                         @csrf
                                                         <button type="submit" class="btn btn-danger btn-sm mb-1"
-                                                            title="Cancel if Expired">
+                                                            title="Cancel / Batalkan">
                                                             <i class="fas fa-times"></i> Cancel
                                                         </button>
                                                     </form>
 
-                                                    @if ($payment->transfer_proof && ($payment->payment_method ?? null) === 'manual_transfer')
+                                                    {{-- Tombol Revisi: hanya untuk manual transfer yang sudah upload --}}
+                                                    @if ($isManual && $payment->transfer_proof)
+                                                        <button type="button"
+                                                            class="btn btn-warning btn-sm mb-1"
+                                                            data-toggle="modal"
+                                                            data-target="#revisionModal{{ $payment->id }}"
+                                                            title="Minta Revisi Bukti">
+                                                            <i class="fas fa-redo"></i> Revisi
+                                                        </button>
+                                                    @endif
+
+                                                    {{-- Tombol Bukti: hanya untuk manual transfer yang sudah upload --}}
+                                                    @if ($isManual && $payment->transfer_proof)
                                                         <button type="button"
                                                             class="btn btn-info btn-sm mb-1"
                                                             data-toggle="modal"
@@ -134,45 +158,47 @@
                                                             <i class="fas fa-image"></i> Bukti
                                                         </button>
                                                     @endif
-                                                @elseif ($payment->status == 'success')
-                                                    <span class="text-success font-weight-bold mr-2"><i
-                                                            class="fas fa-check"></i> Paid</span>
-                                                    <!-- PRINT INVOICE BUTTON -->
-                                                    <a href="{{ route('payments.invoice', $payment->id) }}"
-                                                        class="btn btn-info btn-sm" title="Print Invoice">
-                                                        <i class="fas fa-print"></i> Invoice
-                                                    </a>
-                                                @elseif ($payment->status == 'failed')
-                                                    <span class="text-danger font-weight-bold mr-2"><i
-                                                            class="fas fa-ban"></i>
-                                                        Cancelled</span>
-                                                    <!-- Tombol Tandai Lunas (Manual) untuk status Gagal -->
-                                                    <form action="{{ route('payments.paid', $payment->id) }}"
-                                                        method="POST" style="display:inline-block" class="form-mark-paid">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-success btn-sm mb-1"
-                                                            title="Mark as Paid Manually">
-                                                            <i class="fas fa-check"></i> Mark Paid
-                                                        </button>
-                                                    </form>
-                                                @elseif ($payment->status == 'success')
-                                                    <span class="text-success font-weight-bold mr-2"><i
-                                                            class="fas fa-check"></i> Paid</span>
 
+                                                @elseif ($payment->status == 'success')
+                                                    <span class="text-success font-weight-bold mr-2">
+                                                        <i class="fas fa-check"></i> Paid
+                                                    </span>
                                                     <a href="{{ route('payments.invoice', $payment->id) }}"
                                                         class="btn btn-info btn-sm mb-1" title="Print Invoice">
                                                         <i class="fas fa-print"></i> Invoice
                                                     </a>
-
-                                                    {{-- <form action="{{ route('payments.send_email', $payment->id) }}"
-                                                        method="POST" style="display:inline-block">
-                                                        @csrf
-                                                        <button type="submit"
-                                                            class="btn btn-warning btn-sm mb-1 text-white"
-                                                            title="Kirim Ulang Email Invoice">
-                                                            <i class="fas fa-envelope"></i> Email
+                                                    {{-- Bukti transfer tetap bisa dilihat meski sudah paid --}}
+                                                    @if ($isManual && $payment->transfer_proof)
+                                                        <button type="button"
+                                                            class="btn btn-secondary btn-sm mb-1"
+                                                            data-toggle="modal"
+                                                            data-target="#proofModal{{ $payment->id }}"
+                                                            title="Lihat Bukti Transfer">
+                                                            <i class="fas fa-image"></i> Bukti
                                                         </button>
-                                                    </form> --}}
+                                                    @endif
+
+                                                @elseif ($payment->status == 'failed')
+                                                    <span class="text-danger font-weight-bold mr-2">
+                                                        <i class="fas fa-ban"></i> Cancelled
+                                                    </span>
+                                                    <form action="{{ route('payments.paid', $payment->id) }}"
+                                                        method="POST" style="display:inline-block" class="form-mark-paid">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-success btn-sm mb-1"
+                                                            title="Mark as Paid">
+                                                            <i class="fas fa-check"></i> Mark Paid
+                                                        </button>
+                                                    </form>
+                                                    @if ($isManual && $payment->transfer_proof)
+                                                        <button type="button"
+                                                            class="btn btn-secondary btn-sm mb-1"
+                                                            data-toggle="modal"
+                                                            data-target="#proofModal{{ $payment->id }}"
+                                                            title="Lihat Bukti Transfer">
+                                                            <i class="fas fa-image"></i> Bukti
+                                                        </button>
+                                                    @endif
                                                 @endif
                                             </td>
                                         </tr>
@@ -266,15 +292,19 @@
         document.querySelectorAll('.form-cancel').forEach(form => {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
+                const method = this.getAttribute('data-method');
+                const isManual = method === 'manual';
                 Swal.fire({
-                    title: 'Cancel Payment?',
-                    text: "If the transaction in Midtrans has Expired, click Yes to cancel this order.",
+                    title: isManual ? 'Batalkan Pembayaran?' : 'Cancel Payment?',
+                    text: isManual
+                        ? 'Booking ini akan dibatalkan. Pastikan customer belum melakukan transfer.'
+                        : 'If the transaction in Midtrans has Expired, click Yes to cancel this order.',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, Cancel!',
-                    cancelButtonText: 'Back'
+                    confirmButtonText: isManual ? 'Ya, Batalkan!' : 'Yes, Cancel!',
+                    cancelButtonText: 'Kembali'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         form.submit();
@@ -283,6 +313,39 @@
             });
         });
     </script>
+    <!-- MODAL REVISI BUKTI TRANSFER -->
+    @foreach ($payments as $payment)
+        @if (($payment->payment_method ?? null) === 'manual_transfer' && $payment->transfer_proof)
+            <div class="modal fade" id="revisionModal{{ $payment->id }}" tabindex="-1" role="dialog">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="fas fa-redo text-warning"></i> Minta Revisi — {{ $payment->booking->booking_code ?? '-' }}</h5>
+                            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                        </div>
+                        <form action="{{ route('payments.revision', $payment->id) }}" method="POST">
+                            @csrf
+                            <div class="modal-body">
+                                <p class="text-muted small mb-3">Bukti transfer akan direset. Customer akan diminta upload ulang dengan catatan dari Anda.</p>
+                                <div class="form-group">
+                                    <label class="font-weight-bold">Catatan untuk Customer <span class="text-danger">*</span></label>
+                                    <textarea name="admin_note" class="form-control" rows="3" required
+                                        placeholder="cth: Transfer kurang Rp50.000, mohon transfer ulang sesuai total tagihan."></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-paper-plane"></i> Kirim Permintaan Revisi
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
+
     <!-- MODAL BUKTI TRANSFER -->
     @foreach ($payments as $payment)
         @if ($payment->transfer_proof)
@@ -296,7 +359,7 @@
                             </button>
                         </div>
                         <div class="modal-body text-center">
-                            <img src="{{ asset('storage/' . $payment->transfer_proof) }}"
+                            <img src="{{ storage_asset_url($payment->transfer_proof) }}"
                                 alt="Bukti Transfer"
                                 class="img-fluid rounded"
                                 style="max-height: 400px; object-fit: contain;">
@@ -305,7 +368,7 @@
                             </p>
                         </div>
                         <div class="modal-footer">
-                            <a href="{{ asset('storage/' . $payment->transfer_proof) }}"
+                            <a href="{{ storage_asset_url($payment->transfer_proof) }}"
                                 target="_blank" class="btn btn-secondary btn-sm">
                                 <i class="fas fa-external-link-alt"></i> Buka di Tab Baru
                             </a>
