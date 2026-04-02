@@ -340,11 +340,24 @@
                             <div class="mb-2" id="participantInputWrapper">
                                 <label class="form-label small fw-medium">Jumlah Peserta</label>
                                 <div class="input-group">
-                                    <button type="button" class="btn btn-outline-secondary" onclick="decreaseParticipantCount()" aria-label="Kurangi peserta">-</button>
-                                    <input type="number" id="participantCountInput" class="form-control text-center" min="1" value="1" oninput="validateParticipantInput()" required>
-                                    <button type="button" class="btn btn-outline-secondary" onclick="increaseParticipantCount()" aria-label="Tambah peserta">+</button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-secondary participant-step-btn {{ ($paket->has_minimum_person && $paket->minimum_person) ? 'opacity-50 is-disabled' : '' }}"
+                                        onclick="decreaseParticipantCount()"
+                                        aria-label="Kurangi peserta"
+                                        {{ ($paket->has_minimum_person && $paket->minimum_person) ? 'disabled' : '' }}>
+                                        -
+                                    </button>
+                                    <input type="number" id="participantCountInput" class="form-control text-center" min="{{ ($paket->has_minimum_person && $paket->minimum_person) ? (int) $paket->minimum_person : 1 }}" value="{{ ($paket->has_minimum_person && $paket->minimum_person) ? (int) $paket->minimum_person : 1 }}" oninput="validateParticipantInput()" required>
+                                    <button type="button" class="btn btn-outline-secondary participant-step-btn" onclick="increaseParticipantCount()" aria-label="Tambah peserta">+</button>
                                 </div>
-                                <small class="text-muted">Untuk banyak peserta, cukup isi jumlahnya saja.</small>
+                                <small class="text-muted" id="participantConstraintHint">
+                                    @if($paket->has_minimum_person && $paket->minimum_person)
+                                        Minimal {{ number_format($paket->minimum_person, 0, ',', '.') }} peserta untuk paket ini.
+                                    @else
+                                        Untuk banyak peserta, cukup isi jumlahnya saja.
+                                    @endif
+                                </small>
                             </div>
                             <div class="mb-2">
                                 <label class="form-label small fw-medium">Nama Peserta Lain (Opsional)</label>
@@ -1346,6 +1359,16 @@
     opacity: 1;
 }
 
+.participant-step-btn.is-disabled,
+.participant-step-btn:disabled {
+    color: #9ca3af !important;
+    background: #f3f4f6 !important;
+    border-color: #d1d5db !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    pointer-events: none;
+}
+
 @media (max-width: 768px) {
     .modal-overlay {
         align-items: flex-end;
@@ -1423,10 +1446,36 @@
 let basePrice = {{ $paket->harga_paket }};
 let umkm = {};
 let isBundlingSelected = false;
-let minPax = 1;
+const packageMinimumPax = {{ ($paket->has_minimum_person && $paket->minimum_person) ? (int) $paket->minimum_person : 1 }};
+let minPax = packageMinimumPax;
 let maxPax = null;
 let isRendering = false;
 let isUpdatingTotal = false;
+
+function updateParticipantConstraintHint() {
+    const hint = document.getElementById('participantConstraintHint');
+
+    if (!hint) {
+        return;
+    }
+
+    if (maxPax !== null && minPax === maxPax) {
+        hint.innerText = `Jumlah peserta harus ${minPax.toLocaleString('id-ID')} orang untuk bundling yang dipilih.`;
+        return;
+    }
+
+    if (minPax > packageMinimumPax) {
+        hint.innerText = `Minimal ${minPax.toLocaleString('id-ID')} peserta untuk pilihan promo yang sedang aktif.`;
+        return;
+    }
+
+    if (packageMinimumPax > 1) {
+        hint.innerText = `Minimal ${packageMinimumPax.toLocaleString('id-ID')} peserta untuk paket ini.`;
+        return;
+    }
+
+    hint.innerText = 'Untuk banyak peserta, cukup isi jumlahnya saja.';
+}
 
 function syncParticipantConstraintState() {
     const input = document.getElementById('participantCountInput');
@@ -1461,6 +1510,7 @@ function syncParticipantConstraintState() {
         participantTotal.innerText = currentValue;
     }
 
+    updateParticipantConstraintHint();
     updateParticipantButtons();
 }
 
@@ -1540,7 +1590,7 @@ function clearSelectedBundling() {
     });
 
     isBundlingSelected = false;
-    minPax = 1;
+    minPax = packageMinimumPax;
     maxPax = null;
 
     syncParticipantConstraintState();
@@ -1594,7 +1644,7 @@ function clearSelectedDiscount() {
         return;
     }
 
-    minPax = 1;
+    minPax = packageMinimumPax;
     maxPax = null;
 
     syncParticipantConstraintState();
@@ -1709,18 +1759,22 @@ function updateParticipantButtons() {
     if (value <= minPax) {
         btnMinus.disabled = true;
         btnMinus.classList.add('opacity-50');
+        btnMinus.classList.add('is-disabled');
     } else {
         btnMinus.disabled = false;
         btnMinus.classList.remove('opacity-50');
+        btnMinus.classList.remove('is-disabled');
     }
 
     // MAX LIMIT
     if (maxPax && value >= maxPax) {
         btnPlus.disabled = true;
         btnPlus.classList.add('opacity-50');
+        btnPlus.classList.add('is-disabled');
     } else {
         btnPlus.disabled = false;
         btnPlus.classList.remove('opacity-50');
+        btnPlus.classList.remove('is-disabled');
     }
 }
 function increaseParticipantCount() {

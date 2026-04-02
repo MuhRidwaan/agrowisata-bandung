@@ -78,6 +78,8 @@ class PaketTourController extends Controller
             'jam_awal'    => 'required|date_format:H:i',
             'jam_akhir'   => 'required|date_format:H:i|after:jam_awal',
             'harga_paket' => 'required|numeric|min:0',
+            'has_minimum_person' => 'nullable|boolean',
+            'minimum_person' => 'nullable|integer|min:1|required_if:has_minimum_person,1',
             'aktivitas'   => 'required|array|min:1',
             'aktivitas.*' => 'required|string|max:255',
             'bundlings' => 'nullable|array',
@@ -105,6 +107,11 @@ class PaketTourController extends Controller
         if (auth()->user()->hasRole('Vendor')) {
             $data['vendor_id'] = auth()->user()->vendor->id;
         }
+
+        $data['has_minimum_person'] = $request->boolean('has_minimum_person');
+        $data['minimum_person'] = $data['has_minimum_person']
+            ? (int) $request->input('minimum_person')
+            : null;
 
         [$data['harga_bundling'], $data['bundling_people']] = $this->legacyBundlingValues($bundlings);
         $data['is_bundling_available'] = !empty($bundlings);
@@ -173,6 +180,8 @@ class PaketTourController extends Controller
             'jam_awal'    => 'required|date_format:H:i',
             'jam_akhir'   => 'required|date_format:H:i|after:jam_awal',
             'harga_paket' => 'required|numeric|min:0',
+            'has_minimum_person' => 'nullable|boolean',
+            'minimum_person' => 'nullable|integer|min:1|required_if:has_minimum_person,1',
             'aktivitas'   => 'required|array|min:1',
             'aktivitas.*' => 'required|string|max:255',
             'vendor_id'   => 'required|exists:vendors,id',
@@ -195,6 +204,11 @@ class PaketTourController extends Controller
         if (auth()->user()->hasRole('Vendor')) {
             $data['vendor_id'] = auth()->user()->vendor->id;
         }
+
+        $data['has_minimum_person'] = $request->boolean('has_minimum_person');
+        $data['minimum_person'] = $data['has_minimum_person']
+            ? (int) $request->input('minimum_person')
+            : null;
 
         [$data['harga_bundling'], $data['bundling_people']] = $this->legacyBundlingValues($bundlings);
         $data['is_bundling_available'] = !empty($bundlings);

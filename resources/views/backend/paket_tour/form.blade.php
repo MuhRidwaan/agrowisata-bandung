@@ -74,6 +74,10 @@
                     </div>
 
                     {{-- PRICE --}}
+                    @php
+                        $hasMinimumPerson = (bool) old('has_minimum_person', $paketTour->has_minimum_person ?? false);
+                    @endphp
+
                     <div class="form-group">
                         <label>Price <span class="text-danger">*</span></label>
                         <input type="number"
@@ -85,6 +89,58 @@
                             required>
                         @error('harga_paket')
                             <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label class="d-block">Minimum Person</label>
+                        <input type="hidden" name="has_minimum_person" value="0">
+
+                        <div class="minimum-person-option @if($hasMinimumPerson) is-active @endif">
+                            <div class="form-check minimum-person-check mb-0">
+                                <input
+                                    type="checkbox"
+                                    class="form-check-input @error('has_minimum_person') is-invalid @enderror"
+                                    id="has_minimum_person"
+                                    name="has_minimum_person"
+                                    value="1"
+                                    {{ $hasMinimumPerson ? 'checked' : '' }}
+                                    onchange="toggleMinimumPersonField()">
+                                <label class="form-check-label" for="has_minimum_person">
+                                    Add minimum person
+                                </label>
+                            </div>
+                            <small class="form-text text-muted minimum-person-help mb-0">
+                                Centang jika paket ini memiliki jumlah peserta minimum.
+                            </small>
+                        </div>
+
+                        <div id="minimum-person-field"
+                            class="minimum-person-inline mt-2"
+                            style="{{ $hasMinimumPerson ? '' : 'display:none;' }}">
+                            <label class="minimum-person-input-label">Minimum Participants</label>
+                            <div class="input-group">
+                                <input type="number"
+                                    name="minimum_person"
+                                    id="minimum_person"
+                                    min="1"
+                                    class="form-control @error('minimum_person') is-invalid @enderror"
+                                    value="{{ old('minimum_person', $paketTour->minimum_person ?? '') }}"
+                                    placeholder="Masukkan jumlah minimum peserta">
+                                <div class="input-group-append">
+                                    <span class="input-group-text">Pax</span>
+                                </div>
+                            </div>
+                            <small class="form-text text-muted mb-0">
+                                Jumlah peserta di tampilan web tidak bisa kurang dari angka ini.
+                            </small>
+                            @error('minimum_person')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        @error('has_minimum_person')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -358,6 +414,42 @@
     flex-direction: column;
 }
 
+.minimum-person-option {
+    border: 1px solid #d9e2ec;
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: #fff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.minimum-person-option.is-active {
+    border-color: #9ec5fe;
+    background: #f8fbff;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.08);
+}
+
+.minimum-person-check .form-check-label {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.minimum-person-help {
+    margin-left: 1.5rem;
+    line-height: 1.45;
+}
+
+.minimum-person-inline {
+    margin-left: 1.5rem;
+}
+
+.minimum-person-input-label {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+}
+
 .bundling-photo-delete-btn {
     border-radius: 10px;
     display: inline-flex;
@@ -435,6 +527,28 @@
 @section('scripts')
 <script>
 function toggleBundlingPrice() {
+}
+
+function toggleMinimumPersonField() {
+    const toggle = document.getElementById('has_minimum_person');
+    const wrapper = document.getElementById('minimum-person-field');
+    const input = document.getElementById('minimum_person');
+    const option = document.querySelector('.minimum-person-option');
+
+    if (!toggle || !wrapper || !input) {
+        return;
+    }
+
+    if (toggle.checked) {
+        wrapper.style.display = '';
+        input.setAttribute('min', '1');
+        option?.classList.add('is-active');
+        return;
+    }
+
+    wrapper.style.display = 'none';
+    input.value = '';
+    option?.classList.remove('is-active');
 }
 
 function bundlingRowTemplate(index) {
@@ -644,6 +758,10 @@ document.addEventListener('change', function (event) {
     if (event.target.matches('.bundling-photo-input')) {
         renderBundlingPhotoPreview(event.target);
     }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    toggleMinimumPersonField();
 });
 </script>
 @endsection

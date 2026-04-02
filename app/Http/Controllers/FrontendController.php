@@ -144,6 +144,13 @@ class FrontendController extends Controller
             ], 422);
         }
 
+        if ($paket->has_minimum_person && $paket->minimum_person && (int) $request->jumlah_peserta < (int) $paket->minimum_person) {
+            return response()->json([
+                'success' => false,
+                'message' => "Minimal peserta untuk paket ini adalah {$paket->minimum_person} orang.",
+            ], 422);
+        }
+
         $bundlingId = $request->input('bundling_id');
         $bundling = null;
         $paymentMethod = $request->input('payment_method');
