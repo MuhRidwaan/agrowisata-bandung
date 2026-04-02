@@ -96,6 +96,12 @@ class BookingController extends Controller
                 ->with('error', 'Paket tour belum memiliki foto, sehingga belum bisa dipilih untuk booking.');
         }
 
+        if ($paket->has_minimum_person && $paket->minimum_person && (int) $request->jumlah_peserta < (int) $paket->minimum_person) {
+            return back()
+                ->withInput()
+                ->with('error', "Minimal peserta untuk paket ini adalah {$paket->minimum_person} orang.");
+        }
+
         $pricing = $paket->calculatePrice($request->jumlah_peserta);
         $total = $pricing['total_price'];
 
@@ -219,6 +225,12 @@ class BookingController extends Controller
             return back()
                 ->withInput()
                 ->with('error', 'Paket tour belum memiliki foto, sehingga belum bisa dipilih untuk booking.');
+        }
+
+        if ($paket->has_minimum_person && $paket->minimum_person && (int) $request->jumlah_peserta < (int) $paket->minimum_person) {
+            return back()
+                ->withInput()
+                ->with('error', "Minimal peserta untuk paket ini adalah {$paket->minimum_person} orang.");
         }
 
         $pricing = $paket->calculatePrice($request->jumlah_peserta);

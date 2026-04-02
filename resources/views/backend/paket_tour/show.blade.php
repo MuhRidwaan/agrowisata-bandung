@@ -42,6 +42,15 @@
                         @endif
                     </dd>
 
+                    <dt class="col-sm-3">Minimum Person</dt>
+                    <dd class="col-sm-9">
+                        @if ($paketTour->has_minimum_person && $paketTour->minimum_person)
+                            {{ number_format($paketTour->minimum_person, 0, ',', '.') }} orang
+                        @else
+                            <span class="text-muted">Tidak diatur</span>
+                        @endif
+                    </dd>
+
                     <dt class="col-sm-3">Bundling Price</dt>
                     <dd class="col-sm-9">
                         @if ($paketTour->bundlings->count())

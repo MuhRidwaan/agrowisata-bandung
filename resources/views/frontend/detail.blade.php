@@ -93,6 +93,13 @@
                                 {{ number_format($paket->reviews->avg('rating') ?? 0,1) }}
                                 ({{ $paket->reviews->where('status','approved')->count() }} ulasan)
                             </span>
+
+                            @if($paket->has_minimum_person && $paket->minimum_person)
+                            <span class="d-flex align-items-center gap-1">
+                                <i class="bi bi-people"></i>
+                                Minimal {{ number_format($paket->minimum_person, 0, ',', '.') }} orang
+                            </span>
+                            @endif
                         </div>
 
                         <p class="text-muted">
@@ -356,9 +363,12 @@
 
                         <div class="bg-agro-light rounded-3 p-3 mb-4 d-flex gap-2">
                             <i class="bi bi-shield-check text-primary-agro flex-shrink-0"></i>
-                            <p class="text-muted small mb-0">
-                                Pemesanan harus dilakukan minimal 24 jam sebelum jadwal kunjungan.
-                            </p>
+                            <div class="text-muted small mb-0">
+                                <p class="mb-1">Pemesanan harus dilakukan minimal 24 jam sebelum jadwal kunjungan.</p>
+                                @if($paket->has_minimum_person && $paket->minimum_person)
+                                <p class="mb-0">Minimal peserta: {{ number_format($paket->minimum_person, 0, ',', '.') }} orang.</p>
+                                @endif
+                            </div>
                         </div>
 
                         <a href="{{ route('booking',$paket->id) }}"

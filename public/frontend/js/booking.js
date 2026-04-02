@@ -93,6 +93,17 @@ function getSelectedBundling() {
 }
 
 function getSelectedPricingRuleLimits() {
+  var input = document.getElementById('participantCountInput');
+  var packageMinimum = input ? parseInt(input.min, 10) : null;
+
+  if (Number.isNaN(packageMinimum) || packageMinimum < 1) {
+    packageMinimum = Number(config.packageMinimumPax || 1);
+  }
+
+  if (!packageMinimum || packageMinimum < 1) {
+    packageMinimum = 1;
+  }
+
   var selectedBundling = getSelectedBundling();
   if (selectedBundling) {
     return { min: selectedBundling.people_count, max: selectedBundling.people_count };
@@ -100,14 +111,14 @@ function getSelectedPricingRuleLimits() {
 
   var activeCard = document.querySelector('.discount-card.active');
   if (!activeCard) {
-    return { min: 1, max: null };
+    return { min: packageMinimum, max: null };
   }
 
   var min = parseInt(activeCard.dataset.min, 10);
   var max = activeCard.dataset.max ? parseInt(activeCard.dataset.max, 10) : null;
 
   return {
-    min: Number.isNaN(min) || min < 1 ? 1 : min,
+    min: Number.isNaN(min) || min < packageMinimum ? packageMinimum : min,
     max: Number.isNaN(max) ? null : max
   };
 }
@@ -143,6 +154,8 @@ function updateParticipantLimitButtons() {
 
   minusBtn.classList.toggle('opacity-50', minusBtn.disabled);
   plusBtn.classList.toggle('opacity-50', plusBtn.disabled);
+  minusBtn.classList.toggle('is-disabled', minusBtn.disabled);
+  plusBtn.classList.toggle('is-disabled', plusBtn.disabled);
 }
 
 function syncParticipantCountFromInput() {
