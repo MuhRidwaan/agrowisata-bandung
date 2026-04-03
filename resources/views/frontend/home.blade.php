@@ -83,9 +83,9 @@
             <div class="row g-4">
 
                 @forelse ($pakets as $paket)
-                    <div class="col-md-6 col-lg-4 paket-item" data-name="{{ strtolower($paket->nama_paket) }}"
-                        data-area="{{ strtolower($paket->vendor->area->name ?? '') }}"
-                        data-vendor="{{ strtolower($paket->vendor->name ?? '') }}">
+                    <div class="col-md-6 col-lg-4 paket-item"
+                        data-search="{{ strtolower(implode(' ', array_filter([$paket->nama_paket, $paket->vendor->area->name ?? '', $paket->vendor->name ?? '', is_array($paket->aktivitas ?? null) ? implode(' ', $paket->aktivitas) : '']))) }}"
+                        data-area="{{ strtolower($paket->vendor->area->name ?? '') }}">
 
                         <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
 
@@ -217,32 +217,60 @@
 
         const searchInput = document.getElementById("searchInput");
         const buttons = document.querySelectorAll(".region-pill");
-        const items = document.querySelectorAll(".paket-item");
+        const items = Array.from(document.querySelectorAll(".paket-item")).map((item) => ({
+            element: item,
+            searchText: item.dataset.search || "",
+            area: item.dataset.area || ""
+        }));
         const noResult = document.getElementById("noResultMessage");
 
         let currentFilter = "all";
+        let frameId = null;
 
-        // kasih transition sekali saja
-        items.forEach(item => {
-            item.style.transition = "opacity 0.25s ease";
+        items.forEach(({
+            element
+        }) => {
+            element.addEventListener("transitionend", function(event) {
+                if (event.propertyName !== "opacity") {
+                    return;
+                }
+
+                if (element.classList.contains("paket-hide")) {
+                    element.classList.add("paket-gone");
+                }
+            });
         });
 
-        function filterData() {
+        function normalizeText(value) {
+            return value.toLowerCase().trim().replace(/\s+/g, " ");
+        }
 
-            const keyword = (searchInput?.value || "").toLowerCase().trim();
+        function showItem(element) {
+            element.classList.remove("paket-gone");
+
+            requestAnimationFrame(() => {
+                element.classList.remove("paket-hide");
+            });
+        }
+
+        function hideItem(element) {
+            element.classList.add("paket-hide");
+        }
+
+        function applyFilter() {
+
+            const keyword = normalizeText(searchInput?.value || "");
             let visible = 0;
 
-            items.forEach(item => {
-
-                const name = item.dataset.name || "";
-                const area = item.dataset.area || "";
-                const vendor = item.dataset.vendor || "";
+            items.forEach(({
+                element,
+                searchText,
+                area
+            }) => {
 
                 const matchSearch =
                     keyword === "" ||
-                    name.includes(keyword) ||
-                    area.includes(keyword) ||
-                    vendor.includes(keyword);
+                    searchText.includes(keyword);
 
                 let matchFilter =
                     currentFilter === "all" ||
@@ -253,46 +281,37 @@
                 }
 
                 if (matchSearch && matchFilter) {
-
-                    item.classList.remove("paket-hide");
-                    item.style.display = "block";
+                    showItem(element);
                     visible++;
-
                 } else {
-
-                    item.classList.add("paket-hide");
-
-                    setTimeout(() => {
-                        item.style.display = "none";
-                    }, 300);
-
+                    hideItem(element);
                 }
-
             });
 
             if (noResult) {
                 noResult.style.display = visible === 0 ? "block" : "none";
             }
         }
-        // SEARCH realtime
-        let typingTimer;
-        const delay = 120;
+
+        function filterData() {
+            if (frameId) {
+                cancelAnimationFrame(frameId);
+            }
+
+            frameId = requestAnimationFrame(() => {
+                applyFilter();
+                frameId = null;
+            });
+        }
 
         searchInput.addEventListener("input", function() {
+            currentFilter = "all";
+            buttons.forEach(b => b.classList.remove("active"));
+            if (buttons.length > 0) {
+                buttons[0].classList.add("active");
+            }
 
-            clearTimeout(typingTimer);
-
-            typingTimer = setTimeout(() => {
-
-                currentFilter = "all";
-                buttons.forEach(b => b.classList.remove("active"));
-                if (buttons.length > 0) {
-                    buttons[0].classList.add("active");
-                }
-
-                filterData();
-
-            }, delay);
+            filterData();
 
         });
 
@@ -335,7 +354,11 @@
     }
 
     .paket-item {
-        transition: opacity .25s ease, transform .25s ease;
+        transition: opacity .18s ease, transform .18s ease;
         will-change: transform, opacity;
+    }
+
+    .paket-gone {
+        display: none;
     }
 </style>
