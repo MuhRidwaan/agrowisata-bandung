@@ -112,6 +112,19 @@
                         @endif
                     </dd>
 
+                    <dt class="col-sm-3">Facilities</dt>
+                    <dd class="col-sm-9">
+                        @if (is_array($paketTour->facilities) && count(array_filter($paketTour->facilities)))
+                            @foreach ($paketTour->facilities as $item)
+                                @if (filled($item))
+                                    <span class="badge badge-success mb-1">{{ $item }}</span><br>
+                                @endif
+                            @endforeach
+                        @else
+                            <span class="text-muted">-</span>
+                        @endif
+                    </dd>
+
                     <dt class="col-sm-3">Available Dates</dt>
                     <dd class="col-sm-9">
                         @if ($paketTour->tanggalAvailables && $paketTour->tanggalAvailables->count())

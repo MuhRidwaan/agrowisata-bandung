@@ -82,6 +82,8 @@ class PaketTourController extends Controller
             'minimum_person' => 'nullable|integer|min:1|required_if:has_minimum_person,1',
             'aktivitas'   => 'required|array|min:1',
             'aktivitas.*' => 'required|string|max:255',
+            'facilities' => 'nullable|array',
+            'facilities.*' => 'nullable|string|max:255',
             'bundlings' => 'nullable|array',
             'bundlings.*.label' => 'nullable|string|max:255',
             'bundlings.*.people_count' => 'nullable|integer|min:1',
@@ -99,6 +101,11 @@ class PaketTourController extends Controller
         }
 
         $data = $request->validate($rules);
+        $data['facilities'] = collect($data['facilities'] ?? [])
+            ->map(fn ($item) => is_string($item) ? trim($item) : $item)
+            ->filter(fn ($item) => filled($item))
+            ->values()
+            ->all();
         
         // Convert checkbox value to boolean
         $bundlings = $this->extractBundlings($request);
@@ -184,6 +191,8 @@ class PaketTourController extends Controller
             'minimum_person' => 'nullable|integer|min:1|required_if:has_minimum_person,1',
             'aktivitas'   => 'required|array|min:1',
             'aktivitas.*' => 'required|string|max:255',
+            'facilities' => 'nullable|array',
+            'facilities.*' => 'nullable|string|max:255',
             'vendor_id'   => 'required|exists:vendors,id',
             'bundlings' => 'nullable|array',
             'bundlings.*.label' => 'nullable|string|max:255',
@@ -196,6 +205,11 @@ class PaketTourController extends Controller
             'bundlings.*.delete_photo_ids' => 'nullable|array',
             'bundlings.*.delete_photo_ids.*' => 'nullable|integer|exists:paket_tour_bundling_photos,id',
         ]);
+        $data['facilities'] = collect($data['facilities'] ?? [])
+            ->map(fn ($item) => is_string($item) ? trim($item) : $item)
+            ->filter(fn ($item) => filled($item))
+            ->values()
+            ->all();
         
         // Convert checkbox value to boolean
         $bundlings = $this->extractBundlings($request);
