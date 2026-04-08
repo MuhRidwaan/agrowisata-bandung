@@ -40,6 +40,35 @@
                 </p>
             </div>
 
+            @php
+                $areaAliases = [
+                    'pengalengan' => 'Pangalengan',
+                    'pangalengan' => 'Pangalengan',
+                ];
+
+                $normalizeAreaName = function (?string $name) use ($areaAliases) {
+                    $cleanName = trim((string) $name);
+                    $key = strtolower($cleanName);
+
+                    return $areaAliases[$key] ?? $cleanName;
+                };
+
+                $groupedAreas = collect($areas)
+                    ->groupBy(fn($area) => $normalizeAreaName($area->name))
+                    ->map(function ($items, $label) use ($pakets, $normalizeAreaName) {
+                        $count = $pakets->filter(function ($paket) use ($label, $normalizeAreaName) {
+                            return $normalizeAreaName(optional(optional($paket->vendor)->area)->name) === $label;
+                        })->count();
+
+                        return (object) [
+                            'name' => $label,
+                            'count' => $count,
+                        ];
+                    })
+                    ->sortBy('name')
+                    ->values();
+            @endphp
+
             <!-- FORM (TETAP SAMA) -->
             <form method="GET">
 
@@ -66,12 +95,10 @@
                         <span class="count-badge">{{ $pakets->count() }}</span>
                     </button>
 
-                    @foreach ($areas as $area)
+                    @foreach ($groupedAreas as $area)
                         <button type="button" value="{{ $area->name }}" class="region-pill">
                             <i class="bi bi-geo-alt"></i> {{ $area->name }}
-                            <span class="count-badge">
-                                {{ $pakets->filter(fn($p) => optional($p->vendor)->area_id == $area->id)->count() }}
-                            </span>
+                            <span class="count-badge">{{ $area->count }}</span>
                         </button>
                     @endforeach
 
@@ -84,8 +111,8 @@
 
                 @forelse ($pakets as $paket)
                     <div class="col-md-6 col-lg-4 paket-item"
-                        data-search="{{ strtolower(implode(' ', array_filter([$paket->nama_paket, $paket->vendor->area->name ?? '', $paket->vendor->name ?? '', is_array($paket->aktivitas ?? null) ? implode(' ', $paket->aktivitas) : '']))) }}"
-                        data-area="{{ strtolower($paket->vendor->area->name ?? '') }}">
+                        data-search="{{ strtolower(implode(' ', array_filter([$paket->nama_paket, $normalizeAreaName($paket->vendor->area->name ?? ''), $paket->vendor->name ?? '', is_array($paket->aktivitas ?? null) ? implode(' ', $paket->aktivitas) : '']))) }}"
+                        data-area="{{ strtolower($normalizeAreaName($paket->vendor->area->name ?? '')) }}">
 
                         <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
 
@@ -116,7 +143,7 @@
 
                                     @if ($paket->vendor && $paket->vendor->area)
                                         <span class="badge bg-success-subtle text-success rounded-pill">
-                                            {{ $paket->vendor->area->name }}
+                                            {{ $normalizeAreaName($paket->vendor->area->name) }}
                                         </span>
                                     @endif
                                 </div>
