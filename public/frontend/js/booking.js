@@ -468,6 +468,23 @@ function getUmkmTotal() {
   return total;
 }
 
+function getSelectedUmkmItems() {
+  var items = [];
+
+  document.querySelectorAll('.umkm-item').forEach(function(item) {
+    var id = item.dataset.id;
+    if (!id) return;
+
+    var qtyEl = document.getElementById('qty-' + id);
+    var qty = qtyEl ? parseInt(qtyEl.textContent, 10) || 0 : 0;
+    if (qty <= 0) return;
+
+    items.push({ id: parseInt(id, 10), qty: qty });
+  });
+
+  return items;
+}
+
 function updateSummary() {
   var dateInput = document.getElementById('visitDate');
   var sisaInput = document.getElementById('visitDateSisa');
@@ -546,7 +563,8 @@ function submitBooking() {
     customer_name: nameInput ? nameInput.value.trim() : '',
     customer_email: emailInput ? emailInput.value.trim() : '',
     customer_phone: phoneInput ? phoneInput.value.trim() : '',
-    visit_date: dateInput ? dateInput.value : ''
+    visit_date: dateInput ? dateInput.value : '',
+    umkm_products: JSON.stringify(getSelectedUmkmItems())
   };
 
   fetch(config.storeUrl, {

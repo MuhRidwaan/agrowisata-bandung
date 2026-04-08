@@ -8,6 +8,7 @@ use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\Area;
 use App\Models\TransactionLog;
+use App\Models\UmkmProduct;
 use Illuminate\Support\Str;
 
 class FrontendController extends Controller
@@ -32,6 +33,42 @@ class FrontendController extends Controller
     private function isManualPaymentEnabled(): bool
     {
         return get_setting('enable_manual_payment', 'true') === 'true';
+    }
+
+    private function resolveUmkmItems(PaketTour $paket, ?string $umkmProductsJson): array
+    {
+        $items = json_decode($umkmProductsJson ?? '[]', true);
+
+        if (!is_array($items) || empty($items)) {
+            return ['addon_total' => 0, 'sync_data' => []];
+        }
+
+        $requestedItems = collect($items)
+            ->filter(fn ($item) => is_array($item) && isset($item['id'], $item['qty']))
+            ->map(fn ($item) => ['id' => (int) $item['id'], 'qty' => max(0, (int) $item['qty'])])
+            ->filter(fn ($item) => $item['id'] > 0 && $item['qty'] > 0)
+            ->values();
+
+        if ($requestedItems->isEmpty()) {
+            return ['addon_total' => 0, 'sync_data' => []];
+        }
+
+        $allowedProducts = $paket->umkmProducts()
+            ->whereIn('umkm_products.id', $requestedItems->pluck('id')->all())
+            ->get()
+            ->keyBy('id');
+
+        $addonTotal = 0;
+        $syncData = [];
+
+        foreach ($requestedItems as $item) {
+            $product = $allowedProducts->get($item['id']);
+            if (!$product) continue;
+            $addonTotal += $product->price * $item['qty'];
+            $syncData[$product->id] = ['quantity' => $item['qty'], 'price' => $product->price];
+        }
+
+        return ['addon_total' => $addonTotal, 'sync_data' => $syncData];
     }
 
     // ================= HOME =================
@@ -115,6 +152,7 @@ class FrontendController extends Controller
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|string|max:20',
             'visit_date'     => 'required|date|after_or_equal:today',
+            'umkm_products'  => 'nullable|string',
         ]);
 
         // Validasi kuota terhadap tanggal yang dipilih
@@ -198,6 +236,11 @@ class FrontendController extends Controller
         );
         $total = $pricing['total_price'];
 
+        // Proses UMKM add-ons
+        $umkmPayload = $request->input('umkm_products');
+        $umkmData = $this->resolveUmkmItems($paket, $umkmPayload);
+        $total += $umkmData['addon_total'];
+
         // Generate booking code
         $prefix = get_setting('booking_prefix', 'BOOK-');
         $bookingCode = $prefix . Str::upper(Str::random(6));
@@ -215,6 +258,10 @@ class FrontendController extends Controller
             'customer_phone' => $request->customer_phone,
             'visit_date'     => $request->visit_date,
         ]);
+
+        if (!empty($umkmData['sync_data'])) {
+            $booking->umkmProducts()->sync($umkmData['sync_data']);
+        }
 
         // Audit Log
         TransactionLog::create([

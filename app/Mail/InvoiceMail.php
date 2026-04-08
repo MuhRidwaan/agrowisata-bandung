@@ -18,15 +18,12 @@ class InvoiceMail extends Mailable
 
     public function __construct(Payment $payment)
     {
-        $this->payment = $payment;
+        $this->payment = $payment->loadMissing([
+            'booking.user',
+            'booking.paketTour.vendor.whatsappsetting',
+            'booking.umkmProducts',
+        ]);
     }
-
-    public function build()
-    {
-        return $this->subject('Invoice Pembayaran - Agrowisata Tour')
-                    ->view('emails.invoice_email');
-    }
-
 
     /**
      * Get the message envelope.
@@ -34,7 +31,7 @@ class InvoiceMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Invoice Mail',
+            subject: 'Invoice Pembayaran - Agrowisata Tour',
         );
     }
 
@@ -44,7 +41,7 @@ class InvoiceMail extends Mailable
     public function content(): Content
     {
         return new Content(
-          view: 'emails.invoice_email',
+            view: 'emails.invoice_email',
         );
     }
 

@@ -133,18 +133,58 @@
                     </thead>
                     <tbody>
                         @php
-                            $baseTotal = ($paket->harga_paket ?? 0) * $booking->jumlah_peserta;
-                            $discount = $baseTotal - $booking->total_price;
+                            $pax = (int) ($booking->jumlah_peserta ?? 0);
+                            $hargaNormal = (float) ($paket->harga_paket ?? 0);
+                            $baseTotal = $hargaNormal * $pax;
+                            $umkmItems = $booking->umkmProducts ?? collect();
+                            $umkmTotal = $umkmItems->sum(function ($product) {
+                                $qty = (int) ($product->pivot->quantity ?? 0);
+                                $price = (float) ($product->pivot->price ?? $product->price ?? 0);
+                                return $price * $qty;
+                            });
+                            $tourPaid = max(0, (float) ($booking->total_price ?? 0) - $umkmTotal);
+                            $discount = max(0, $baseTotal - $tourPaid);
+                            $pricePerPax = $pax > 0 ? $tourPaid / $pax : $hargaNormal;
                         @endphp
                         <tr>
                             <td>{{ $paket->nama_paket ?? '-' }}</td>
-                            <td class="text-center">{{ $booking->jumlah_peserta }} Pax</td>
-                            <td class="text-end">Rp {{ number_format($paket->harga_paket ?? 0, 0, ',', '.') }}</td>
-                            <td class="text-end">Rp {{ number_format($baseTotal, 0, ',', '.') }}</td>
+                            <td class="text-center">{{ $pax }} Pax</td>
+                            <td class="text-end">Rp {{ number_format($pricePerPax, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format($tourPaid, 0, ',', '.') }}</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+
+            @if (($umkmItems ?? collect())->isNotEmpty())
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Produk UMKM (Tambahan)</th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-end">Harga</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($umkmItems as $product)
+                                @php
+                                    $qty = (int) ($product->pivot->quantity ?? 0);
+                                    $price = (float) ($product->pivot->price ?? $product->price ?? 0);
+                                    $lineTotal = $qty * $price;
+                                @endphp
+                                <tr>
+                                    <td>{{ $product->name ?? '-' }}</td>
+                                    <td class="text-center">{{ $qty }}</td>
+                                    <td class="text-end">Rp {{ number_format($price, 0, ',', '.') }}</td>
+                                    <td class="text-end">Rp {{ number_format($lineTotal, 0, ',', '.') }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
 
             <div class="row">
                 <div class="col-sm-6">
@@ -239,14 +279,24 @@
                 </div>
                 <div class="col-sm-6">
                     <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span class="text-muted">Subtotal:</span>
+                        <span class="text-muted">Subtotal Paket Tour:</span>
                         <span class="fw-bold">Rp {{ number_format($baseTotal, 0, ',', '.') }}</span>
                     </div>
-                    @if($discount > 0)
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span class="text-danger">Diskon:</span>
-                        <span class="text-danger fw-bold">-Rp {{ number_format($discount, 0, ',', '.') }}</span>
-                    </div>
+                    @if ($discount > 0)
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted">Harga Normal:</span>
+                            <span class="text-muted text-decoration-line-through">Rp {{ number_format($baseTotal, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-danger">Diskon:</span>
+                            <span class="text-danger fw-bold">-Rp {{ number_format($discount, 0, ',', '.') }}</span>
+                        </div>
+                    @endif
+                    @if (($umkmTotal ?? 0) > 0)
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted">Produk UMKM:</span>
+                            <span class="fw-bold">Rp {{ number_format($umkmTotal, 0, ',', '.') }}</span>
+                        </div>
                     @endif
                     <hr>
                     <div class="d-flex justify-content-between align-items-center">

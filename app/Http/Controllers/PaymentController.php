@@ -27,7 +27,11 @@ class PaymentController extends Controller
         }
 
         if (($payment->payment_method ?? null) === 'manual_transfer' || blank($payment->snap_token)) {
-            return $payment->fresh(['booking.paketTour', 'booking.user']);
+            return $payment->fresh([
+                'booking.paketTour.vendor.whatsappsetting',
+                'booking.user',
+                'booking.umkmProducts',
+            ]);
         }
 
         $shouldSendInvoiceEmail = false;
@@ -41,7 +45,11 @@ class PaymentController extends Controller
                 'payment_id' => $payment->id,
             ]);
 
-            return $payment->fresh(['booking.paketTour', 'booking.user']);
+            return $payment->fresh([
+                'booking.paketTour.vendor.whatsappsetting',
+                'booking.user',
+                'booking.umkmProducts',
+            ]);
         }
 
         $transactionStatus = $status->transaction_status ?? null;
@@ -110,7 +118,11 @@ class PaymentController extends Controller
             }
         }
 
-        $payment = $payment->fresh(['booking.paketTour', 'booking.user']);
+        $payment = $payment->fresh([
+            'booking.paketTour.vendor.whatsappsetting',
+            'booking.user',
+            'booking.umkmProducts',
+        ]);
 
         if ($shouldSendInvoiceEmail && $payment && $payment->status === 'success') {
             $this->triggerInvoiceEmail($payment);
@@ -149,7 +161,11 @@ class PaymentController extends Controller
     public function invoice($id)
     {
         $user = auth()->user();
-        $payment = Payment::with(['booking.paketTour', 'booking.user'])->findOrFail($id);
+        $payment = Payment::with([
+            'booking.paketTour.vendor.whatsappsetting',
+            'booking.user',
+            'booking.umkmProducts',
+        ])->findOrFail($id);
 
         // Jika user adalah Vendor, pastikan invoice ini milik paket mereka
         if ($user->hasRole('Vendor')) {
@@ -349,13 +365,12 @@ class PaymentController extends Controller
             return back()->with('error', 'Invoice belum bisa dikirim karena pembayaran belum lunas.');
         }
 
-        $emailSent = $this->triggerInvoiceEmail($payment);
+        $emailSent = $this->triggerInvoiceEmail($payment, force: true);
 
-  
         if ($emailSent) {
             return back()->with('success', 'Email Invoice berhasil dikirim ulang ke customer.');
         } else {
-            return back()->with('error', 'Gagal mengirim email. Pastikan alamat email customer tersedia.');
+            return back()->with('error', 'Gagal mengirim email. Pastikan konfigurasi email dan setting notifikasi sudah aktif.');
         }
     }
 
@@ -379,8 +394,12 @@ class PaymentController extends Controller
                 $payment->forceFill(['invoice_emailed_at' => now()])->saveQuietly();
                 return true;
             } catch (\Exception $e) {
-               \Log::error('Mail fail: '.$e->getMessage());
-            // dd('Penyebab Gagal Kirim Email: ' . $e->getMessage());
+                \Log::error('Mail fail: ' . $e->getMessage(), [
+                    'payment_id' => $payment->id,
+                    'booking_code' => $payment->booking->booking_code ?? null,
+                    'email' => $email,
+                    'exception' => $e->getTraceAsString(),
+                ]);
                 return false;
             }
         }
@@ -390,7 +409,11 @@ class PaymentController extends Controller
     // FUNGSI BARU: Untuk halaman invoice public (customer)
     public function publicInvoice($booking_code)
     {
-        $payment = Payment::with(['booking.paketTour.vendor.whatsappsetting', 'booking.user'])
+        $payment = Payment::with([
+            'booking.paketTour.vendor.whatsappsetting',
+            'booking.user',
+            'booking.umkmProducts',
+        ])
             ->whereHas('booking', function($q) use ($booking_code) {
                 $q->where('booking_code', $booking_code);
             })->firstOrFail();

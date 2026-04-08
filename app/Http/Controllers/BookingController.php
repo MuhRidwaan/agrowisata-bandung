@@ -86,6 +86,7 @@ class BookingController extends Controller
             'customer_phone' => 'required|string|max:20',
             'visit_date'     => 'required|date|after_or_equal:today',
             'umkm_products'  => 'nullable|string',
+            'umkm_data'      => 'nullable|string',
         ]);
 
         // 2. Kalkulasi Total Harga menggunakan Pricing Rules
@@ -105,7 +106,8 @@ class BookingController extends Controller
         $pricing = $paket->calculatePrice($request->jumlah_peserta);
         $total = $pricing['total_price'];
 
-        $umkmData = $this->resolveUmkmItems($paket, $request->umkm_products);
+        $umkmPayload = $request->input('umkm_products') ?? $request->input('umkm_data');
+        $umkmData = $this->resolveUmkmItems($paket, $umkmPayload);
         $total += $umkmData['addon_total'];
         $prefix = get_setting('booking_prefix', 'BOOK-');
         $bookingCode = $prefix . Str::upper(Str::random(6));
@@ -217,6 +219,7 @@ class BookingController extends Controller
             'customer_phone' => 'required|string|max:20',
             'visit_date'     => 'required|date',
             'umkm_products' => 'nullable|string',
+            'umkm_data'     => 'nullable|string',
         ]);
 
         // Kalkulasi ulang jika paket atau jumlah peserta diubah
@@ -236,7 +239,8 @@ class BookingController extends Controller
         $pricing = $paket->calculatePrice($request->jumlah_peserta);
         $total = $pricing['total_price'];
 
-        $umkmData = $this->resolveUmkmItems($paket, $request->umkm_products);
+        $umkmPayload = $request->input('umkm_products') ?? $request->input('umkm_data');
+        $umkmData = $this->resolveUmkmItems($paket, $umkmPayload);
         $total += $umkmData['addon_total'];
 
         $oldStatus = $booking->status;

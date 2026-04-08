@@ -35,6 +35,14 @@
                 <td style="padding: 5px 0;"><strong>Kode Booking:</strong></td>
                 <td style="padding: 5px 0; text-align: right;">{{ $payment->booking->booking_code }}</td>
             </tr>
+            @if (!empty($payment->booking->visit_date) || !empty($payment->booking->tanggal))
+                <tr>
+                    <td style="padding: 5px 0;"><strong>Tanggal Kunjungan:</strong></td>
+                    <td style="padding: 5px 0; text-align: right;">
+                        {{ \Carbon\Carbon::parse($payment->booking->visit_date ?? $payment->booking->tanggal)->format('d M Y') }}
+                    </td>
+                </tr>
+            @endif
             <tr>
                 <td style="padding: 5px 0;"><strong>Tanggal Pembayaran:</strong></td>
                 <td style="padding: 5px 0; text-align: right;">
@@ -65,25 +73,41 @@
             </thead>
             <tbody>
                 @php
-                    $baseTotal = $paket->harga_paket * $booking->jumlah_peserta;
-                    $discount = $baseTotal - $booking->total_price;
+                    $pax = (int) ($booking->jumlah_peserta ?? 0);
+                    $hargaNormal = (float) ($paket->harga_paket ?? 0);
+                    $baseTotal = $hargaNormal * $pax;
+                    $umkmItems = $booking->umkmProducts ?? collect();
+                    $umkmTotal = $umkmItems->sum(function ($product) {
+                        $qty = (int) ($product->pivot->quantity ?? 0);
+                        $price = (float) ($product->pivot->price ?? $product->price ?? 0);
+                        return $price * $qty;
+                    });
+                    $tourPaid = max(0, (float) ($booking->total_price ?? 0) - $umkmTotal);
+                    $discount = max(0, $baseTotal - $tourPaid);
                 @endphp
                 <tr>
                     <td style="padding: 10px; border: 1px solid #ddd;">
                         {{ $paket->nama_paket ?? '-' }}</td>
                     <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
-                        {{ $booking->jumlah_peserta }} Pax</td>
+                        {{ $pax }} Pax</td>
                     <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">Rp
-                        {{ number_format($baseTotal, 0, ',', '.') }}</td>
+                        {{ number_format($tourPaid, 0, ',', '.') }}</td>
                 </tr>
             </tbody>
             <tfoot>
-                @if($discount > 0)
+                @if ($discount > 0)
                 <tr>
                     <td colspan="2" style="padding: 10px; border: 1px solid #ddd; text-align: right; color: #dc3545;"><strong>Potongan Diskon:</strong></td>
                     <td style="padding: 10px; border: 1px solid #ddd; text-align: right; color: #dc3545;"><strong>-Rp
                             {{ number_format($discount, 0, ',', '.') }}</strong></td>
                 </tr>
+                @endif
+                @if ($umkmTotal > 0)
+                    <tr>
+                        <td colspan="2" style="padding: 10px; border: 1px solid #ddd; text-align: right;"><strong>Total Produk UMKM:</strong></td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;"><strong>Rp
+                                {{ number_format($umkmTotal, 0, ',', '.') }}</strong></td>
+                    </tr>
                 @endif
                 <tr>
                     <td colspan="2" style="padding: 10px; border: 1px solid #ddd; text-align: right; background-color: #f8f9fa;"><strong>Total
@@ -93,6 +117,35 @@
                 </tr>
             </tfoot>
         </table>
+
+        @if (($umkmItems ?? collect())->isNotEmpty())
+            <h4 style="margin: 0 0 10px 0; color: #444; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Produk UMKM (Tambahan)</h4>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
+                <thead>
+                    <tr style="background-color: #f8f9fa;">
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Produk</th>
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Qty</th>
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">Harga</th>
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($umkmItems as $product)
+                        @php
+                            $qty = (int) ($product->pivot->quantity ?? 0);
+                            $price = (float) ($product->pivot->price ?? $product->price ?? 0);
+                            $lineTotal = $qty * $price;
+                        @endphp
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd;">{{ $product->name ?? '-' }}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">{{ $qty }}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">Rp {{ number_format($price, 0, ',', '.') }}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">Rp {{ number_format($lineTotal, 0, ',', '.') }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
 
         <div
             style="background-color: #fff3cd; color: #856404; padding: 15px; border-left: 4px solid #ffeeba; margin-bottom: 20px; font-size: 13px;">
@@ -107,6 +160,12 @@
                 <strong>Hubungi Vendor via WhatsApp</strong><br>
                 @if ($vendor?->name)
                     Vendor: {{ $vendor->name }}<br>
+                @endif
+                @if ($vendor?->address)
+                    Alamat: {{ $vendor->address }}<br>
+                @endif
+                @if ($vendor?->email)
+                    Email: {{ $vendor->email }}<br>
                 @endif
                 Nomor WhatsApp: {{ $whatsappSetting->phone_number }}<br>
                 <a href="{{ $waLink }}"
