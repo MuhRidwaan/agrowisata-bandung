@@ -126,11 +126,9 @@ class FrontendController extends Controller
             ->orderBy('tanggal')
             ->get()
             ->map(function ($tgl) use ($paket) {
-                // Hitung kuota terpakai dari bookings yang tidak dibatalkan
-                $used = Booking::where('paket_tour_id', $paket->id)
-                    ->where('created_at', $tgl->tanggal)
-                    ->where('status', '!=', 'cancelled')
-                    ->sum('jumlah_peserta');
+                // Hitung kuota terpakai berdasarkan tanggal kunjungan, bukan tanggal dibuat booking.
+                $used = Booking::reservedParticipantsForDate($paket->id, $tgl->tanggal);
+
                 $tgl->quota_used = (int) $used;
                 $tgl->sisa = max(0, $tgl->kuota - $used);
                 return $tgl;
@@ -169,10 +167,7 @@ class FrontendController extends Controller
             ], 422);
         }
 
-        $used = Booking::where('paket_tour_id', $paket->id)
-            ->whereDate('created_at', $request->visit_date)
-            ->where('status', '!=', 'cancelled')
-            ->sum('jumlah_peserta');
+        $used = Booking::reservedParticipantsForDate($paket->id, $request->visit_date);
 
         $remaining = max(0, (int) $tanggalAvailable->kuota - (int) $used);
         if ((int) $request->jumlah_peserta > $remaining) {

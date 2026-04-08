@@ -2,10 +2,17 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
 {
+    public const QUOTA_RESERVED_STATUSES = [
+        'pending',
+        'confirmed',
+        'paid',
+    ];
+
     protected $fillable = [
         'booking_code',
         'user_id',
@@ -19,6 +26,25 @@ class Booking extends Model
         'visit_date',
         'tanggal',
     ];
+
+    public function scopeReservingQuota($query)
+    {
+        return $query->whereIn('status', self::QUOTA_RESERVED_STATUSES);
+    }
+
+    public static function reservedParticipantsForDate(int $paketTourId, string|CarbonInterface $visitDate, ?int $ignoreBookingId = null): int
+    {
+        $query = static::query()
+            ->where('paket_tour_id', $paketTourId)
+            ->reservingQuota()
+            ->whereDate('visit_date', $visitDate);
+
+        if ($ignoreBookingId) {
+            $query->whereKeyNot($ignoreBookingId);
+        }
+
+        return (int) $query->sum('jumlah_peserta');
+    }
 
     public function paketTour()
     {

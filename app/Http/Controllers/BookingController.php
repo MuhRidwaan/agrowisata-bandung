@@ -103,6 +103,18 @@ class BookingController extends Controller
                 ->with('error', "Minimal peserta untuk paket ini adalah {$paket->minimum_person} orang.");
         }
 
+        $quotaValidationError = $this->validateVisitDateQuota(
+            $paket,
+            $request->visit_date,
+            (int) $request->jumlah_peserta
+        );
+
+        if ($quotaValidationError) {
+            return back()
+                ->withInput()
+                ->with('error', $quotaValidationError);
+        }
+
         $pricing = $paket->calculatePrice($request->jumlah_peserta);
         $total = $pricing['total_price'];
 
@@ -236,6 +248,21 @@ class BookingController extends Controller
                 ->with('error', "Minimal peserta untuk paket ini adalah {$paket->minimum_person} orang.");
         }
 
+        if ($request->status !== 'cancelled') {
+            $quotaValidationError = $this->validateVisitDateQuota(
+                $paket,
+                $request->visit_date,
+                (int) $request->jumlah_peserta,
+                $booking->id
+            );
+
+            if ($quotaValidationError) {
+                return back()
+                    ->withInput()
+                    ->with('error', $quotaValidationError);
+            }
+        }
+
         $pricing = $paket->calculatePrice($request->jumlah_peserta);
         $total = $pricing['total_price'];
 
@@ -348,5 +375,26 @@ class BookingController extends Controller
             'addon_total' => $addonTotal,
             'sync_data' => $syncData,
         ];
+    }
+
+    private function validateVisitDateQuota(PaketTour $paket, string $visitDate, int $jumlahPeserta, ?int $ignoreBookingId = null): ?string
+    {
+        $tanggalAvailable = $paket->tanggalAvailables()
+            ->where('status', 'aktif')
+            ->whereDate('tanggal', $visitDate)
+            ->first();
+
+        if (! $tanggalAvailable) {
+            return 'Tanggal kunjungan tidak tersedia untuk paket ini.';
+        }
+
+        $used = Booking::reservedParticipantsForDate($paket->id, $visitDate, $ignoreBookingId);
+        $remaining = max(0, (int) $tanggalAvailable->kuota - $used);
+
+        if ($jumlahPeserta > $remaining) {
+            return "Kuota tidak mencukupi. Sisa kuota untuk tanggal ini: {$remaining} orang.";
+        }
+
+        return null;
     }
 }
