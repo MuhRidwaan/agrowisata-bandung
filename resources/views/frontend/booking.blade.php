@@ -456,36 +456,52 @@
                 <div class="booking-step d-none" id="bookingStep4">
                     <!-- Waiting Payment -->
                     <div class="card card-agro" id="paymentWaiting">
-                        <div class="card-body p-5 text-center">
-                            <div class="mb-4">
-                                <div class="spinner-border text-accent" style="width: 3rem; height: 3rem;"
-                                    role="status">
-                                    <span class="visually-hidden">Loading...</span>
+                        <div class="card-body p-4">
+
+                            {{-- Header status --}}
+                            <div class="confirm-status-header text-center mb-4">
+                                <div class="confirm-status-icon pending mb-3">
+                                    <i class="bi bi-hourglass-split"></i>
+                                </div>
+                                <h3 class="font-display fs-4 fw-bold mb-1">Booking Berhasil Dibuat!</h3>
+                                <p class="text-muted small mb-0">
+                                    Selesaikan pembayaran via <strong id="paymentMethodName">-</strong> untuk mengaktifkan tiket Anda.
+                                </p>
+                            </div>
+
+                            {{-- Booking code + total --}}
+                            <div class="confirm-info-grid mb-4">
+                                <div class="confirm-info-item">
+                                    <span class="confirm-info-label">Kode Pemesanan</span>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="confirm-info-value font-display fw-bold" id="bookingCode">-</span>
+                                        <button class="btn-copy-code" onclick="copyBookingCode()" title="Salin kode" aria-label="Salin kode booking">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="confirm-info-item">
+                                    <span class="confirm-info-label">Total Pembayaran</span>
+                                    <span class="confirm-info-value font-display fw-bold text-primary-agro fs-5" id="waitingTotal">Rp0</span>
                                 </div>
                             </div>
-                            <h3 class="font-display fs-4 fw-bold mb-2">Menunggu Pembayaran</h3>
-                            <p class="text-muted mb-4">
-                                Silakan selesaikan pembayaran Anda melalui <strong id="paymentMethodName">-</strong>
-                            </p>
-                            <div class="bg-agro-light rounded-3 p-3 mb-3 d-inline-block">
-                                <p class="text-muted small mb-1">Total yang harus dibayar</p>
-                                <p class="font-display fs-4 fw-bold text-primary-agro mb-0" id="waitingTotal">Rp0</p>
-                            </div>
-                            <div class="border rounded-3 p-3 mb-4 mx-auto" style="max-width: 300px;">
-                                <p class="text-muted small mb-1">Kode Pemesanan</p>
-                                <div class="d-flex align-items-center justify-content-center gap-2">
-                                    <span class="font-display fs-5 fw-bold" id="bookingCode">-</span>
-                                    <button class="btn btn-sm btn-light" onclick="copyBookingCode()" title="Salin kode">
-                                        <i class="bi bi-clipboard"></i>
-                                    </button>
+
+                            {{-- Instruksi manual transfer --}}
+                            <div id="manualPaymentInfo" class="confirm-payment-instruction d-none mb-4"></div>
+
+                            {{-- CTA --}}
+                            <div class="d-grid gap-2 mx-auto" style="max-width:440px;">
+                                <a id="continuePaymentLink" href="#" class="btn btn-agro-primary d-none">
+                                    <i class="bi bi-arrow-right-circle me-2"></i>Lihat Instruksi Pembayaran
+                                </a>
+                                <div class="confirm-note d-flex align-items-start gap-2 mt-2">
+                                    <i class="bi bi-info-circle text-primary-agro flex-shrink-0 mt-1" style="font-size:0.85rem;"></i>
+                                    <p class="text-muted mb-0" style="font-size:0.8rem;">
+                                        Simpan kode pemesanan Anda. Invoice akan dikirim ke email setelah pembayaran dikonfirmasi.
+                                    </p>
                                 </div>
                             </div>
-                            <a id="continuePaymentLink" href="#" class="btn btn-agro-primary w-100 d-none"
-                                style="max-width: 400px;">
-                                Lanjutkan Pembayaran
-                            </a>
-                            <div id="manualPaymentInfo" class="alert alert-light border text-start mx-auto mt-4 d-none"
-                                style="max-width: 520px;"></div>
+
                         </div>
                     </div>
 
@@ -2052,3 +2068,71 @@ function changeBundlingPhoto(direction) {
 }
 
 </script>
+
+<style>
+/* ===== STEP 4 KONFIRMASI ===== */
+.confirm-status-header { padding: 0.5rem 0; }
+
+.confirm-status-icon {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1.75rem;
+}
+.confirm-status-icon.pending {
+    background: rgba(212,162,76,0.12);
+    color: var(--agro-accent);
+}
+.confirm-status-icon.success {
+    background: rgba(45,106,79,0.12);
+    color: var(--agro-primary);
+}
+
+.confirm-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+.confirm-info-item {
+    background: var(--agro-bg);
+    border: 1px solid var(--agro-border);
+    border-radius: 12px;
+    padding: 0.875rem 1rem;
+}
+.confirm-info-label {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--agro-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+.confirm-info-value { font-size: 1rem; color: var(--agro-text); }
+
+.btn-copy-code {
+    background: none; border: none; padding: 4px 8px;
+    color: var(--agro-text-muted); cursor: pointer;
+    border-radius: 6px; transition: color 0.2s, background 0.2s;
+    font-size: 0.9rem;
+}
+.btn-copy-code:hover { color: var(--agro-primary); background: rgba(45,106,79,0.08); }
+
+.confirm-payment-instruction {
+    background: #fff;
+    border: 1.5px solid rgba(45,106,79,0.2);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+.confirm-note {
+    background: rgba(45,106,79,0.04);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+}
+
+@media (max-width: 575.98px) {
+    .confirm-info-grid { grid-template-columns: 1fr; }
+}
+</style>

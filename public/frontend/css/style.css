@@ -973,3 +973,387 @@ textarea:focus-visible {
 .no-results p {
   color: #888;
 }
+
+/* ===================================================
+   TAMBAHAN — UI/UX Improvements
+   =================================================== */
+
+/* ===== Utility ===== */
+.lh-lg { line-height: 1.7; }
+.hover-lift { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.hover-lift:hover { transform: translateY(-3px); box-shadow: var(--shadow-card-hover); }
+
+/* ===== Touch targets ===== */
+.btn { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+.btn-sm { min-height: 36px; }
+
+/* ===== Card improvements ===== */
+.card-agro .card-body { padding: 1.5rem; }
+@media (max-width: 575.98px) {
+    .card-agro .card-body { padding: 1.25rem; }
+}
+
+/* ===== Section spacing ===== */
+.section-title-badge {
+    display: inline-block;
+    background: rgba(45, 106, 79, 0.1);
+    color: var(--agro-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.35rem 1rem;
+    border-radius: 50rem;
+    margin-bottom: 0.75rem;
+}
+
+/* ===== Filter pills scrollable on mobile ===== */
+.filter-pills-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+}
+.filter-pills-wrapper::-webkit-scrollbar { display: none; }
+.filter-pills-inner {
+    display: flex;
+    gap: 0.5rem;
+    white-space: nowrap;
+    padding: 2px 0;
+}
+
+/* ===== Count badge inside region pill ===== */
+.count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 50rem;
+    background: rgba(45, 106, 79, 0.12);
+    color: var(--agro-primary);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0 5px;
+    transition: all 0.2s ease;
+}
+.region-pill.active .count-badge {
+    background: rgba(255,255,255,0.25);
+    color: #fff;
+}
+
+/* ===== Destination card ===== */
+.destination-card .card-img-top,
+.destination-card .card-img-wrapper img {
+    height: 220px;
+    object-fit: cover;
+    transition: transform 0.45s ease;
+}
+@media (max-width: 575.98px) {
+    .destination-card .card-img-top,
+    .destination-card .card-img-wrapper img {
+        height: 200px;
+    }
+}
+.destination-card:hover .card-img-top,
+.destination-card:hover .card-img-wrapper img {
+    transform: scale(1.06);
+}
+
+/* Activity badge limit */
+.activity-badges-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+/* ===== Hero improvements ===== */
+@media (max-width: 575.98px) {
+    .hero-section {
+        min-height: 75vh;
+    }
+    .hero-content h1 {
+        font-size: 2rem !important;
+        line-height: 1.2;
+    }
+    .hero-content .lead {
+        font-size: 0.95rem !important;
+    }
+    .btn-agro-accent {
+        padding: 0.875rem 2rem;
+        font-size: 1rem;
+    }
+}
+
+/* ===== Detail page — sticky bottom CTA on mobile ===== */
+.sticky-book-bar {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1040;
+    background: #fff;
+    border-top: 1px solid var(--agro-border);
+    padding: 0.875rem 1rem;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+}
+@media (max-width: 991.98px) {
+    .sticky-book-bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    body.has-sticky-bar { padding-bottom: 80px; }
+}
+
+/* ===== Minimum person notice ===== */
+.minimum-order-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 0.75rem;
+    padding: 0.875rem 1rem;
+}
+.minimum-order-notice-icon {
+    color: #d97706;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+.minimum-order-notice-label {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #92400e;
+    margin-bottom: 2px;
+}
+.minimum-order-notice-text {
+    font-size: 0.85rem;
+    color: #78350f;
+}
+
+/* ===== Facility list ===== */
+.facility-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.5rem;
+}
+.facility-list-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--agro-text);
+}
+.facility-list-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(45, 106, 79, 0.1);
+    color: var(--agro-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+}
+@media (max-width: 575.98px) {
+    .facility-list { grid-template-columns: 1fr 1fr; }
+}
+
+/* ===== Review lightbox ===== */
+.review-lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+.review-lightbox img {
+    max-width: 90vw;
+    max-height: 85vh;
+    border-radius: 0.75rem;
+    object-fit: contain;
+}
+.review-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+.review-close:hover { background: rgba(255,255,255,0.3); }
+.review-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+.review-nav:hover { background: rgba(255,255,255,0.3); }
+.review-nav.prev { left: 1rem; }
+.review-nav.next { right: 1rem; }
+
+/* ===== Booking — payment icon circle ===== */
+.payment-icon-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(45, 106, 79, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ===== Bundling detail link ===== */
+.bundling-detail-link {
+    background: none;
+    border: none;
+    color: var(--agro-primary);
+    font-size: 0.75rem;
+    padding: 0;
+    margin-top: 4px;
+    cursor: pointer;
+    text-decoration: underline;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+/* ===== Order summary mobile collapsible ===== */
+@media (max-width: 991.98px) {
+    #orderSummaryCol {
+        order: -1;
+    }
+    .order-summary-collapse-btn {
+        display: flex !important;
+    }
+}
+.order-summary-collapse-btn {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    font-weight: 600;
+    color: var(--agro-text);
+    cursor: pointer;
+}
+
+/* ===== Invoice responsive ===== */
+@media (max-width: 575.98px) {
+    .invoice-container {
+        padding: 1.25rem !important;
+        margin: 16px auto !important;
+        border-radius: 12px !important;
+    }
+    .invoice-container .table-responsive {
+        font-size: 0.8rem;
+    }
+}
+
+/* ===== Form improvements ===== */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--agro-primary);
+    box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.15);
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] { -moz-appearance: textfield; }
+
+/* ===== Participant step buttons ===== */
+.participant-step-btn {
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 0.5rem !important;
+}
+
+/* ===== UMKM qty buttons ===== */
+.umkm-qty-btn {
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+    border-radius: 8px !important;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+/* ===== Responsive table ===== */
+@media (max-width: 575.98px) {
+    .table-responsive-xs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+/* ===== Footer WA button ===== */
+.footer-wa-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #25d366;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.6rem 1.1rem;
+    border-radius: 8px;
+    transition: background 0.2s ease, transform 0.15s ease;
+    white-space: nowrap;
+}
+.footer-wa-btn:hover {
+    background: #20bd5a;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+/* ===== Footer email truncate on mobile ===== */
+.footer-email-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+.footer-link-email {
+    overflow: hidden;
+}
+
+/* ===== Footer mobile overrides ===== */
+@media (max-width: 575.98px) {
+    .footer-agro { text-align: left; }
+    .footer-list { align-items: flex-start; }
+    .footer-link { justify-content: flex-start; }
+    .footer-email-text { font-size: 0.78rem; }
+}

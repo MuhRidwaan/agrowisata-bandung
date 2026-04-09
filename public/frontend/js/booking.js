@@ -31,25 +31,61 @@ function getInvoiceEmailUrl(bookingCode) {
 
 function savePendingBooking(bookingData) {
   if (!bookingData || !bookingData.booking_code) return;
+
+  var existing = [];
+  try {
+    var raw = localStorage.getItem('pending_bookings');
+    if (raw) existing = JSON.parse(raw) || [];
+  } catch (e) { existing = []; }
+
+  // Hapus entry lama dengan booking_code yang sama (hindari duplikat)
+  existing = existing.filter(function(b) { return b.booking_code !== bookingData.booking_code; });
+
+  existing.push({
+    booking_code: bookingData.booking_code,
+    total_price: bookingData.total_price || 0,
+    resume_url: getResumeUrl(bookingData.booking_code),
+    paket_name: config.name || null,
+    saved_at: new Date().toISOString()
+  });
+
+  localStorage.setItem('pending_bookings', JSON.stringify(existing));
+
+  // Backward compat: tetap simpan last_pending_booking untuk halaman lain yang masih pakai
   localStorage.setItem('last_pending_booking', JSON.stringify({
     booking_code: bookingData.booking_code,
     total_price: bookingData.total_price || 0,
     resume_url: getResumeUrl(bookingData.booking_code),
+    paket_name: config.name || null,
     saved_at: new Date().toISOString()
   }));
 }
 
 function clearPendingBookingIfMatch(bookingCode) {
-  const raw = localStorage.getItem('last_pending_booking');
-  if (!raw) return;
+  // Hapus dari array
   try {
-    const data = JSON.parse(raw);
-    if (!bookingCode || data.booking_code === bookingCode) {
-      localStorage.removeItem('last_pending_booking');
+    var raw = localStorage.getItem('pending_bookings');
+    if (raw) {
+      var list = JSON.parse(raw) || [];
+      list = list.filter(function(b) { return b.booking_code !== bookingCode; });
+      if (list.length > 0) {
+        localStorage.setItem('pending_bookings', JSON.stringify(list));
+      } else {
+        localStorage.removeItem('pending_bookings');
+      }
     }
-  } catch (e) {
-    localStorage.removeItem('last_pending_booking');
-  }
+  } catch (e) { localStorage.removeItem('pending_bookings'); }
+
+  // Hapus last_pending_booking jika cocok
+  try {
+    var raw2 = localStorage.getItem('last_pending_booking');
+    if (raw2) {
+      var data = JSON.parse(raw2);
+      if (!bookingCode || data.booking_code === bookingCode) {
+        localStorage.removeItem('last_pending_booking');
+      }
+    }
+  } catch (e) { localStorage.removeItem('last_pending_booking'); }
 }
 
 function formatCurrency(amount) {

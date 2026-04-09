@@ -26,10 +26,18 @@
 
                         <div class="row">
                             <div class="col-12">
-                                <h4>
-                                    <i class="fas fa-leaf text-success"></i> Agrowisata Tour
-                                    <small class="float-right">Print Date: {{ now()->format('d/m/Y') }}</small>
-                                </h4>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        @php
+                                            $companyLogo = storage_asset_url(get_setting('invoice_company_logo'), asset('frontend/img/logo.png'));
+                                        @endphp
+                                        <img src="{{ $companyLogo }}" alt="Company Logo" style="max-height: 60px; margin-right: 15px;">
+                                        <h4 class="mb-0">
+                                            {{ get_setting('invoice_company_name', 'Agrowisata Tour') }}
+                                        </h4>
+                                    </div>
+                                    <small>Print Date: {{ now()->format('d/m/Y') }}</small>
+                                </div>
                             </div>
                         </div>
                         <hr>
@@ -38,11 +46,10 @@
                             <div class="col-sm-4 invoice-col">
                                 From
                                 <address>
-                                    <strong>Agrowisata Admin</strong><br>
-                                    Jl. Raya Pariwisata No. 123<br>
-                                    Bandung, West Java<br>
-                                    Phone: (022) 123-4567<br>
-                                    Email: info@agrowisata.com
+                                    <strong>{{ get_setting('invoice_company_name', 'Agrowisata Tour') }}</strong><br>
+                                    {!! nl2br(e(get_setting('invoice_company_address', "Jl. Raya Pariwisata No. 123\nBandung, West Java"))) !!}<br>
+                                    Phone: {{ get_setting('invoice_company_phone', '(022) 123-4567') }}<br>
+                                    Email: {{ get_setting('invoice_company_email', 'info@agrowisata.com') }}
                                 </address>
                             </div>
 
@@ -145,11 +152,8 @@
                         <div class="row mt-4">
                             <div class="col-6">
                                 <p class="lead">Important Notes:</p>
-                                <img src="https://midtrans.com/assets/img/midtrans-logo.png" alt="Midtrans" width="120"
-                                    class="mb-3">
                                 <p class="text-muted well well-sm shadow-none" style="margin-top: 10px;">
-                                    Thank you for your payment. Please keep this invoice and show it to our staff during
-                                    re-registration at the Agrowisata location.
+                                    {!! nl2br(e(get_setting('invoice_notes', 'Thank you for your payment. Please keep this invoice and show it to our staff during re-registration at the Agrowisata location.'))) !!}
                                 </p>
                             </div>
                             <div class="col-6">

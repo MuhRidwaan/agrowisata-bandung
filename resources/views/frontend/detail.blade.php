@@ -3,19 +3,19 @@
 @section('header')
     @include('frontend.layouts.header')
     @stack('styles')
-<body>
+<body class="has-sticky-bar">
 @endsection
 
 @section('content')
-<header class="bg-white border-bottom position-sticky top-0" style="z-index: 1000;">
+<header class="detail-subheader bg-white border-bottom position-sticky top-0" style="z-index: 999;">
     <div class="container">
         <div class="d-flex align-items-center gap-3 py-3">
-            <a href="/" class="btn btn-light rounded-circle p-2">
+            <a href="/" class="btn btn-light rounded-circle p-0 detail-back-btn" aria-label="Kembali">
                 <i class="bi bi-arrow-left"></i>
             </a>
-            <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-leaf text-primary-agro"></i>
-                <span class="font-display fs-5 fw-bold">Detail Paket</span>
+            <div class="d-flex align-items-center gap-2 min-w-0">
+                <i class="bi bi-leaf text-primary-agro flex-shrink-0"></i>
+                <span class="font-display fs-6 fw-bold text-truncate">{{ $paket->nama_paket }}</span>
             </div>
         </div>
     </div>
@@ -32,29 +32,37 @@
                 style="width:100%; height:100%; object-fit:cover; display:block;"
                 loading="eager">
 
-            <button class="gallery-nav-btn prev" onclick="prevImage()">
+            @if($paket->photos->count() > 1)
+            <button class="gallery-nav-btn prev" onclick="prevImage()" aria-label="Foto sebelumnya">
                 <i class="bi bi-chevron-left"></i>
             </button>
-
-            <button class="gallery-nav-btn next" onclick="nextImage()">
+            <button class="gallery-nav-btn next" onclick="nextImage()" aria-label="Foto berikutnya">
                 <i class="bi bi-chevron-right"></i>
             </button>
+            @endif
 
             <div class="gallery-dots">
                 @foreach($paket->photos as $index => $photo)
                     <button class="gallery-dot {{ $index == 0 ? 'active' : '' }}"
-                        onclick="setImage({{ $index }})">
+                        onclick="setImage({{ $index }})" aria-label="Foto {{ $index + 1 }}">
                     </button>
                 @endforeach
             </div>
+
+            <!-- Counter badge -->
+            @if($paket->photos->count() > 1)
+            <div class="gallery-counter" id="galleryCounter">
+                1 / {{ $paket->photos->count() }}
+            </div>
+            @endif
         </div>
 
         @if($paket->photos && $paket->photos->count() > 1)
         <div class="gallery-thumbs">
             @foreach($paket->photos as $index => $photo)
                 <button class="gallery-thumb {{ $index == 0 ? 'active' : '' }}"
-                    onclick="setImage({{ $index }})">
-                    <img src="{{ $photo->photo_url }}">
+                    onclick="setImage({{ $index }})" aria-label="Pilih foto {{ $index + 1 }}">
+                    <img src="{{ $photo->photo_url }}" alt="Foto {{ $index + 1 }}" loading="lazy">
                 </button>
             @endforeach
         </div>
@@ -195,75 +203,100 @@
                 @endif
 
                 <!-- REVIEWS -->
-                <div class="card card-agro">
+                <div class="card card-agro" id="reviewSection">
                     <div class="card-body p-4">
-                        <h3 class="font-display fs-5 fw-semibold mb-4">
-                            Ulasan Pengunjung ({{ $paket->reviews->where('status','approved')->count() }})
-                        </h3>
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <h3 class="font-display fs-5 fw-semibold mb-0">
+                                Ulasan Pengunjung
+                            </h3>
+                            <span class="badge rounded-pill px-3 py-2"
+                                  style="background:rgba(45,106,79,0.1);color:var(--agro-primary);font-size:0.8rem;">
+                                {{ $paket->reviews->where('status','approved')->count() }} ulasan
+                            </span>
+                        </div>
 
-                        <div class="d-flex flex-column gap-4 review-scroll">
-                            @forelse($paket->reviews->where('status','approved')->sortByDesc('created_at') as $review)
-                                <div class="p-4 rounded-4 bg-light">
+                        @php
+                            $approvedReviews = $paket->reviews->where('status','approved')->sortByDesc('created_at');
+                            $avgRating = $approvedReviews->avg('rating') ?? 0;
+                        @endphp
 
-                                    <div class="d-flex justify-content-between">
-                                        <div class="d-flex gap-3">
-                                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold"
-                                                style="width:45px; height:45px; background:#e9f5ee; color:#2f6d4f;">
-                                                {{ strtoupper(substr($review->name ?? 'U',0,1)) }}
+                        @if($approvedReviews->count() > 0)
+                        <!-- Rating summary -->
+                        <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-3 bg-agro-light">
+                            <div class="text-center">
+                                <div class="font-display fw-bold text-primary-agro" style="font-size:2.5rem;line-height:1;">
+                                    {{ number_format($avgRating, 1) }}
+                                </div>
+                                <div class="d-flex gap-1 justify-content-center mt-1">
+                                    @for($i=1;$i<=5;$i++)
+                                        <i class="bi bi-star-fill {{ $i <= round($avgRating) ? 'text-warning' : 'text-muted' }}" style="font-size:0.75rem;"></i>
+                                    @endfor
+                                </div>
+                                <div class="text-muted" style="font-size:0.72rem;">dari 5</div>
+                            </div>
+                            <div class="vr"></div>
+                            <div class="text-muted small">
+                                Berdasarkan <strong>{{ $approvedReviews->count() }}</strong> ulasan terverifikasi
+                            </div>
+                        </div>
+                        @endif
+
+                        <div class="d-flex flex-column gap-3">
+                            @forelse($approvedReviews as $review)
+                                <div class="review-card">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="d-flex gap-3 align-items-center">
+                                            <div class="review-avatar">
+                                                {{ strtoupper(substr($review->name ?? 'U', 0, 1)) }}
                                             </div>
-
                                             <div>
-                                                <div class="fw-semibold">
-                                                    {{ $review->name ?? 'User' }}
+                                                <div class="fw-semibold" style="font-size:0.9rem;">
+                                                    {{ $review->name ?? 'Pengunjung' }}
                                                 </div>
-
-                                                <div class="text-muted small">
+                                                <div class="text-muted" style="font-size:0.78rem;">
                                                     {{ \Carbon\Carbon::parse($review->created_at)->translatedFormat('d F Y') }}
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <div class="d-flex gap-1">
+                                        <div class="d-flex gap-1 flex-shrink-0">
                                             @for($i=1;$i<=5;$i++)
-                                                <i class="bi bi-star-fill {{ $i <= $review->rating ? 'text-warning' : 'text-muted' }}"></i>
+                                                <i class="bi bi-star-fill {{ $i <= $review->rating ? 'text-warning' : 'text-muted' }}"
+                                                   style="font-size:0.8rem;"></i>
                                             @endfor
                                         </div>
                                     </div>
 
-                                    <p class="text-muted mt-3 mb-0">
-                                        {{ $review->comment }}
-                                    </p>
+                                    <p class="text-muted mb-0 review-comment">{{ $review->comment }}</p>
 
                                     @if($review->photos->count())
                                     <div class="mt-3 d-flex gap-2 flex-wrap">
                                         @foreach($review->photos as $photo)
-                                        <img 
-                                            src="{{ $photo->photo_url }}"
-                                            class="rounded-3 shadow-sm review-img"
-                                            style="width:100px;height:100px;object-fit:cover;cursor:pointer;"
-                                            onclick="openReviewImage(this.src)">
+                                        <img src="{{ $photo->photo_url }}"
+                                             class="review-img rounded-3"
+                                             style="width:80px;height:80px;object-fit:cover;cursor:pointer;"
+                                             onclick="openReviewImage(this.src)"
+                                             alt="Foto ulasan" loading="lazy">
                                         @endforeach
                                     </div>
                                     @endif
 
                                     @if(!empty($review->admin_reply))
-                                    <div class="mt-3 ms-5">
-                                        <div class="p-3 rounded-4 shadow-sm"
-                                            style="background:#f5faf7; border-left:4px solid #2f6d4f;">
-                                            <div class="fw-semibold small text-success mb-1">
+                                    <div class="mt-3 ms-4 ms-sm-5">
+                                        <div class="admin-reply-card">
+                                            <div class="fw-semibold small text-success mb-1 d-flex align-items-center gap-1">
                                                 <i class="bi bi-patch-check-fill"></i>
-                                                {{ get_setting('admin_name', 'Admin AgroTourism Bandung') }}
+                                                {{ get_setting('admin_name', 'Admin AgroBandung') }}
                                             </div>
-                                            <p class="small mb-0 text-muted">
-                                                {{ $review->admin_reply }}
-                                            </p>
+                                            <p class="small mb-0 text-muted">{{ $review->admin_reply }}</p>
                                         </div>
                                     </div>
                                     @endif
-
                                 </div>
                             @empty
-                                <p class="text-muted">Belum ada ulasan</p>
+                                <div class="text-center py-4">
+                                    <i class="bi bi-chat-square-text fs-2 text-muted mb-2 d-block"></i>
+                                    <p class="text-muted mb-0">Belum ada ulasan. Jadilah yang pertama!</p>
+                                </div>
                             @endforelse
                         </div>
                     </div>
@@ -381,13 +414,12 @@
         </div>
 
         <!-- ================= RIGHT ================= -->
-        <div class="col-lg-4">
-            <div class="position-sticky" style="top:80px;">
+        <div class="col-lg-4 d-none d-lg-block" id="desktopBookingCard">
+            <div class="position-sticky" style="top:130px;">
                 <div class="card card-agro">
                     <div class="card-body p-4">
 
                         <p class="text-muted small mb-1">Harga mulai dari</p>
-
                         <div class="d-flex align-items-baseline gap-1 mb-3">
                             <span class="font-display display-6 fw-bold text-primary-agro">
                                 Rp{{ number_format($paket->harga_paket ?? 0,0,',','.') }}
@@ -395,16 +427,20 @@
                             <span class="text-muted small">/orang</span>
                         </div>
 
+                        @if($paket->has_minimum_person && $paket->minimum_person)
+                        <div class="d-flex align-items-center gap-2 mb-3 p-2 rounded-3" style="background:#fffbeb;border:1px solid #fde68a;">
+                            <i class="bi bi-people-fill text-warning flex-shrink-0"></i>
+                            <span class="small" style="color:#92400e;">Min. {{ $paket->minimum_person }} peserta</span>
+                        </div>
+                        @endif
+
                         <div class="bg-agro-light rounded-3 p-3 mb-4 d-flex gap-2">
-                            <i class="bi bi-shield-check text-primary-agro flex-shrink-0"></i>
-                            <div class="text-muted small mb-0">
-                                <p class="mb-1">Pemesanan harus dilakukan minimal 24 jam sebelum jadwal kunjungan.</p>
-                            </div>
+                            <i class="bi bi-shield-check text-primary-agro flex-shrink-0 mt-1"></i>
+                            <p class="text-muted small mb-0">Pemesanan minimal 24 jam sebelum kunjungan.</p>
                         </div>
 
-                        <a href="{{ route('booking',$paket->id) }}"
-                           class="btn btn-agro-primary w-100">
-                           Beli Tiket
+                        <a href="{{ route('booking', $paket->id) }}" class="btn btn-agro-primary w-100">
+                            <i class="bi bi-ticket-perforated me-2"></i>Beli Tiket
                         </a>
 
                     </div>
@@ -413,6 +449,19 @@
         </div>
 
     </div>
+</div>
+
+<!-- ===== STICKY BOTTOM BAR (mobile only) ===== -->
+<div class="sticky-book-bar" id="stickyBookBar">
+    <div>
+        <div class="text-muted" style="font-size:0.72rem;">Mulai dari</div>
+        <div class="font-display fw-bold text-primary-agro" style="font-size:1.2rem;line-height:1.1;">
+            Rp{{ number_format($paket->harga_paket ?? 0,0,',','.') }}<span class="text-muted fw-normal" style="font-size:0.75rem;">/orang</span>
+        </div>
+    </div>
+    <a href="{{ route('booking', $paket->id) }}" class="btn btn-agro-primary px-4">
+        <i class="bi bi-ticket-perforated me-1"></i>Beli Tiket
+    </a>
 </div>
 
 @endsection
@@ -462,6 +511,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 150);
 
             updateActiveState(index);
+            // Update counter
+            var counter = document.getElementById('galleryCounter');
+            if (counter) counter.textContent = (index + 1) + ' / ' + images.length;
         };
 
         window.nextImage = function() {
@@ -473,6 +525,17 @@ document.addEventListener("DOMContentLoaded", function () {
             currentIndex = (currentIndex - 1 + images.length) % images.length;
             setImage(currentIndex);
         };
+
+        // Touch swipe
+        var gallery = document.getElementById('mainGallery');
+        if (gallery) {
+            var touchStartX = 0;
+            gallery.addEventListener('touchstart', function(e) { touchStartX = e.changedTouches[0].clientX; }, { passive: true });
+            gallery.addEventListener('touchend', function(e) {
+                var diff = touchStartX - e.changedTouches[0].clientX;
+                if (Math.abs(diff) > 40) { if (diff > 0) nextImage(); else prevImage(); }
+            }, { passive: true });
+        }
     }
 
 
@@ -791,9 +854,6 @@ function updateInputFiles(input){
 
 }
 </script>
-@endpush
-
-
 
 <!-- ======================== Styling CSS ======================== -->
 <style>
@@ -977,3 +1037,110 @@ function updateInputFiles(input){
     line-height:1.55;
 }
 </style>
+
+                renderPreview(container);
+                updateRealInput();
+            };
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(removeBtn);
+            container.appendChild(wrapper);
+        };
+
+        reader.readAsDataURL(file);
+    });
+}
+</script>
+
+<style>
+/* ===== DETAIL SUBHEADER ===== */
+.detail-subheader { z-index: 999; }
+.detail-back-btn {
+    width: 38px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ===== GALLERY COUNTER ===== */
+.gallery-counter {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 50rem;
+    backdrop-filter: blur(4px);
+    pointer-events: none;
+}
+
+/* ===== REVIEW CARDS ===== */
+.review-card {
+    background: #f8f9f7;
+    border: 1px solid rgba(45,106,79,0.08);
+    border-radius: 14px;
+    padding: 1.1rem 1.25rem;
+    transition: box-shadow 0.2s ease;
+}
+.review-card:hover { box-shadow: 0 2px 12px rgba(45,106,79,0.08); }
+
+.review-avatar {
+    width: 42px; height: 42px; flex-shrink: 0;
+    border-radius: 50%;
+    background: rgba(45,106,79,0.12);
+    color: var(--agro-primary);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.review-comment {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--agro-text-muted);
+}
+
+.admin-reply-card {
+    background: #f0faf5;
+    border-left: 3px solid var(--agro-primary);
+    border-radius: 0 10px 10px 0;
+    padding: 0.75rem 1rem;
+}
+
+/* ===== PRICING RULES CARDS ===== */
+.price-tier-card {
+    border: 1.5px solid var(--agro-border);
+    border-radius: 12px;
+    padding: 0.875rem;
+    text-align: center;
+    background: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.price-tier-card:hover {
+    border-color: var(--agro-primary);
+    box-shadow: 0 2px 12px rgba(45,106,79,0.1);
+}
+
+/* ===== FORM REVIEW ===== */
+.review-field {
+    border: 1.5px solid var(--agro-border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.review-field:focus {
+    border-color: var(--agro-primary);
+    box-shadow: 0 0 0 3px rgba(45,106,79,0.12);
+    outline: none;
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 575.98px) {
+    .gallery-counter { bottom: 0.75rem; right: 0.75rem; }
+    .review-card { padding: 1rem; }
+    .admin-reply-card { margin-left: 0 !important; }
+}
+</style>
+@endpush
