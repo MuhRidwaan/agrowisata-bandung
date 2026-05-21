@@ -3,8 +3,12 @@ set -eu
 
 php artisan storage:link || true
 
-if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
+if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
   php artisan migrate --force
+fi
+
+if [ "${RUN_SEEDERS:-true}" = "true" ]; then
+  php artisan db:seed --force
 fi
 
 php artisan optimize:clear || true
