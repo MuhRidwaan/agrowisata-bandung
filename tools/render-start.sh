@@ -1,6 +1,13 @@
 #!/bin/sh
 set -eu
 
+if [ "${DB_CONNECTION:-mysql}" = "mysql" ]; then
+  if [ -z "${DB_HOST:-${MYSQLHOST:-}}" ] && [ -z "${DB_URL:-${MYSQL_URL:-}}" ]; then
+    echo "MySQL variables are missing in Railway. Set MYSQL_URL or DB_HOST/DB_PORT/DB_DATABASE/DB_USERNAME/DB_PASSWORD."
+    exit 1
+  fi
+fi
+
 php artisan storage:link || true
 
 if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
