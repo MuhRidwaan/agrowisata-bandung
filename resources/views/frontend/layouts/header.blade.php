@@ -33,5 +33,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="{{ asset('frontend/css/style.css') }}" rel="stylesheet">
+    @php
+        $frontendStylePath = public_path('frontend/css/style.css');
+    @endphp
+    @if (file_exists($frontendStylePath))
+        <style>{!! file_get_contents($frontendStylePath) !!}</style>
+    @endif
     @stack('styles')
 </head>
