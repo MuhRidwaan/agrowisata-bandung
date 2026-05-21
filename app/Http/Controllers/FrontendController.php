@@ -79,7 +79,6 @@ class FrontendController extends Controller
                 'photos',
                 'reviews' => fn ($q) => $q->where('status', 'approved')->with('photos'),
             ])
-            ->whereHas('photos')
             ->latest();
 
         if ($request->area && $request->area != 'all') {
