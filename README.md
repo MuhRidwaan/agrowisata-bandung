@@ -55,5 +55,51 @@ Sistem memiliki pemisahan akses yang ketat menggunakan **Spatie Laravel Permissi
    - **Super Admin**: `admin@gmail.com` | pass: `password`
    - **Vendor**: `vendor@gmail.com` | pass: `password`
 
+## Environment Setup
+
+### Local Development
+
+Default `.env.example` diarahkan ke MySQL lokal:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=agrowisata_bandung
+DB_USERNAME=root
+DB_PASSWORD=
+QUEUE_CONNECTION=sync
+CACHE_STORE=file
+```
+
+Buat dulu database `agrowisata_bandung`, lalu jalankan:
+
+```bash
+php artisan key:generate
+php artisan migrate --seed
+php artisan serve
+```
+
+### Railway Deployment
+
+Konfigurasi database sekarang otomatis kompatibel dengan variabel resmi Railway MySQL:
+
+- `MYSQLHOST`
+- `MYSQLPORT`
+- `MYSQLDATABASE`
+- `MYSQLUSER`
+- `MYSQLPASSWORD`
+- `MYSQL_URL`
+
+Deploy flow yang disarankan:
+
+1. Deploy app Laravel ke Railway.
+2. Tambahkan service MySQL di project yang sama.
+3. Hubungkan app ke MySQL Railway dengan reference variables bawaan Railway.
+4. Set `APP_KEY`, `APP_ENV=production`, dan `APP_DEBUG=false`.
+
+Jika `APP_URL` tidak diisi manual, aplikasi juga akan otomatis memakai `https://<RAILWAY_PUBLIC_DOMAIN>`.
+
 ## 📄 Lisensi
 Platform ini dikembangkan untuk kebutuhan manajemen Agrowisata di wilayah Bandung dan sekitarnya.
+# agrotourism_bandung
