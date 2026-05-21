@@ -27,11 +27,26 @@ if (!function_exists('storage_asset_url')) {
             return $default;
         }
 
+        $path = trim($path);
+
         if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-            return $path;
+            $parsedUrl = parse_url($path);
+            $host = strtolower((string) ($parsedUrl['host'] ?? ''));
+            $urlPath = ltrim((string) ($parsedUrl['path'] ?? ''), '/');
+
+            // Normalize app-local URLs so deployed environments don't keep pointing to localhost.
+            if (in_array($host, ['127.0.0.1', 'localhost'], true) || str_starts_with($urlPath, 'storage/') || str_starts_with($urlPath, 'media/storage/')) {
+                $path = $urlPath;
+            } else {
+                return $path;
+            }
         }
 
         $normalizedPath = ltrim(str_replace('\\', '/', $path), '/');
+
+        if (str_starts_with($normalizedPath, 'media/storage/')) {
+            $normalizedPath = substr($normalizedPath, 14);
+        }
 
         if (file_exists(public_path($normalizedPath))) {
             return asset($normalizedPath);
@@ -46,6 +61,10 @@ if (!function_exists('storage_asset_url')) {
         }
 
         if (file_exists(storage_path('app/public/' . $storagePath))) {
+            return route('public.storage', ['path' => $storagePath]);
+        }
+
+        if ($storagePath !== '') {
             return route('public.storage', ['path' => $storagePath]);
         }
 
