@@ -50,12 +50,14 @@ return [
 
         'mysql' => [
             'driver' => 'mysql',
-            'url' => env('DB_URL', env('MYSQL_URL')),
-            'host' => env('DB_HOST', env('MYSQLHOST')),
-            'port' => env('DB_PORT', env('MYSQLPORT')),
-            'database' => env('DB_DATABASE', env('MYSQLDATABASE')),
-            'username' => env('DB_USERNAME', env('MYSQLUSER')),
-            'password' => env('DB_PASSWORD', env('MYSQLPASSWORD')),
+            // Prefer platform-provided variables in production so local .env defaults
+            // do not override Railway's injected database credentials.
+            'url' => env('MYSQL_URL', env('DB_URL')),
+            'host' => env('MYSQLHOST', env('DB_HOST')),
+            'port' => env('MYSQLPORT', env('DB_PORT')),
+            'database' => env('MYSQLDATABASE', env('DB_DATABASE')),
+            'username' => env('MYSQLUSER', env('DB_USERNAME')),
+            'password' => env('MYSQLPASSWORD', env('DB_PASSWORD')),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => env('DB_CHARSET', 'utf8mb4'),
             'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
