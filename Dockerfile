@@ -19,6 +19,9 @@ WORKDIR /app
 ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV APP_ENV=production
 ENV PORT=8080
+ENV DB_CONNECTION=mysql
+ENV CACHE_STORE=file
+ENV QUEUE_CONNECTION=sync
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
